@@ -1,11 +1,24 @@
-# TimerTrigger - C<span>#</span>
+# 🧠 TrevorBot — Discord's Operational Diagnostician
 
-The `TimerTrigger` makes it incredibly easy to have your functions executed on a schedule. This sample demonstrates a simple use case of calling your function every 5 minutes.
+TrevorBot is a Discord bot built on Azure Functions, designed for groups who thrive on rituals, mental clips, and chaotic team drafts. Trevor is not just a bot. Trevor observes. Trevor comments. Trevor logs.
 
-## How it works
+---
 
-For a `TimerTrigger` to work, you provide a schedule in the form of a [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression)(See the link for full details). A cron expression is a string with 6 separate expressions which represent a given schedule via patterns. The pattern we use to represent every 5 minutes is `0 */5 * * * *`. This, in plain text, means: "When seconds is equal to 0, minutes is divisible by 5, for any hour, day of the month, month, day of the week, or year".
+## 🚀 Features
 
-## Learn more
+### `/ping`
+Checks if Trevor is alive. He usually is. But he’s not happy about it.
 
-<TODO> Documentation
+### `/teams gracze: Konrad,Janusz,Jan,Bartosz`
+Splits the provided list of players into two teams. Uneven teams? Trevor sees all. And judges.
+
+---
+
+## 🧰 Tech Stack
+
+- **Azure Functions** — webhook-based backend
+- **Discord Interactions API** — slash command support
+- **C# (.NET 8)** — core logic
+- **Trevor Personality Engine™** — dry wit, operational paranoia, and judgmental commentary
+
+---
