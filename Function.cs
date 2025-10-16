@@ -27,12 +27,12 @@ public class Function
 
         try
         {
-            //bool isValid = _auth.VerifyRequestAsync(req, _logger).Result;
-            //if (!isValid)
-            //{
-            //    log.LogWarning("Invalid Discord signature.");
-            //    return new StatusCodeResult(401);
-            //}
+            bool isValid = _auth.VerifyRequestAsync(req, _logger).Result;
+            if (!isValid)
+            {
+                log.LogWarning("Invalid Discord signature.");
+                return new StatusCodeResult(401);
+            }
 
             var interaction = await JsonSerializer.DeserializeAsync<DiscordInteraction>(req.Body, new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
 
