@@ -2,69 +2,67 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using trevor.Model;
 
-namespace trevor;
-
-public class Function
+namespace trevor
 {
-    private readonly ILogger<Function> _logger;
-    private readonly IAuthentication _auth;
-
-    public Function(ILogger<Function> logger, IAuthentication auth)
+    public class Function
     {
-        _logger = logger;
-        _auth = auth;
-    }
+        private readonly ILogger<Function> _logger;
+        private readonly IAuthentication _auth;
 
-    [Function("DiscordCommands")]
-    public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
-        FunctionContext context)
-    {
-        var log = context.GetLogger("DiscordCommands");
-
-        try
+        public Function(ILogger<Function> logger, IAuthentication auth)
         {
-            bool isValid = _auth.VerifyRequestAsync(req, _logger).Result;
-            if (!isValid)
+            _logger = logger;
+            _auth = auth;
+        }
+
+        [Function("DiscordCommands")]
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
+            FunctionContext context)
+        {
+            var log = context.GetLogger("DiscordCommands");
+
+            try
             {
-                log.LogWarning("Invalid Discord signature.");
-                return new StatusCodeResult(401);
-            }
+                using var reader = new StreamReader(req.Body);
+                var body = await reader.ReadToEndAsync();
 
-            var interaction = await JsonSerializer.DeserializeAsync<DiscordInteraction>(req.Body, new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
+                if (!_auth.VerifyRequest(body, req.Headers, log))
+                    return new StatusCodeResult(401);
 
+                var interaction = JsonSerializer.Deserialize<DiscordInteraction>(body,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if(interaction?.Type == 1)
-            {
-                log.LogInformation("Received Discord PING request.");
-                return new ContentResult
+                if (interaction?.Type == 1) 
                 {
-                    Content = "{\"type\":1}",
-                    ContentType = "application/json",
-                    StatusCode = 200
-                };
-            }
+                    log.LogInformation("Received Discord PING request.");
+                    return new ContentResult
+                    {
+                        Content = "{\"type\":1}",
+                        ContentType = "application/json",
+                        StatusCode = 200
+                    };
+                }
 
-            if (Enum.TryParse<Command>(interaction?.Data?.Name, true, out var cmd) && Enum.IsDefined(typeof(Command), cmd))
-            {
-                return MessageResponse.CreateResponse(cmd, interaction);
+                if (Enum.TryParse<Command>(interaction?.Data?.Name, true, out var cmd) &&
+                    Enum.IsDefined(typeof(Command), cmd))
+                {
+                    return MessageResponse.CreateResponse(cmd, interaction);
+                }
 
-            }
-            else
-            {
-                _logger.LogInformation($"Unknown command: {interaction?.Data?.Name}");
+                log.LogInformation($"Unknown command: {interaction?.Data?.Name}");
                 return new OkResult();
             }
-
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Exception: {ex.Message}");
-            return new StatusCodeResult(400);
-            
+            catch (Exception ex)
+            {
+                log.LogError($"Exception: {ex}");
+                return new StatusCodeResult(400);
+            }
         }
     }
 }

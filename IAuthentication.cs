@@ -10,6 +10,6 @@ namespace trevor
 {
     public interface IAuthentication
     {
-        public Task<bool> VerifyRequestAsync(HttpRequest req, ILogger log);
+        bool VerifyRequest(string body, IHeaderDictionary headers, ILogger log);
     }
 }
