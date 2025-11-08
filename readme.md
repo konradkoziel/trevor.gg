@@ -1,35 +1,33 @@
-🧠 TrevorBot — Discord’s Operational Diagnostician
+# 🧠 TrevorBot — Discord's Operational Diagnostician
 
-TrevorBot is a Discord bot powered by Azure Functions and Azure OpenAI, designed for teams that thrive on chaos, structure, and unsolicited commentary. Trevor doesn’t just respond — he analyzes, judges, and occasionally helps.
+TrevorBot is a Discord bot built on **Azure Functions** and **Azure OpenAI**, designed for teams that thrive on chaos, rituals, and judgmental automation.  
+He doesn’t just respond — he observes, analyzes, and occasionally helps.
 
-🚀 Features
-/ping
+---
 
-Checks if Trevor is alive. He usually is. Still cynical.
+## 🚀 Features
 
-/teams gracze: Konrad,Janusz,Jan,Bartosz
+### `/ping`
+Checks if Trevor is alive.  
+He usually is. Still cynical.
 
-Splits the provided list of players into two teams. If they’re uneven — Trevor sees. And disapproves.
+### `/teams gracze: Konrad,Janusz,Jan,Bartosz`
+Splits the provided list of players into two teams.  
+If they’re uneven — Trevor sees all. And judges.
 
-/ask question: <text>
+### `/ask question: <text>`
+Connects directly to **Azure OpenAI (GPT-4o)**.  
+Trevor reads your question, consults the neural gods, and answers briefly and precisely.  
+He’s helpful by contract, but not necessarily polite.
 
-Connects directly to Azure OpenAI.
-Trevor reads your question, consults the neural gods, and responds concisely.
-He’s contractually obligated to be helpful, but not necessarily kind.
+---
 
-🧰 Tech Stack
+## 🧰 Tech Stack
 
-Azure Functions — webhook-based backend for Discord Interactions
+- **Azure Functions (.NET 8)** — webhook-based backend for Discord Interactions  
+- **Azure OpenAI Service** — GPT-4o model powering `/ask`  
+- **Discord Interactions API** — Slash commands with signature verification  
+- **C#** — clean structure with DI, async/await, and factory-based command registry  
+- **Trevor Personality Engine™** — sarcasm-driven orchestration layer
 
-Azure OpenAI Service — GPT-4o model powering /ask command
-
-Discord Interactions API — full slash command support
-
-C# (.NET 8) — backend logic and dependency injection
-
-Trevor Personality Engine™ — sarcasm-driven orchestration layer
-
-🧩 Summary
-
-TrevorBot is equal parts automation and attitude.
-He listens, computes, and replies faster than your manager — and with slightly more empathy.
+---
