@@ -4,11 +4,13 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using trevor.Commands;
+using trevor.Commands.Core;
 using trevor.Common;
 using trevor.Model;
+using static System.Net.WebRequestMethods;
 
 namespace trevor.Functions
 {
@@ -16,11 +18,14 @@ namespace trevor.Functions
     {
         private readonly ILogger<CommandFunction> _logger;
         private readonly IAuthentication _auth;
+        private readonly ICommandFactory _commandFactory;
+        private static readonly HttpClient _http = new();
 
-        public CommandFunction(ILogger<CommandFunction> logger, IAuthentication auth)
+        public CommandFunction(ILogger<CommandFunction> logger, IAuthentication auth, ICommandFactory commandFactory)
         {
             _logger = logger;
             _auth = auth;
+            _commandFactory = commandFactory;
         }
 
         [Function("DiscordCommands")]
@@ -54,11 +59,26 @@ namespace trevor.Functions
 
                 if (interaction?.Data?.Name != null)
                 {
-                    CommandFactory commandFactory = new CommandFactory();
-                    var command = await commandFactory.Create(interaction.Data.Name, interaction);
+                    var command = await _commandFactory.Create(interaction.Data.Name);
                     var result = await command.ExecuteAsync(interaction);
                     var response = MessageResponse.CreateResponse(result);
                     return response;
+                }
+                else if (interaction?.Data?.Name == "ask")
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        var command = await _commandFactory.Create(interaction.Data.Name);
+                        var result = await command.ExecuteAsync(interaction);
+
+                        var followupUrl = $"https://discord.com/api/v10/webhooks/{interaction.ApplicationId}/{interaction.Token}";
+                        var payload = new { content = result };
+                        var json = JsonSerializer.Serialize(payload);
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                        await _http.PostAsync(followupUrl, content);
+                    });
+
+                    return MessageResponse.CreateDeferredResponse();
                 }
 
                 log.LogInformation($"Unknown command: {interaction?.Data?.Name}");

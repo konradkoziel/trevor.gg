@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using trevor.Model;
 
-namespace trevor.Commands
+namespace trevor.Commands.Core
 {
     public interface ICommand
     {

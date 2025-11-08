@@ -30,5 +30,16 @@ namespace trevor.Common
                 StatusCode = 200
             };
         }
+
+        public static ContentResult CreateDeferredResponse()
+        {
+            var json = JsonSerializer.Serialize(new { type = 5 });
+            return new ContentResult
+            {
+                Content = json,
+                ContentType = "application/json",
+                StatusCode = 200
+            };
+        }
     }
 }
