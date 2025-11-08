@@ -1,24 +1,35 @@
-# 🧠 TrevorBot — Discord's Operational Diagnostician
+🧠 TrevorBot — Discord’s Operational Diagnostician
 
-TrevorBot is a Discord bot built on Azure Functions, designed for groups who thrive on rituals, mental clips, and chaotic team drafts. Trevor is not just a bot. Trevor observes. Trevor comments. Trevor logs.
+TrevorBot is a Discord bot powered by Azure Functions and Azure OpenAI, designed for teams that thrive on chaos, structure, and unsolicited commentary. Trevor doesn’t just respond — he analyzes, judges, and occasionally helps.
 
----
+🚀 Features
+/ping
 
-## 🚀 Features
+Checks if Trevor is alive. He usually is. Still cynical.
 
-### `/ping`
-Checks if Trevor is alive. He usually is. But he’s not happy about it.
+/teams gracze: Konrad,Janusz,Jan,Bartosz
 
-### `/teams gracze: Konrad,Janusz,Jan,Bartosz`
-Splits the provided list of players into two teams. Uneven teams? Trevor sees all. And judges.
+Splits the provided list of players into two teams. If they’re uneven — Trevor sees. And disapproves.
 
----
+/ask question: <text>
 
-## 🧰 Tech Stack
+Connects directly to Azure OpenAI.
+Trevor reads your question, consults the neural gods, and responds concisely.
+He’s contractually obligated to be helpful, but not necessarily kind.
 
-- **Azure Functions** — webhook-based backend
-- **Discord Interactions API** — slash command support
-- **C# (.NET 8)** — core logic
-- **Trevor Personality Engine™** — dry wit, operational paranoia, and judgmental commentary
+🧰 Tech Stack
 
----
+Azure Functions — webhook-based backend for Discord Interactions
+
+Azure OpenAI Service — GPT-4o model powering /ask command
+
+Discord Interactions API — full slash command support
+
+C# (.NET 8) — backend logic and dependency injection
+
+Trevor Personality Engine™ — sarcasm-driven orchestration layer
+
+🧩 Summary
+
+TrevorBot is equal parts automation and attitude.
+He listens, computes, and replies faster than your manager — and with slightly more empathy.
