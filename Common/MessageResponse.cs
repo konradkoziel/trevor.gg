@@ -5,24 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using trevor.Commands;
 using trevor.Model;
 
-namespace trevor
+namespace trevor.Common
 {
     public static class MessageResponse
     {
-        public static ContentResult CreateResponse(Command cmd, DiscordInteraction interaction)
+        public static ContentResult CreateResponse(string content)
         {
-            var cs = new CommandService(cmd, interaction);
-            var response = cs.GetCommandResponse();
-
-
             var json = JsonSerializer.Serialize(new
             {
                 type = 4,
                 data = new
                 {
-                    content = response
+                    content
                 },
                 statusCode = 200
             });

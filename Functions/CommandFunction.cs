@@ -3,18 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using trevor.Commands;
+using trevor.Common;
 using trevor.Model;
 
-namespace trevor
+namespace trevor.Functions
 {
-    public class Function
+    public class CommandFunction
     {
-        private readonly ILogger<Function> _logger;
+        private readonly ILogger<CommandFunction> _logger;
         private readonly IAuthentication _auth;
 
-        public Function(ILogger<Function> logger, IAuthentication auth)
+        public CommandFunction(ILogger<CommandFunction> logger, IAuthentication auth)
         {
             _logger = logger;
             _auth = auth;
@@ -49,10 +52,13 @@ namespace trevor
                     };
                 }
 
-                if (Enum.TryParse<Command>(interaction?.Data?.Name, true, out var cmd) &&
-                    Enum.IsDefined(typeof(Command), cmd))
+                if (interaction?.Data?.Name != null)
                 {
-                    return MessageResponse.CreateResponse(cmd, interaction);
+                    CommandFactory commandFactory = new CommandFactory();
+                    var command = await commandFactory.Create(interaction.Data.Name, interaction);
+                    var result = await command.ExecuteAsync(interaction);
+                    var response = MessageResponse.CreateResponse(result);
+                    return response;
                 }
 
                 log.LogInformation($"Unknown command: {interaction?.Data?.Name}");

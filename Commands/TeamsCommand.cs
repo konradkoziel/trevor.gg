@@ -1,46 +1,18 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using trevor.Model;
 
-namespace trevor
+namespace trevor.Commands
 {
-    public class CommandService
+    public class TeamsCommand : ICommand
     {
-
-        private readonly Command _cmd;
-        private readonly DiscordInteraction _interaction;
-        public CommandService(Command cmd, DiscordInteraction interaction)
+        public async Task<string> ExecuteAsync(DiscordInteraction interaction)
         {
-            _cmd = cmd;
-            _interaction = interaction;
-
-        }
-
-        public string GetCommandResponse()
-        {
-            switch (_cmd)
-            {
-                case Command.ping:
-                    return PingCommand();
-                case Command.teams:
-                    return TeamsCommand();
-            }
-            return "Unknown command";
-        }
-
-        private string PingCommand()
-        {
-            return "🏓 Ping? Ping?! Ty śmiesz mnie pingować? Ja tu siedzę od 3 godzin, analizuję trajektorie kul bilardowych i rozkład emocjonalny serwera, a ty mi wysyłasz ping? Dobrze. Pong. Ale wiedz, że obserwuję.";
-        }
-
-        private string TeamsCommand()
-        {
-            var raw = _interaction?.Data?.Options?.FirstOrDefault(o => o.Name == "gracze")?.Value;
+            var raw = interaction?.Data?.Options?.FirstOrDefault(o => o.Name == "gracze")?.Value;
 
             var players = raw?.Split(',', StringSplitOptions.RemoveEmptyEntries)
                              .Select(g => g.Trim())

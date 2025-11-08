@@ -4,7 +4,7 @@ using Org.BouncyCastle.Math.EC.Rfc8032;
 using System;
 using System.Text;
 
-namespace trevor
+namespace trevor.Common
 {
 
 
