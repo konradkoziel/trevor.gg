@@ -1,93 +1,66 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Reflection;
-using System.Text;
+﻿using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
 using trevor.Commands.Core;
 using trevor.Common;
 using trevor.Model;
-using static System.Net.WebRequestMethods;
 
 namespace trevor.Functions
 {
-    public class CommandFunction
+    public class CommandFunction(ILogger<CommandFunction> logger, IAuthentication auth, ICommandFactory commandFactory, ICommandHandler commandHandler)
     {
-        private readonly ILogger<CommandFunction> _logger;
-        private readonly IAuthentication _auth;
-        private readonly ICommandFactory _commandFactory;
-        private static readonly HttpClient _http = new();
-
-        public CommandFunction(ILogger<CommandFunction> logger, IAuthentication auth, ICommandFactory commandFactory)
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
-            _logger = logger;
-            _auth = auth;
-            _commandFactory = commandFactory;
-        }
+            PropertyNameCaseInsensitive = true, 
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 
+        };
+        
         [Function("DiscordCommands")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")]
+            HttpRequestData req,
             FunctionContext context)
         {
-            var log = context.GetLogger("DiscordCommands");
-
             try
             {
                 using var reader = new StreamReader(req.Body);
                 var body = await reader.ReadToEndAsync();
 
-                if (!_auth.VerifyRequest(body, req.Headers, log))
-                    return new StatusCodeResult(401);
-
-                var interaction = JsonSerializer.Deserialize<DiscordInteraction>(body,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (interaction?.Type == 1) 
+                if (!auth.VerifyRequest(body, req.Headers, logger))
                 {
-                    log.LogInformation("Received Discord PING request.");
-                    return new ContentResult
-                    {
-                        Content = "{\"type\":1}",
-                        ContentType = "application/json",
-                        StatusCode = 200
-                    };
+                    var unauthorized = req.CreateResponse(HttpStatusCode.Unauthorized);
+                    await unauthorized.WriteStringAsync("Invalid signature");
+                    return unauthorized;
                 }
-
+                
+                var interaction = JsonSerializer.Deserialize<DiscordInteraction>(
+                    body,
+                    _jsonSerializerOptions
+                );
+                var response = req.CreateResponse();
                 if (interaction?.Data?.Name != null)
                 {
-                    var command = await _commandFactory.Create(interaction.Data.Name);
-                    var result = await command.ExecuteAsync(interaction);
-                    var response = MessageResponse.CreateResponse(result);
-                    return response;
+                    var command = await commandFactory.Create(interaction.Data.Name);
+                    var discordResponse = await commandHandler.HandleCommandAsync(command, interaction, _jsonSerializerOptions);
+                    response.StatusCode = HttpStatusCode.OK;
+                    await response.WriteAsJsonAsync(discordResponse);
+                    logger.LogInformation("Received command: {DataName}", interaction?.Data?.Name);
                 }
-                else if (interaction?.Data?.Name == "ask")
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        var command = await _commandFactory.Create(interaction.Data.Name);
-                        var result = await command.ExecuteAsync(interaction);
-
-                        var followupUrl = $"https://discord.com/api/v10/webhooks/{interaction.ApplicationId}/{interaction.Token}";
-                        var payload = new { content = result };
-                        var json = JsonSerializer.Serialize(payload);
-                        var content = new StringContent(json, Encoding.UTF8, "application/json");
-                        await _http.PostAsync(followupUrl, content);
-                    });
-
-                    return MessageResponse.CreateDeferredResponse();
-                }
-
-                log.LogInformation($"Unknown command: {interaction?.Data?.Name}");
-                return new OkResult();
+   
+                response.StatusCode = HttpStatusCode.OK;
+                await response.WriteAsJsonAsync("No command found.");
+                return response;
             }
             catch (Exception ex)
             {
-                log.LogError($"Exception: {ex}");
-                return new StatusCodeResult(400);
+                logger.LogError("Exception: {Exception}", ex);
+                var error = req.CreateResponse(HttpStatusCode.BadRequest);
+                await error.WriteStringAsync("Error processing command");
+                return error;
             }
         }
     }

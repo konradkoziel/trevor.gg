@@ -1,17 +1,13 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using trevor.Commands.Core;
+﻿using trevor.Commands.Core;
 using trevor.Model;
 
 namespace trevor.Commands
 {
     public class TeamsCommand : ICommand
     {
-        public async Task<string> ExecuteAsync(DiscordInteraction interaction)
+        public bool IsDefferedType => false;
+
+        public Task<string> ExecuteAsync(DiscordInteraction interaction)
         {
             var raw = interaction?.Data?.Options?.FirstOrDefault(o => o.Name == "gracze")?.Value;
 
@@ -34,7 +30,7 @@ namespace trevor.Commands
                     team2.Add(przemieszani[i]);
             }
 
-            int max = Math.Max(team1.Count, team2.Count);
+            var max = Math.Max(team1.Count, team2.Count);
             var padded1 = team1.Concat(Enumerable.Repeat("", max - team1.Count)).ToList();
             var padded2 = team2.Concat(Enumerable.Repeat("", max - team2.Count)).ToList();
 
@@ -43,17 +39,17 @@ namespace trevor.Commands
 
             var table = string.Join("\n", lines);
 
-            return $"""
-                    🏆 **Wynik losowania drużyn**
+            return Task.FromResult($"""
+                                    🏆 **Wynik losowania drużyn**
 
-                    🔵 **Niebiescy**
-                    —————————————---
-                    {string.Join("\n", team1.Select(p => $"• {p}"))}
+                                    🔵 **Niebiescy**
+                                    —————————————---
+                                    {string.Join("\n", team1.Select(p => $"• {p}"))}
 
-                    🔴 **Czerwoni**
-                    —————————————---
-                    {string.Join("\n", team2.Select(p => $"• {p}"))}
-                    """;
+                                    🔴 **Czerwoni**
+                                    —————————————---
+                                    {string.Join("\n", team2.Select(p => $"• {p}"))}
+                                    """);
         }
     }
 }

@@ -1,23 +1,14 @@
 ﻿using OpenAI.Chat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using trevor.Model;
 
 namespace trevor.Commands.Core
 {
-    public class CommandFactory : ICommandFactory
+    public class CommandFactory(ChatClient chatClient) : ICommandFactory
     {
-        private readonly ChatClient _chatClient;
-        public CommandFactory(ChatClient chatClient) => _chatClient = chatClient;
-
-        public async Task<ICommand> Create(string name) => name switch
+        public Task<ICommand> Create(string name) => name switch
         {
-            "ping" => new PingCommand(),
-            "teams" => new TeamsCommand(),
-            "ask" => new AskCommand(_chatClient),
+            "ping" => Task.FromResult<ICommand>(new PingCommand()),
+            "teams" => Task.FromResult<ICommand>(new TeamsCommand()),
+            "ask" => Task.FromResult<ICommand>(new AskCommand(chatClient)),
             _ => throw new NotSupportedException(name)
         };
     }

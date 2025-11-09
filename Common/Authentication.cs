@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Math.EC.Rfc8032;
-using System;
 using System.Text;
 
 namespace trevor.Common
 {
-
-
     public class Authentication : IAuthentication
     {
-        public bool VerifyRequest(string body, IHeaderDictionary headers, ILogger log)
+        public bool VerifyRequest(string body, HttpHeadersCollection headers, ILogger log)
         {
             var discordPublicKey = Environment.GetEnvironmentVariable("DISCORD_API_KEY");
             if (string.IsNullOrWhiteSpace(discordPublicKey))
@@ -18,30 +15,40 @@ namespace trevor.Common
                 log.LogError("Missing DISCORD_API_KEY.");
                 return false;
             }
-
-            if (!headers.TryGetValue("X-Signature-Ed25519", out var signatureHeader) ||
-                !headers.TryGetValue("X-Signature-Timestamp", out var timestampHeader))
+            
+            if (!headers.TryGetValues("X-Signature-Ed25519", out var sigValues) ||
+                !headers.TryGetValues("X-Signature-Timestamp", out var tsValues))
             {
                 log.LogWarning("Missing Discord signature headers.");
                 return false;
             }
 
-            var signature = Convert.FromHexString(signatureHeader);
-            var publicKey = Convert.FromHexString(discordPublicKey);
-            var timestamp = timestampHeader.ToString();
+            var signatureHeader = sigValues.FirstOrDefault();
+            var timestampHeader = tsValues.FirstOrDefault();
 
-            var message = Encoding.UTF8.GetBytes(timestamp + body);
-            bool isValid = Ed25519.Verify(signature, 0, publicKey, 0, message, 0, message.Length);
+            if (signatureHeader is null || timestampHeader is null)
+            {
+                log.LogWarning("Empty Discord signature headers.");
+                return false;
+            }
 
-            if (!isValid)
-                log.LogWarning("Invalid Discord signature.");
+            try
+            {
+                var signature = Convert.FromHexString(signatureHeader);
+                var publicKey = Convert.FromHexString(discordPublicKey);
+                var message = Encoding.UTF8.GetBytes(timestampHeader + body);
 
-            return isValid;
-        }
+                var isValid = Ed25519.Verify(signature, 0, publicKey, 0, message, 0, message.Length);
+                if (!isValid)
+                    log.LogWarning("Invalid Discord signature.");
 
-        public Task<bool> VerifyRequestAsync(string body, IHeaderDictionary headers, ILogger log)
-        {
-            throw new NotImplementedException();
+                return isValid;
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"Error verifying signature: {ex.Message}");
+                return false;
+            }
         }
     }
 }

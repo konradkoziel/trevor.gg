@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenAI.Chat;
 using System.ClientModel;
+using System.Configuration;
 using trevor.Commands.Core;
 using trevor.Common;
-using trevor.Discord;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -17,11 +17,6 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
-builder.Services.AddTransient<DiscordClient>(sp =>
-    new DiscordClient(
-        sp.GetRequiredService<HttpClient>()
-    )
-);
 
 builder.Services.AddSingleton<ChatClient>(sp =>
 {
@@ -29,11 +24,18 @@ builder.Services.AddSingleton<ChatClient>(sp =>
     var key = Environment.GetEnvironmentVariable("OPENAI_KEY");
     var deployment = Environment.GetEnvironmentVariable("OPENAI_DEPLOYMENT");
 
-    var azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key));
-    return azureClient.GetChatClient(deployment);
+    if (endpoint != null && key != null && deployment != null)
+    {
+        var azureClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key));
+        return azureClient.GetChatClient(deployment);
+    }
+    throw new Exception("Missing OPENAI_URL or OPENAI_KEY");
 });
 
 builder.Services.AddSingleton<ICommandFactory, CommandFactory>();
-
 builder.Services.AddSingleton<IAuthentication, Authentication>();
+builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
+builder.Services.AddScoped<IAuthentication, Authentication>();
+builder.Services.AddHttpClient("discord");
+
 builder.Build().Run();

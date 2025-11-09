@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace trevor.Common
 {
     public interface IAuthentication
     {
-        bool VerifyRequest(string body, IHeaderDictionary headers, ILogger log);
+        bool VerifyRequest(string body, HttpHeadersCollection headers, ILogger log);
     }
 }
