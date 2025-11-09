@@ -22,7 +22,7 @@ namespace trevor.Commands
                 MaxOutputTokenCount = 200
             });
             var response = result.Value.Content[0].Text;
-            return $"**🧠 Pytanie:**\n> {message}\n\n**💬 Odpowiedź:**\n{response}";
+            return $"**🧠 Pytanie:**\n> {message}\n{response}";
         }
     }
 }
