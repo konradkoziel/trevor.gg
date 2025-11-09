@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenAI.Chat;
 using System.ClientModel;
-using System.Configuration;
+using Microsoft.Extensions.Logging;
 using trevor.Commands.Core;
 using trevor.Common;
 
@@ -37,5 +37,9 @@ builder.Services.AddSingleton<IAuthentication, Authentication>();
 builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
 builder.Services.AddScoped<IAuthentication, Authentication>();
 builder.Services.AddHttpClient("discord");
+
+builder.Logging.AddConsole();
+builder.Logging.AddApplicationInsights();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Build().Run();
