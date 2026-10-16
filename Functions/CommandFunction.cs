@@ -62,6 +62,16 @@ namespace trevor.Functions
                     _jsonSerializerOptions
                 );
 
+                // Discord sends PING (type 1, no data) when the Interactions Endpoint URL is saved
+                if (interaction?.Type == 1)
+                {
+                    var pong = req.CreateResponse(HttpStatusCode.OK);
+                    pong.Headers.Add("Content-Type", "application/json");
+                    await pong.WriteStringAsync(JsonSerializer.Serialize(new DiscordResponse(Type: 1), _jsonSerializerOptions));
+                    logger.LogInformation("Received Discord PING request");
+                    return pong;
+                }
+
                 if (interaction?.Data?.Name is null)
                 {
                     var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);

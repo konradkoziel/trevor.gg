@@ -30,11 +30,18 @@ public class TimerFunction(ILogger<TimerFunction> logger, HttpClient httpClient)
             
         }
         var uri = Environment.GetEnvironmentVariable("DISCORD_URL_OGÓLNY");
-        var payload = new { content = "BBualdo to noob" };
-        if (uri != null) httpClient.BaseAddress = new Uri(uri);
+        if (string.IsNullOrWhiteSpace(uri))
+        {
+            logger.LogWarning("Missing DISCORD_URL_OGÓLNY, skipping timer message");
+            return;
+        }
+
+        var payload = new DiscordResponseData(Content: "BBualdo to noob");
         var json = JsonSerializer.Serialize(payload, _jsonSerializerOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         logger.LogInformation("Outgoing Discord request:\n{Json}", json);
-        await httpClient.PostAsync(uri, content);
+        var response = await httpClient.PostAsync(uri, content);
+        if (!response.IsSuccessStatusCode)
+            logger.LogError("Discord webhook failed with {StatusCode}", (int)response.StatusCode);
     }
 }
