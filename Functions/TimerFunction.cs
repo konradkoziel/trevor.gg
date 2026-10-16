@@ -1,47 +1,23 @@
-﻿using System;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.Azure.Functions.Worker;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using trevor.Model.Response.cs;
+using Microsoft.Extensions.Options;
+using trevor.Infrastructure.Discord;
 
 namespace trevor.Functions;
 
-public class TimerFunction(ILogger<TimerFunction> logger, HttpClient httpClient)
+public class TimerFunction(ILogger<TimerFunction> logger, DiscordApiClient discord, IOptions<DiscordOptions> options)
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
-    
     [Function("TimerFunction")]
-    public async Task Run([TimerTrigger("0 */5 * * * *")] TimerInfo myTimer)
+    public async Task Run([TimerTrigger("0 */5 * * * *")] TimerInfo myTimer, CancellationToken ct)
     {
-        logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-
-        if (myTimer.ScheduleStatus is not null)
-        {
-            logger.LogInformation($"Next timer schedule at: {myTimer.ScheduleStatus.Next}");
-            
-        }
-        var uri = Environment.GetEnvironmentVariable("DISCORD_URL_OGÓLNY");
-        if (string.IsNullOrWhiteSpace(uri))
+        var webhookUrl = options.Value.GeneralWebhookUrl;
+        if (string.IsNullOrWhiteSpace(webhookUrl))
         {
             logger.LogWarning("Missing DISCORD_URL_OGÓLNY, skipping timer message");
             return;
         }
 
-        var payload = new DiscordResponseData(Content: "BBualdo to noob");
-        var json = JsonSerializer.Serialize(payload, _jsonSerializerOptions);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        logger.LogInformation("Outgoing Discord request:\n{Json}", json);
-        var response = await httpClient.PostAsync(uri, content);
-        if (!response.IsSuccessStatusCode)
-            logger.LogError("Discord webhook failed with {StatusCode}", (int)response.StatusCode);
+        await discord.SendWebhookAsync(webhookUrl, "BBualdo to noob", ct);
+        logger.LogInformation("Timer message sent, next run at {Next}", myTimer.ScheduleStatus?.Next);
     }
 }

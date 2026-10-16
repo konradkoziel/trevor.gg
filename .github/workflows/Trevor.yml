@@ -28,7 +28,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish --configuration Release --output ./publish
+        run: dotnet publish trevor.csproj --configuration Release --output ./publish
 
       - name: Logowanie do Azure za pomocą sekretów
         uses: azure/login@v2
