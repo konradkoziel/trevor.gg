@@ -16,6 +16,9 @@ namespace trevor.Commands
                              .Where(g => !string.IsNullOrWhiteSpace(g))
                              .ToList();
 
+            if (players is null || players.Count == 0)
+                return Task.FromResult("Podaj graczy po przecinku, np. `Konrad,Janusz,Jan,Bartosz`.");
+
             var rng = new Random();
             var przemieszani = players.OrderBy(_ => rng.Next()).ToList();
 
@@ -29,15 +32,6 @@ namespace trevor.Commands
                 else
                     team2.Add(przemieszani[i]);
             }
-
-            var max = Math.Max(team1.Count, team2.Count);
-            var padded1 = team1.Concat(Enumerable.Repeat("", max - team1.Count)).ToList();
-            var padded2 = team2.Concat(Enumerable.Repeat("", max - team2.Count)).ToList();
-
-            var lines = Enumerable.Range(0, max)
-                .Select(i => $"| {padded1[i],-12} | {padded2[i],-12} |");
-
-            var table = string.Join("\n", lines);
 
             return Task.FromResult($"""
                                     🏆 **Wynik losowania drużyn**
