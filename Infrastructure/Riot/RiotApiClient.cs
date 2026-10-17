@@ -4,22 +4,6 @@ using Microsoft.Extensions.Options;
 
 namespace trevor.Infrastructure.Riot;
 
-public interface IRiotApiClient
-{
-    bool IsConfigured { get; }
-
-    // Null when the Riot ID doesn't exist
-    Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default);
-
-    Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default);
-}
-
-public class RiotApiException(HttpStatusCode statusCode)
-    : Exception($"Riot API returned {(int)statusCode}")
-{
-    public HttpStatusCode StatusCode { get; } = statusCode;
-}
-
 // Typed client: the rest of the app sees RiotAccount/LeagueEntry, never Riot's HTTP details.
 // Retries, timeouts and 429 back-off come from the resilience handler registered in Program.cs.
 public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options) : IRiotApiClient
@@ -48,6 +32,30 @@ public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options)
         using var response = await SendAsync(url, ct);
         EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<List<LeagueEntry>>(ct) ?? [];
+    }
+
+    public async Task<IReadOnlyList<string>> GetRecentMatchIdsAsync(string puuid, int count, CancellationToken ct = default)
+    {
+        var region = RiotRouting.MatchRegion(options.Value.Platform);
+        var url = $"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{Uri.EscapeDataString(puuid)}/ids" +
+                  $"?start=0&count={count}";
+
+        using var response = await SendAsync(url, ct);
+        EnsureSuccess(response);
+        return await response.Content.ReadFromJsonAsync<List<string>>(ct) ?? [];
+    }
+
+    public async Task<RiotMatch?> GetMatchAsync(string matchId, CancellationToken ct = default)
+    {
+        var region = RiotRouting.MatchRegion(options.Value.Platform);
+        var url = $"https://{region}.api.riotgames.com/lol/match/v5/matches/{Uri.EscapeDataString(matchId)}";
+
+        using var response = await SendAsync(url, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        EnsureSuccess(response);
+        return await response.Content.ReadFromJsonAsync<RiotMatch>(ct);
     }
 
     private Task<HttpResponseMessage> SendAsync(string url, CancellationToken ct)

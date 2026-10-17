@@ -7,7 +7,7 @@ public class TeamsCommandTests
     [Fact]
     public void ParsePlayers_TrimsAndDropsEmptyEntries()
     {
-        Assert.Equal(["Konrad", "Janusz", "Jan"], TeamsCommand.ParsePlayers(" Konrad, ,Janusz,,Jan "));
+        Assert.Equal(["Ann", "Bob", "Cid"], TeamsCommand.ParsePlayers(" Ann, ,Bob,,Cid "));
         Assert.Empty(TeamsCommand.ParsePlayers(",,,"));
         Assert.Empty(TeamsCommand.ParsePlayers(null));
     }

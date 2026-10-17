@@ -11,7 +11,7 @@
     "options": [
       {
         "name": "gracze",
-        "description": "Gracze po przecinku, np. Konrad,Janusz,Jan,Bartosz",
+        "description": "Gracze po przecinku, np. Gracz1,Gracz2,Gracz3,Gracz4",
         "type": 3,
         "required": true
       }
@@ -37,7 +37,20 @@
     "options": [
       {
         "name": "nick",
-        "description": "Riot ID z tagiem, np. Konrad#EUNE",
+        "description": "Riot ID z tagiem, np. Nick#EUNE",
+        "type": 3,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "roast",
+    "type": 1,
+    "description": "Trevor ocenia ostatni mecz LoL gracza",
+    "options": [
+      {
+        "name": "nick",
+        "description": "Riot ID z tagiem, np. Nick#EUNE",
         "type": 3,
         "required": true
       }

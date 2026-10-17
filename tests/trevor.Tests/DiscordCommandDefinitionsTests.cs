@@ -1,7 +1,8 @@
 using System.Text.Json;
 using trevor.Core;
 using trevor.Features.Ask;
-using trevor.Features.Lol;
+using trevor.Features.Lol.Rank;
+using trevor.Features.Lol.Roast;
 using trevor.Features.Ping;
 using trevor.Features.Teams;
 
@@ -15,7 +16,8 @@ public class DiscordCommandDefinitionsTests
         new PingCommand(),
         new TeamsCommand(),
         new AskCommand(null!),
-        new RankCommand(null!),
+        new RankCommand(null!, null!, null!),
+        new RoastCommand(null!, null!, null!),
     ];
 
     // Option names each command reads via GetOption
@@ -25,6 +27,7 @@ public class DiscordCommandDefinitionsTests
         ["teams"] = ["gracze"],
         ["ask"] = ["question"],
         ["rank"] = ["nick"],
+        ["roast"] = ["nick"],
     };
 
     private static JsonElement[] Definitions()

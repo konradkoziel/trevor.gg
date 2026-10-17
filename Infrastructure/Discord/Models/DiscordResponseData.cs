@@ -15,10 +15,3 @@ public record DiscordResponseData(
     public static DiscordResponseData FromText(string content) =>
         new(content.Length <= MaxContentLength ? content : content[..(MaxContentLength - 1)] + "…");
 }
-
-public record DiscordAllowedMentions(
-    [property: JsonPropertyName("parse")] IReadOnlyList<string> Parse
-)
-{
-    public static DiscordAllowedMentions None { get; } = new([]);
-}

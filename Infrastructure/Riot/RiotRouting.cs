@@ -13,6 +13,12 @@ public static class RiotRouting
 
     public static bool IsKnownPlatform(string platform) => RegionByPlatform.ContainsKey(platform);
 
+    // Match-V5 has its own sea cluster
+    public static string MatchRegion(string platform) =>
+        RegionByPlatform.TryGetValue(platform, out var region)
+            ? region
+            : throw new ArgumentException($"Unknown Riot platform '{platform}'", nameof(platform));
+
     // Account-V1 only lives in americas/asia/europe; SEA accounts are served from asia
     public static string AccountRegion(string platform) =>
         RegionByPlatform.TryGetValue(platform, out var region)

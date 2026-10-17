@@ -62,6 +62,43 @@ public class RiotApiClientTests
     }
 
     [Fact]
+    public async Task GetRecentMatchIds_UsesRegionalHost_AndCount()
+    {
+        var handler = new StubHandler(_ => Json("""["EUN1_3","EUN1_2"]"""));
+
+        var ids = await Client(handler).GetRecentMatchIdsAsync("p1", 2);
+
+        Assert.Equal("https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/p1/ids?start=0&count=2",
+            Assert.Single(handler.Requests).RequestUri!.AbsoluteUri);
+        Assert.Equal(["EUN1_3", "EUN1_2"], ids);
+    }
+
+    [Fact]
+    public async Task GetMatch_ParsesParticipants_AndUsesSeaForOceania()
+    {
+        var handler = new StubHandler(_ => Json("""
+            {"metadata":{"matchId":"OC1_1"},"info":{"gameDuration":1834,"queueId":420,"gameMode":"CLASSIC",
+             "participants":[{"puuid":"p1","championName":"Yasuo","teamId":100,"teamPosition":"MIDDLE","win":false,
+               "kills":2,"deaths":9,"assists":3,"totalMinionsKilled":120,"neutralMinionsKilled":6,
+               "totalDamageDealtToChampions":12400,"visionScore":7,"goldEarned":8100,"summonerName":"x"}]}}
+            """));
+
+        var match = await Client(handler, platform: "oc1").GetMatchAsync("OC1_1");
+
+        Assert.Equal("https://sea.api.riotgames.com/lol/match/v5/matches/OC1_1",
+            Assert.Single(handler.Requests).RequestUri!.AbsoluteUri);
+        Assert.Equal(1834, match!.Info.GameDuration);
+        Assert.Equal(new RiotMatchParticipant("p1", "Yasuo", 100, "MIDDLE", false, 2, 9, 3, 120, 6, 12400, 7, 8100),
+            Assert.Single(match.Info.Participants));
+    }
+
+    [Fact]
+    public async Task GetMatch_NotFound_ReturnsNull()
+    {
+        Assert.Null(await Client(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound))).GetMatchAsync("x"));
+    }
+
+    [Fact]
     public async Task ErrorStatus_ThrowsRiotApiException()
     {
         var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Forbidden));
@@ -87,7 +124,7 @@ public class RiotApiClientTests
     }
 
     [Theory]
-    [InlineData("Konrad#EUNE", "Konrad", "EUNE")]
+    [InlineData("Player#EUNE", "Player", "EUNE")]
     [InlineData("Pan # Kot#123", "Pan # Kot", "123")]
     public void RiotId_SplitsOnLastHash(string text, string name, string tag)
     {

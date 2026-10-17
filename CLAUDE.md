@@ -7,7 +7,7 @@ Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure Ope
 
 - Reply in the language the person writes in. Code, identifiers, commit messages and PRs stay in English.
 - User-facing bot strings are Polish and in Trevor's voice (sarcastic, crude is fine). Keep that tone in new messages.
-- The `TimerFunction` message ("BBualdo to noob" every 5 min) is an intentional in-group joke, not a bug. Don't remove it unasked.
+- The `TimerFunction` message (every 5 min) is an intentional in-group joke, not a bug. Don't remove it unasked.
 
 ## Git, commits and PRs
 
@@ -72,13 +72,39 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `TimerFunction`.
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
-- `Features/<Name>/` — one folder per feature (vertical slices): `Ask` (+ `TrevorPrompts` persona), `Teams`, `Ping`, `Lol` (`RankCommand`).
-- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options. `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `RiotId`, routing (platform `eun1` → regional host `europe` for Account-V1).
+- `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`).
+- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `RiotId`, routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
 - Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
-- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `discord/commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests`.
+- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `discord/commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
+- **AI in commands:** go through `ITrevorAi`, add the instruction to `TrevorPrompts`, and always keep a canned fallback for when it returns null (tests use `FakeAi`).
+- **Keep `readme.md` current:** every PR that adds or changes a command, a setting, a secret or the architecture updates `readme.md` in the same PR.
 - Tests: xUnit in `tests/trevor.Tests` (excluded from the app build in `trevor.csproj`). Build interactions from Discord-shaped JSON with `TestInteractions`.
 - Style: file-scoped namespaces, primary constructors, records, `ImplicitUsings` + `Nullable` on, zero build warnings. App source files are **UTF-8 with BOM, LF**.
 
+## Code quality — required in every change
+
+- **SOLID, applied to this codebase:**
+  - *Single responsibility:* a command class only orchestrates (get data → call AI → pick the message). Message text and
+    formatting live in a static `<Feature>Message` class, calculations in their own type (e.g. `MatchStats`), Riot/Discord
+    knowledge (ids, names, routing) in `Infrastructure/`.
+  - *Open/closed:* new behaviour = new class registered in DI (commands, strategies), not another `switch` in shared code.
+  - *Dependency inversion:* commands depend on interfaces for anything external (`IRiotApiClient`, `ITrevorAi`,
+    `IRiotPlayerRunner`), so tests use fakes (`tests/trevor.Tests/FakeRiot.cs`, `FakeAi.cs`).
+- **No duplicated flows:** shared steps get one home (e.g. `RiotPlayerRunner` does key check → Riot ID parse → account
+  lookup → Riot error messages for every LoL command). Test that shared code once, not in every command.
+- **No magic numbers or strings:** named constants with a comment saying why (`RemakeSeconds`, `VerdictMaxTokens`).
+- **One type per file, no exceptions:** every class, record, interface, enum or exception gets its own file named after it
+  (`IRiotApiClient.cs`, `RiotApiClient.cs`, `RiotApiException.cs`). Only private types nested inside a class may share its file.
+- Small methods with intention-revealing names.
+- Before pushing, re-read the diff for these points, not only for bugs.
+
+## Privacy
+
+- **No personal data in the repo:** no real names, nicknames, Riot IDs, e-mails or anything about the people working on
+  or using the bot — not in code, comments, user-facing examples, tests, docs, commit messages or PR descriptions.
+  Use neutral placeholders: `Nick#EUNE`, `Player#EUNE`, `Gracz1,Gracz2,Gracz3,Gracz4`, `Ann`, `Bob`.
+- Existing content written by the repo owner (e.g. the timer message) stays as it is unless they ask.
+
 ## Roadmap
 
-See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Done: `/rank`. Not done yet: `/roast`, `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.
+See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Done: `/rank` (AI verdict), `/roast`. Not done yet: `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.

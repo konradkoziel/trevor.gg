@@ -1,6 +1,6 @@
 ﻿namespace trevor.Infrastructure.Riot;
 
-// Riot ID, e.g. "Konrad#EUNE" → GameName "Konrad", TagLine "EUNE"
+// Riot ID, e.g. "Nick#EUNE" → GameName "Nick", TagLine "EUNE"
 public record RiotId(string GameName, string TagLine)
 {
     public static bool TryParse(string? text, out RiotId id)
@@ -16,14 +16,4 @@ public record RiotId(string GameName, string TagLine)
     }
 
     public override string ToString() => $"{GameName}#{TagLine}";
-}
-
-// Account-V1 AccountDto
-public record RiotAccount(string Puuid, string? GameName, string? TagLine);
-
-// League-V4 LeagueEntryDTO (only the fields we use)
-public record LeagueEntry(string QueueType, string Tier, string Rank, int LeaguePoints, int Wins, int Losses)
-{
-    public const string SoloQueue = "RANKED_SOLO_5x5";
-    public const string FlexQueue = "RANKED_FLEX_SR";
 }
