@@ -10,10 +10,12 @@ using OpenAI.Chat;
 using System.ClientModel;
 using trevor.Core;
 using trevor.Features.Ask;
+using trevor.Features.Lol;
 using trevor.Features.Ping;
 using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.OpenAi;
+using trevor.Infrastructure.Riot;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -44,6 +46,17 @@ builder.Services.AddOptions<OpenAiOptions>()
     .Validate(o => o.IsValid, "OPENAI_URL, OPENAI_KEY and OPENAI_DEPLOYMENT must be set")
     .ValidateOnStart();
 
+builder.Services.AddOptions<RiotOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        options.ApiKey = config["RIOT_API_KEY"];
+        var platform = config["RIOT_PLATFORM"];
+        if (!string.IsNullOrWhiteSpace(platform))
+            options.Platform = platform.Trim();
+    })
+    .Validate(o => RiotRouting.IsKnownPlatform(o.Platform), "RIOT_PLATFORM must be a Riot platform id, e.g. eun1 or euw1")
+    .ValidateOnStart();
+
 // Infrastructure
 builder.Services.AddSingleton(sp =>
 {
@@ -53,11 +66,18 @@ builder.Services.AddSingleton(sp =>
 });
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
 builder.Services.AddHttpClient<DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
+// Commands are singletons, so this client lives for the whole app: rotate connections
+// in the handler instead of relying on IHttpClientFactory's handler recycling
+builder.Services.AddHttpClient<IRiotApiClient, RiotApiClient>()
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
+    .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
+    .AddStandardResilienceHandler(); // retries 429/5xx with back-off, per-attempt and total timeouts
 
 // Commands: register a new slash command here (and in the Discord Developer Portal)
 builder.Services.AddSingleton<ICommand, PingCommand>();
 builder.Services.AddSingleton<ICommand, TeamsCommand>();
 builder.Services.AddSingleton<ICommand, AskCommand>();
+builder.Services.AddSingleton<ICommand, RankCommand>();
 builder.Services.AddSingleton<CommandRegistry>();
 builder.Services.AddSingleton<InteractionHandler>();
 

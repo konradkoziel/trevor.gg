@@ -8,6 +8,8 @@
     "DISCORD_SKIP_SIGNATURE": "true",
     "OPENAI_URL": "https://<resource>.openai.azure.com/",
     "OPENAI_KEY": "<key>",
-    "OPENAI_DEPLOYMENT": "<deployment name>"
+    "OPENAI_DEPLOYMENT": "<deployment name>",
+    "RIOT_API_KEY": "<RGAPI-... optional>",
+    "RIOT_PLATFORM": "eun1"
   }
 }
