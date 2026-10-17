@@ -1,7 +1,7 @@
 # CLAUDE.md — notes for working on trevor.gg
 
 Discord bot "Trevor" (Trevor Philips persona) for a private friends' server, mostly League of Legends.
-Azure Functions (.NET 8, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue.
+Azure Functions (.NET 8, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue + Riot API.
 
 ## Talking to the owner
 
@@ -29,6 +29,8 @@ Bound to options classes in `Program.cs`; required ones are validated **at start
 | `DISCORD_URL_OGÓLNY` | `DiscordOptions.GeneralWebhookUrl` | Webhook for the general channel (timer). Optional. Non-ASCII name — don't rename without changing the Azure setting |
 | `DISCORD_SKIP_SIGNATURE=true` | `DiscordOptions.SkipSignatureValidation` | **Disables signature verification.** Local only, never in Azure |
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | `OpenAiOptions` | Azure OpenAI. Required |
+| `RIOT_API_KEY` | `RiotOptions.ApiKey` | Riot API key. **Optional** — without it `/rank` answers that the key is missing. Dev keys expire every 24 h; use a Personal API Key |
+| `RIOT_PLATFORM` | `RiotOptions.Platform` | Server of the players, default `eun1` (EUNE); `euw1` for EUW. Validated at startup |
 | `AzureWebJobsStorage` | Functions host | Storage account: timer leases and the `deferred-commands` queue |
 
 Template: `local.settings.example.json` → copy to `local.settings.json` (gitignored).
@@ -42,19 +44,22 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 - Every outgoing message goes through `DiscordResponseData.FromText`: adds `allowed_mentions: { parse: [] }` (nobody can make the bot ping `@everyone`) and truncates to 2000 chars. Use it for any new message.
 - Discord JSON is snake_case: `DiscordJson.Options` uses `SnakeCaseLower`, and models pin names with `[JsonPropertyName]`.
 - Option values can be string/number/bool → `InteractionOption.Value` is a `JsonElement`; read options with `interaction.GetOption("name")`.
-- Slash-command definitions (names/options) are registered with Discord outside this repo. A new command needs registering there too: `/ping`, `/teams gracze:`, `/ask question:`.
+- Slash-command definitions (names/options) are registered with Discord outside this repo. A new command needs registering there too: `/ping`, `/teams gracze:`, `/ask question:`, `/rank nick:`.
+  Register one command without touching the others (POST upserts by name; a bulk PUT would overwrite all of them):
+  `curl -X POST https://discord.com/api/v10/applications/<APP_ID>/commands -H "Authorization: Bot <BOT_TOKEN>" -H "Content-Type: application/json" -d @docs/commands/rank.json`
 - Never log request bodies or Discord URLs — they contain interaction tokens / webhook secrets.
 
 ## Code layout & conventions
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `TimerFunction`.
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
-- `Features/<Name>/` — one folder per feature (vertical slices): `Ask` (+ `TrevorPrompts` persona), `Teams`, `Ping`.
-- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options.
+- `Features/<Name>/` — one folder per feature (vertical slices): `Ask` (+ `TrevorPrompts` persona), `Teams`, `Ping`, `Lol` (`RankCommand`).
+- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options. `Infrastructure/Riot/` — `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `RiotId`, routing (platform `eun1` → regional host `europe` for Account-V1).
+- Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
 - **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → register in Discord → tests in `tests/trevor.Tests`.
 - Tests: xUnit in `tests/trevor.Tests` (excluded from the app build in `trevor.csproj`). Build interactions from Discord-shaped JSON with `TestInteractions`.
 - Style: file-scoped namespaces, primary constructors, records, `ImplicitUsings` + `Nullable` on, zero build warnings. App source files are **UTF-8 with BOM, LF**.
 
 ## Roadmap
 
-See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Not done yet: Riot API features, `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.
+See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Done: `/rank`. Not done yet: `/roast`, `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.
