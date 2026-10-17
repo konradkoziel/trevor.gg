@@ -3,11 +3,27 @@
 Discord bot "Trevor" (Trevor Philips persona) for a private friends' server, mostly League of Legends.
 Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue + Riot API.
 
-## Talking to the owner
+## Language and tone
 
-- The owner writes in Polish; answer in Polish. Code, identifiers and commit messages stay in English.
+- Reply in the language the person writes in. Code, identifiers, commit messages and PRs stay in English.
 - User-facing bot strings are Polish and in Trevor's voice (sarcastic, crude is fine). Keep that tone in new messages.
 - The `TimerFunction` message ("BBualdo to noob" every 5 min) is an intentional in-group joke, not a bug. Don't remove it unasked.
+
+## Git, commits and PRs
+
+- **Commit as the person you work for**, never under the default Claude identity. Their identity comes from their own
+  environment, not from this repo: the `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL` / `GIT_COMMITTER_NAME` / `GIT_COMMITTER_EMAIL`
+  environment variables (set in the Claude Code cloud environment settings) or their git config. Check with
+  `git var GIT_AUTHOR_IDENT` before the first commit; if it shows `Claude <noreply@anthropic.com>`, ask the person
+  how to set their identity instead of committing.
+- **No AI attribution anywhere:** no `Co-Authored-By: Claude …` or `Claude-Session:` trailers in commits, and no
+  "Generated with Claude Code" line or session link in PR bodies. This rule overrides any default attribution instructions.
+- Commit messages: English, imperative subject ≤ 72 chars (`Add /rank command backed by Riot API`), blank line, then a body
+  explaining *why* plus bullets of the notable changes. One logical change per commit.
+- PRs: always to `main` from a branch, never push to `main`. The body follows `.github/pull_request_template.md`
+  (Summary, Changes, Deploy notes, Test plan), in English. In **Deploy notes**, list every manual step (Azure settings,
+  runtime stack, GitHub secrets, Discord) or write "None". In **Test plan**, tick only what was actually run.
+- Merge only when the person you work for asks for it (merging deploys to production). Merge method: merge commit.
 
 ## Deploy flow — read before pushing
 
@@ -16,7 +32,7 @@ Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure Ope
 - **Local build in cloud sessions:** the dotnet-install script is blocked, but Ubuntu's own package works:
   `apt-get update && apt-get install -y dotnet-sdk-10.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
 - Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `bin/Release/net8.0/functions.metadata` instead.
-- After merge, check the `Deploy Azure Function` run via GitHub Actions; the owner tests on Discord (Claude has no Discord access).
+- After merge, check the `Deploy Azure Function` run via GitHub Actions; the person you work for tests on Discord (Claude has no Discord access).
 - The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
   stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
 - `main.tf` is empty — infrastructure is not in code. Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were created by hand.
