@@ -30,7 +30,7 @@ Skala: wartość dla serwera / nakład (S/M/L) / ryzyko.
 ### Rekomendowana kolejność
 
 1. ~~**#0 kolejka + porządki**~~ ✅ **zrobione**: kolejka `deferred-commands`, Options z walidacją, rejestr komend, obsługa błędów w `InteractionHandler`, testy.
-2. ~~**#1 `/rank`**~~ ✅ **zrobione** (czeka na `RIOT_API_KEY`), potem **#2 `/roast`**. Największa frajda przy małym ryzyku, buduje klienta Riot API.
+2. ~~**#1 `/rank`**~~ ✅ **zrobione** (z werdyktem AI), ~~**#2 `/roast`**~~ ✅ **zrobione**. Największa frajda przy małym ryzyku, buduje klienta Riot API.
 3. **#4 `/lfg`** i **#5 `/wynik`**. Wprowadzają przyciski i trwały stan.
 4. **#3 balans drużyn**. Korzysta z Riot API (#1) i z powiązań kont.
 5. Reszta według ochoty. **#7 limit** warto dodać od razu, gdy `/ask` dostanie pamięć (#6).
