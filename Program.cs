@@ -10,7 +10,9 @@ using OpenAI.Chat;
 using System.ClientModel;
 using trevor.Core;
 using trevor.Features.Ask;
-using trevor.Features.Lol;
+using trevor.Features.Lol.Common;
+using trevor.Features.Lol.Rank;
+using trevor.Features.Lol.Roast;
 using trevor.Features.Ping;
 using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
@@ -64,6 +66,8 @@ builder.Services.AddSingleton(sp =>
     var azureClient = new AzureOpenAIClient(new Uri(openAi.Endpoint), new ApiKeyCredential(openAi.Key));
     return azureClient.GetChatClient(openAi.Deployment);
 });
+builder.Services.AddSingleton<ITrevorAi, TrevorAi>();
+builder.Services.AddSingleton<IRiotPlayerRunner, RiotPlayerRunner>();
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
 builder.Services.AddHttpClient<DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 // Commands are singletons, so this client lives for the whole app: rotate connections
@@ -78,6 +82,7 @@ builder.Services.AddSingleton<ICommand, PingCommand>();
 builder.Services.AddSingleton<ICommand, TeamsCommand>();
 builder.Services.AddSingleton<ICommand, AskCommand>();
 builder.Services.AddSingleton<ICommand, RankCommand>();
+builder.Services.AddSingleton<ICommand, RoastCommand>();
 builder.Services.AddSingleton<CommandRegistry>();
 builder.Services.AddSingleton<InteractionHandler>();
 

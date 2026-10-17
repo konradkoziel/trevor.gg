@@ -1,6 +1,6 @@
 ﻿namespace trevor.Infrastructure.Riot;
 
-// Riot ID, e.g. "Konrad#EUNE" → GameName "Konrad", TagLine "EUNE"
+// Riot ID, e.g. "Nick#EUNE" → GameName "Nick", TagLine "EUNE"
 public record RiotId(string GameName, string TagLine)
 {
     public static bool TryParse(string? text, out RiotId id)
@@ -27,3 +27,27 @@ public record LeagueEntry(string QueueType, string Tier, string Rank, int League
     public const string SoloQueue = "RANKED_SOLO_5x5";
     public const string FlexQueue = "RANKED_FLEX_SR";
 }
+
+// Match-V5 MatchDto (only the fields we use)
+public record RiotMatch(RiotMatchInfo Info);
+
+public record RiotMatchInfo(
+    long GameDuration, // seconds
+    int QueueId,
+    string GameMode,
+    IReadOnlyList<RiotMatchParticipant> Participants);
+
+public record RiotMatchParticipant(
+    string Puuid,
+    string ChampionName,
+    int TeamId,
+    string? TeamPosition,
+    bool Win,
+    int Kills,
+    int Deaths,
+    int Assists,
+    int TotalMinionsKilled,
+    int NeutralMinionsKilled,
+    int TotalDamageDealtToChampions,
+    int VisionScore,
+    int GoldEarned);

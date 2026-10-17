@@ -1,85 +1,74 @@
-using System.Net;
-using trevor.Features.Lol;
+using trevor.Features.Lol.Common;
+using trevor.Features.Lol.Rank;
+using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot;
 
 namespace trevor.Tests;
 
+// Player lookup and Riot errors are covered by RiotPlayerRunnerTests
 public class RankCommandTests
 {
-    private sealed class FakeRiot : IRiotApiClient
-    {
-        public bool IsConfigured { get; init; } = true;
-        public RiotAccount? Account { get; init; } = new("puuid-1", "Konrad", "EUNE");
-        public IReadOnlyList<LeagueEntry> Entries { get; init; } = [];
-        public Exception? Error { get; init; }
-        public RiotId? RequestedId { get; private set; }
+    private static readonly LeagueEntry[] GoldAndSilver =
+    [
+        new(LeagueEntry.FlexQueue, "SILVER", "I", 12, 10, 10),
+        new(LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61),
+    ];
 
-        public Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default)
-        {
-            RequestedId = riotId;
-            return Error is null ? Task.FromResult(Account) : Task.FromException<RiotAccount?>(Error);
-        }
-
-        public Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default) =>
-            Task.FromResult(Entries);
-    }
-
-    private static Task<string> Run(FakeRiot riot, string nick = "Konrad#EUNE") =>
-        new RankCommand(riot).ExecuteAsync(
-            TestInteractions.Command("rank", $$"""[{ "name": "nick", "type": 3, "value": "{{nick}}" }]"""));
+    private static Task<string> Run(FakeRiot riot, FakeAi? ai = null) =>
+        new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
+            TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""));
 
     [Fact]
-    public async Task WithoutApiKey_SaysSo()
+    public async Task Unranked_IsReported_WithoutCallingAi()
     {
-        Assert.Contains("klucza", await Run(new FakeRiot { IsConfigured = false }));
-    }
+        var ai = new FakeAi();
 
-    [Theory]
-    [InlineData("Konrad")]
-    [InlineData("#EUNE")]
-    [InlineData("Konrad#")]
-    public async Task NickWithoutTag_ReturnsHint(string nick)
-    {
-        Assert.Contains("z tagiem", await Run(new FakeRiot(), nick));
+        Assert.Equal(RankMessage.Unranked("Player#EUNE"), await Run(new FakeRiot(), ai));
+        Assert.Equal(0, ai.Calls);
     }
 
     [Fact]
-    public async Task UnknownPlayer_ReturnsNotFound()
+    public async Task SoloAndFlex_AreFormatted_WithAiVerdict()
     {
-        Assert.Contains("Nie ma gracza **Ktoś#EUW**", await Run(new FakeRiot { Account = null }, "Ktoś#EUW"));
+        var text = await Run(new FakeRiot { Entries = GoldAndSilver }, new FakeAi("Gold II po 119 grach. Konsekwentna przeciętność."));
+
+        Assert.Equal("""
+                     🏅 **Player#EUNE**
+                     Solo/Duo: **Gold II, 47 LP** — 58W / 61L (48.7%)
+                     Flex: **Silver I, 12 LP** — 10W / 10L (50.0%)
+                     *Gold II po 119 grach. Konsekwentna przeciętność.*
+                     """.ReplaceLineEndings("\n"), text);
     }
 
     [Fact]
-    public async Task PassesParsedRiotId()
+    public async Task AiGetsPlainSummary_AndRankInstruction()
     {
-        var riot = new FakeRiot();
-        await Run(riot, " Pan Kot #EUNE ");
+        var ai = new FakeAi();
+        await Run(new FakeRiot { Entries = GoldAndSilver }, ai);
 
-        Assert.Equal(new RiotId("Pan Kot", "EUNE"), riot.RequestedId);
+        Assert.Equal(TrevorPrompts.RankVerdict, ai.LastInstruction);
+        Assert.Equal("""
+                     Gracz: Player#EUNE
+                     Solo/Duo: Gold II, 47 LP — 58W / 61L (48.7%)
+                     Flex: Silver I, 12 LP — 10W / 10L (50.0%)
+                     """.ReplaceLineEndings("\n"), ai.LastInput);
     }
 
     [Fact]
-    public async Task Unranked_IsReported()
+    public async Task AiUnavailable_FallsBackToVerdictForSoloTier()
     {
-        Assert.Contains("unranked", await Run(new FakeRiot()));
+        var text = await Run(new FakeRiot { Entries = GoldAndSilver }, new FakeAi(reply: null));
+
+        Assert.EndsWith($"*{RankMessage.FallbackVerdict("GOLD")}*", text);
     }
 
     [Fact]
-    public async Task SoloAndFlex_AreFormatted()
+    public async Task FlexOnly_UsesFlexForVerdict()
     {
-        var text = await Run(new FakeRiot
-        {
-            Entries =
-            [
-                new LeagueEntry(LeagueEntry.FlexQueue, "SILVER", "I", 12, 10, 10),
-                new LeagueEntry(LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61),
-            ]
-        });
+        var text = await Run(new FakeRiot { Entries = [GoldAndSilver[0]] }, new FakeAi(reply: null));
 
-        Assert.Contains("🏅 **Konrad#EUNE**", text);
-        Assert.Contains("Solo/Duo: **Gold II, 47 LP** — 58W / 61L (48.7%)", text);
-        Assert.Contains("Flex: **Silver I, 12 LP** — 10W / 10L (50.0%)", text);
-        Assert.Contains("idealnie przeciętny", text); // verdict follows Solo/Duo tier
+        Assert.EndsWith($"*{RankMessage.FallbackVerdict("SILVER")}*", text);
+        Assert.DoesNotContain("Solo/Duo", text);
     }
 
     [Fact]
@@ -88,21 +77,5 @@ public class RankCommandTests
         var text = await Run(new FakeRiot { Entries = [new LeagueEntry(LeagueEntry.SoloQueue, "CHALLENGER", "I", 1200, 300, 200)] });
 
         Assert.Contains("**Challenger, 1200 LP**", text);
-    }
-
-    [Theory]
-    [InlineData(HttpStatusCode.TooManyRequests, "limitem")]
-    [InlineData(HttpStatusCode.Forbidden, "odrzucił mój klucz")]
-    [InlineData(HttpStatusCode.Unauthorized, "odrzucił mój klucz")]
-    public async Task RiotErrors_AreExplained(HttpStatusCode status, string expected)
-    {
-        Assert.Contains(expected, await Run(new FakeRiot { Error = new RiotApiException(status) }));
-    }
-
-    [Fact]
-    public async Task OtherRiotErrors_Bubble_ToHandlerErrorMessage()
-    {
-        await Assert.ThrowsAsync<RiotApiException>(() =>
-            Run(new FakeRiot { Error = new RiotApiException(HttpStatusCode.InternalServerError) }));
     }
 }

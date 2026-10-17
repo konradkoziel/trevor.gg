@@ -13,7 +13,7 @@ public class TeamsCommand : ICommand
     {
         var players = ParsePlayers(interaction.GetOption("gracze"));
         if (players.Length == 0)
-            return Task.FromResult("Podaj graczy po przecinku, np. `Konrad,Janusz,Jan,Bartosz`.");
+            return Task.FromResult("Podaj graczy po przecinku, np. `Gracz1,Gracz2,Gracz3,Gracz4`.");
 
         var (blue, red) = Split(players, Random.Shared);
 
