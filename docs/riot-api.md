@@ -1,9 +1,10 @@
 # Riot API — dostępne metody (Development Key)
 
 Lista z Riot Developer Portal dla klucza deweloperskiego tej aplikacji (59 metod), stan na 2026-10-17.
-Limity podane przy metodach to **limity per metoda**. Niezależnie od nich klucz ma **limit aplikacji**.
-Dla klucza deweloperskiego to standardowo 20 zapytań/s i 100 zapytań/2 min (wartości z ogólnej dokumentacji Riota,
-nie z tej listy). Klucz deweloperski wygasa po 24 h.
+Limity podane przy metodach to **limity per metoda**. Niezależnie od nich klucz ma **limit aplikacji**
+(z Developer Portal): **20 zapytań / 1 s i 100 zapytań / 2 min**, liczone **osobno dla każdej wartości routingu**
+(`eun1`, `euw1`, `europe`, `americas`, …). `/rank` robi 1 zapytanie na `europe` i 1 na `eun1`, więc jedno wywołanie
+zużywa po 1 z obu pul. Klucz deweloperski wygasa po 24 h.
 
 ## Routing
 
