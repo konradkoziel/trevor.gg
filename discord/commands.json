@@ -1,0 +1,46 @@
+[
+  {
+    "name": "ping",
+    "type": 1,
+    "description": "Sprawdź, czy Trevor żyje"
+  },
+  {
+    "name": "teams",
+    "type": 1,
+    "description": "Losuje dwie drużyny z listy graczy",
+    "options": [
+      {
+        "name": "gracze",
+        "description": "Gracze po przecinku, np. Konrad,Janusz,Jan,Bartosz",
+        "type": 3,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "ask",
+    "type": 1,
+    "description": "Zadaj pytanie Trevorowi",
+    "options": [
+      {
+        "name": "question",
+        "description": "O co chcesz zapytać",
+        "type": 3,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "rank",
+    "type": 1,
+    "description": "Ranga LoL gracza (Solo/Duo i Flex) z oceną Trevora",
+    "options": [
+      {
+        "name": "nick",
+        "description": "Riot ID z tagiem, np. Konrad#EUNE",
+        "type": 3,
+        "required": true
+      }
+    ]
+  }
+]

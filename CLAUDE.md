@@ -1,7 +1,7 @@
 # CLAUDE.md — notes for working on trevor.gg
 
 Discord bot "Trevor" (Trevor Philips persona) for a private friends' server, mostly League of Legends.
-Azure Functions (.NET 8, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue + Riot API.
+Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue + Riot API.
 
 ## Talking to the owner
 
@@ -11,12 +11,14 @@ Azure Functions (.NET 8, isolated worker, ASP.NET Core integration) + Azure Open
 
 ## Deploy flow — read before pushing
 
-- **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → `dotnet publish trevor.csproj` → OIDC login → `azure/functions-action`, ~1.5 min). Never push to `main` directly.
+- **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → test → `dotnet publish trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
 - Work on a branch, open a PR to `main`. `.github/workflows/build.yml` builds and runs the tests on every PR.
 - **Local build in cloud sessions:** the dotnet-install script is blocked, but Ubuntu's own package works:
-  `apt-get update && apt-get install -y dotnet-sdk-8.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
+  `apt-get update && apt-get install -y dotnet-sdk-10.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
 - Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `bin/Release/net8.0/functions.metadata` instead.
 - After merge, check the `Deploy Azure Function` run via GitHub Actions; the owner tests on Discord (Claude has no Discord access).
+- The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
+  stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
 - `main.tf` is empty — infrastructure is not in code. Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were created by hand.
 
 ## Configuration (env vars / Azure app settings)
@@ -44,9 +46,10 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 - Every outgoing message goes through `DiscordResponseData.FromText`: adds `allowed_mentions: { parse: [] }` (nobody can make the bot ping `@everyone`) and truncates to 2000 chars. Use it for any new message.
 - Discord JSON is snake_case: `DiscordJson.Options` uses `SnakeCaseLower`, and models pin names with `[JsonPropertyName]`.
 - Option values can be string/number/bool → `InteractionOption.Value` is a `JsonElement`; read options with `interaction.GetOption("name")`.
-- Slash-command definitions (names/options) are registered with Discord outside this repo. A new command needs registering there too: `/ping`, `/teams gracze:`, `/ask question:`, `/rank nick:`.
-  Register one command without touching the others (POST upserts by name; a bulk PUT would overwrite all of them):
-  `curl -X POST https://discord.com/api/v10/applications/<APP_ID>/commands -H "Authorization: Bot <BOT_TOKEN>" -H "Content-Type: application/json" -d @docs/commands/rank.json`
+- Slash-command definitions live in **`discord/commands.json`** (all commands, one array). The deploy workflow PUTs that file to
+  Discord after every deploy (bulk overwrite of global commands: commands missing from the file get removed). The step is skipped
+  unless the GitHub secrets `DISCORD_APP_ID` and `DISCORD_BOT_TOKEN` are set. `DiscordCommandDefinitionsTests` fails when the file
+  and the `ICommand`s / option names drift apart.
 - Never log request bodies or Discord URLs — they contain interaction tokens / webhook secrets.
 
 ## Code layout & conventions
@@ -56,7 +59,7 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 - `Features/<Name>/` — one folder per feature (vertical slices): `Ask` (+ `TrevorPrompts` persona), `Teams`, `Ping`, `Lol` (`RankCommand`).
 - `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options. `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `RiotId`, routing (platform `eun1` → regional host `europe` for Account-V1).
 - Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
-- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → register in Discord → tests in `tests/trevor.Tests`.
+- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `discord/commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests`.
 - Tests: xUnit in `tests/trevor.Tests` (excluded from the app build in `trevor.csproj`). Build interactions from Discord-shaped JSON with `TestInteractions`.
 - Style: file-scoped namespaces, primary constructors, records, `ImplicitUsings` + `Nullable` on, zero build warnings. App source files are **UTF-8 with BOM, LF**.
 
