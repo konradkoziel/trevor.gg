@@ -20,11 +20,15 @@ Connects directly to **Azure OpenAI (GPT-4o)**.
 Trevor reads your question, consults the neural gods, and answers briefly and precisely.  
 He’s helpful by contract, but not necessarily polite.
 
+### `/rank nick: Konrad#EUNE`
+Pulls Solo/Duo and Flex rank from the **Riot API**.
+Trevor reads your LP and tells you exactly what he thinks of it.
+
 ---
 
 ## 🧰 Tech Stack
 
-- **Azure Functions (.NET 8)** — webhook-based backend for Discord Interactions  
+- **Azure Functions (.NET 10)** — webhook-based backend for Discord Interactions  
 - **Azure OpenAI Service** — GPT-4o model powering `/ask`  
 - **Discord Interactions API** — Slash commands with signature verification  
 - **C#** — clean structure with DI, async/await, and factory-based command registry  
