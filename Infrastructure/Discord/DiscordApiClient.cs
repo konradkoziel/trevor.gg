@@ -9,15 +9,15 @@ public class DiscordApiClient(HttpClient httpClient)
 {
     public const string ApiBaseUrl = "https://discord.com/api/v10";
 
-    public Task SendFollowupAsync(string applicationId, string interactionToken, string content, CancellationToken ct = default) =>
-        PostMessageAsync($"{ApiBaseUrl}/webhooks/{applicationId}/{interactionToken}", content, ct);
+    public Task SendFollowupAsync(string applicationId, string interactionToken, DiscordResponseData message, CancellationToken ct = default) =>
+        PostMessageAsync($"{ApiBaseUrl}/webhooks/{applicationId}/{interactionToken}", message, ct);
 
     public Task SendWebhookAsync(string webhookUrl, string content, CancellationToken ct = default) =>
-        PostMessageAsync(webhookUrl, content, ct);
+        PostMessageAsync(webhookUrl, DiscordResponseData.FromText(content), ct);
 
-    private async Task PostMessageAsync(string url, string content, CancellationToken ct)
+    private async Task PostMessageAsync(string url, DiscordResponseData message, CancellationToken ct)
     {
-        var json = JsonSerializer.Serialize(DiscordResponseData.FromText(content), DiscordJson.Options);
+        var json = JsonSerializer.Serialize(message, DiscordJson.Options);
         using var body = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await httpClient.PostAsync(url, body, ct);
 

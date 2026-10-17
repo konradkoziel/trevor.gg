@@ -4,9 +4,9 @@ namespace trevor.Tests;
 
 public class AskCommandTests
 {
-    private static Task<string> Ask(FakeAi ai, string question) =>
-        new AskCommand(ai).ExecuteAsync(
-            TestInteractions.Command("ask", $$"""[{ "name": "question", "type": 3, "value": "{{question}}" }]"""));
+    private static async Task<string> Ask(FakeAi ai, string question) =>
+        (await new AskCommand(ai).ExecuteAsync(
+            TestInteractions.Command("ask", $$"""[{ "name": "question", "type": 3, "value": "{{question}}" }]"""))).Content!;
 
     [Fact]
     public async Task QuotesQuestion_AndAppendsAnswer()

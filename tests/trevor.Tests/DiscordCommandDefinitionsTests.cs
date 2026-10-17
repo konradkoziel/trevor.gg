@@ -17,7 +17,7 @@ public class DiscordCommandDefinitionsTests
         new TeamsCommand(),
         new AskCommand(null!),
         new RankCommand(null!, null!, null!),
-        new RoastCommand(null!, null!, null!),
+        new RoastCommand(null!, null!, null!, null!),
     ];
 
     // Option names each command reads via GetOption

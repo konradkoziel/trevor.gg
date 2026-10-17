@@ -25,16 +25,16 @@ public class InteractionHandler(CommandRegistry registry, ILogger<InteractionHan
         return new InteractionResult(DiscordResponse.Message(await ExecuteAsync(command, interaction, ct)));
     }
 
-    // Runs a deferred command from the queue; returns the text for the followup message
-    public async Task<string> ExecuteDeferredAsync(DiscordInteraction interaction, CancellationToken ct = default)
+    // Runs a deferred command from the queue; returns the followup message
+    public async Task<DiscordResponseData> ExecuteDeferredAsync(DiscordInteraction interaction, CancellationToken ct = default)
     {
         var command = registry.Find(interaction.Data?.Name);
         return command is null
-            ? UnknownCommandMessage(interaction)
+            ? DiscordResponseData.FromText(UnknownCommandMessage(interaction))
             : await ExecuteAsync(command, interaction, ct);
     }
 
-    private async Task<string> ExecuteAsync(ICommand command, DiscordInteraction interaction, CancellationToken ct)
+    private async Task<DiscordResponseData> ExecuteAsync(ICommand command, DiscordInteraction interaction, CancellationToken ct)
     {
         try
         {
@@ -43,7 +43,7 @@ public class InteractionHandler(CommandRegistry registry, ILogger<InteractionHan
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.LogError(ex, "Command {Command} failed for interaction {InteractionId}", command.Name, interaction.Id);
-            return ErrorMessage;
+            return DiscordResponseData.FromText(ErrorMessage);
         }
     }
 

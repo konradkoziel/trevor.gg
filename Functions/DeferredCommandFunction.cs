@@ -22,8 +22,8 @@ public class DeferredCommandFunction(
         var interaction = JsonSerializer.Deserialize<DiscordInteraction>(message, DiscordJson.Options)
                           ?? throw new InvalidOperationException("Empty deferred interaction message");
 
-        var content = await handler.ExecuteDeferredAsync(interaction, ct);
-        await discord.SendFollowupAsync(interaction.ApplicationId, interaction.Token, content, ct);
+        var followup = await handler.ExecuteDeferredAsync(interaction, ct);
+        await discord.SendFollowupAsync(interaction.ApplicationId, interaction.Token, followup, ct);
 
         logger.LogInformation("Sent followup for interaction {InteractionId} command {Command}",
             interaction.Id, interaction.Data?.Name);

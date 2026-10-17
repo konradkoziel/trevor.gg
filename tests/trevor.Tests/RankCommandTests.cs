@@ -14,9 +14,9 @@ public class RankCommandTests
         new(LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61),
     ];
 
-    private static Task<string> Run(FakeRiot riot, FakeAi? ai = null) =>
-        new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
-            TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""));
+    private static async Task<string> Run(FakeRiot riot, FakeAi? ai = null) =>
+        (await new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
+            TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""))).Content!;
 
     [Fact]
     public async Task Unranked_IsReported_WithoutCallingAi()

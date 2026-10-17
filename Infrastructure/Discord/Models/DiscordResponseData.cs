@@ -2,8 +2,10 @@
 
 namespace trevor.Infrastructure.Discord.Models;
 
+// A message the bot sends: plain text, an embed, or both
 public record DiscordResponseData(
-    [property: JsonPropertyName("content")] string? Content = null
+    [property: JsonPropertyName("content")] string? Content = null,
+    [property: JsonPropertyName("embeds")] IReadOnlyList<DiscordEmbed>? Embeds = null
 )
 {
     public const int MaxContentLength = 2000;
@@ -13,5 +15,8 @@ public record DiscordResponseData(
     public DiscordAllowedMentions AllowedMentions { get; init; } = DiscordAllowedMentions.None;
 
     public static DiscordResponseData FromText(string content) =>
-        new(content.Length <= MaxContentLength ? content : content[..(MaxContentLength - 1)] + "…");
+        new(DiscordText.Truncate(content, MaxContentLength));
+
+    public static DiscordResponseData FromEmbed(DiscordEmbed embed) =>
+        new(Embeds: [embed.Trimmed()]);
 }

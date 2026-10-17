@@ -16,17 +16,17 @@ public class RankCommand(IRiotPlayerRunner players, IRiotApiClient riot, ITrevor
     // Riot calls (plus retries on 429) and an AI call can exceed Discord's 3 s limit
     public bool IsDeferred => true;
 
-    public Task<string> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
+    public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
         players.RunAsync(interaction, ReportRankAsync, ct);
 
-    private async Task<string> ReportRankAsync(RiotPlayer player, CancellationToken ct)
+    private async Task<DiscordResponseData> ReportRankAsync(RiotPlayer player, CancellationToken ct)
     {
         var ranks = PlayerRanks.From(await riot.GetLeagueEntriesAsync(player.Puuid, ct));
         if (ranks.IsUnranked)
-            return RankMessage.Unranked(player.DisplayName);
+            return DiscordResponseData.FromText(RankMessage.Unranked(player.DisplayName));
 
         var verdict = await ai.ReplyAsync(TrevorPrompts.RankVerdict, RankMessage.AiInput(player.DisplayName, ranks), VerdictMaxTokens, ct)
                       ?? RankMessage.FallbackVerdict(ranks.Main!.Tier);
-        return RankMessage.Format(player.DisplayName, ranks, verdict);
+        return DiscordResponseData.FromText(RankMessage.Format(player.DisplayName, ranks, verdict));
     }
 }

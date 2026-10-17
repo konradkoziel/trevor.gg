@@ -10,8 +10,8 @@ public class InteractionHandlerTests
     {
         public string Name => name;
         public bool IsDeferred => deferred;
-        public Task<string> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
-            Task.FromResult(run());
+        public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
+            Task.FromResult(DiscordResponseData.FromText(run()));
     }
 
     private static InteractionHandler Handler(params ICommand[] commands) =>
@@ -62,7 +62,7 @@ public class InteractionHandlerTests
     {
         var text = await Handler(new FakeCommand("slow", true, () => "done")).ExecuteDeferredAsync(TestInteractions.Command("slow"));
 
-        Assert.Equal("done", text);
+        Assert.Equal("done", text.Content);
     }
 
     [Fact]
@@ -91,6 +91,6 @@ public class InteractionHandlerTests
 
         var text = await Handler(command).ExecuteDeferredAsync(TestInteractions.Command("boom"));
 
-        Assert.Equal(InteractionHandler.ErrorMessage, text);
+        Assert.Equal(InteractionHandler.ErrorMessage, text.Content);
     }
 }

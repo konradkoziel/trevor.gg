@@ -6,8 +6,8 @@ using trevor.Infrastructure.Riot;
 
 namespace trevor.Features.Lol.Roast;
 
-// /roast nick:<Riot ID> — stats of the player's last match plus Trevor's AI roast
-public class RoastCommand(IRiotPlayerRunner players, IRiotApiClient riot, ITrevorAi ai) : ICommand
+// /roast nick:<Riot ID> — the player's last match as an embed, with Trevor's AI roast
+public class RoastCommand(IRiotPlayerRunner players, IRiotApiClient riot, IDataDragon dataDragon, ITrevorAi ai) : ICommand
 {
     private const int RoastMaxTokens = 220;
 
@@ -17,21 +17,22 @@ public class RoastCommand(IRiotPlayerRunner players, IRiotApiClient riot, ITrevo
     public string Name => "roast";
     public bool IsDeferred => true;
 
-    public Task<string> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
+    public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
         players.RunAsync(interaction, RoastLastMatchAsync, ct);
 
-    private async Task<string> RoastLastMatchAsync(RiotPlayer player, CancellationToken ct)
+    private async Task<DiscordResponseData> RoastLastMatchAsync(RiotPlayer player, CancellationToken ct)
     {
         var stats = await LastMatchStatsAsync(player.Puuid, ct);
         if (stats is null)
             return RoastMessage.NoMatches(player.DisplayName);
 
+        var icon = await dataDragon.ChampionIconUrlAsync(stats.Champion, ct);
         if (stats.DurationSeconds < RemakeSeconds)
-            return RoastMessage.Remake(player.DisplayName, stats);
+            return RoastMessage.Remake(player.DisplayName, stats, icon);
 
         var roast = await ai.ReplyAsync(TrevorPrompts.MatchRoast, RoastMessage.AiInput(player.DisplayName, stats), RoastMaxTokens, ct)
                     ?? RoastMessage.FallbackRoast(stats);
-        return RoastMessage.Format(player.DisplayName, stats, roast);
+        return RoastMessage.Format(player.DisplayName, stats, roast, icon);
     }
 
     private async Task<MatchStats?> LastMatchStatsAsync(string puuid, CancellationToken ct)

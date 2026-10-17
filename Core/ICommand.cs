@@ -10,5 +10,6 @@ public interface ICommand
     // Slow commands (over Discord's 3 s limit) are acknowledged and run from the queue
     bool IsDeferred { get; }
 
-    Task<string> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default);
+    // A message: plain text (DiscordResponseData.FromText) or an embed (FromEmbed)
+    Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default);
 }
