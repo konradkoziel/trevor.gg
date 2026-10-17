@@ -13,11 +13,3 @@ public record DiscordResponse(
     public static DiscordResponse Message(string content) =>
         new(ResponseType.ChannelMessage, DiscordResponseData.FromText(content));
 }
-
-// https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type
-public static class ResponseType
-{
-    public const int Pong = 1;
-    public const int ChannelMessage = 4;
-    public const int DeferredChannelMessage = 5;
-}

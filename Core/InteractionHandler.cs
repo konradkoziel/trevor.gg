@@ -3,8 +3,6 @@ using trevor.Infrastructure.Discord.Models;
 
 namespace trevor.Core;
 
-public record InteractionResult(DiscordResponse Response, bool EnqueueDeferred = false);
-
 public class InteractionHandler(CommandRegistry registry, ILogger<InteractionHandler> logger)
 {
     public const string ErrorMessage = "Coś się zjebało po mojej stronie. Spróbuj jeszcze raz.";

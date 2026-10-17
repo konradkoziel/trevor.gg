@@ -89,11 +89,13 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
     knowledge (ids, names, routing) in `Infrastructure/`.
   - *Open/closed:* new behaviour = new class registered in DI (commands, strategies), not another `switch` in shared code.
   - *Dependency inversion:* commands depend on interfaces for anything external (`IRiotApiClient`, `ITrevorAi`,
-    `IRiotPlayerRunner`), so tests use fakes (`tests/trevor.Tests/TestFakes.cs`).
+    `IRiotPlayerRunner`), so tests use fakes (`tests/trevor.Tests/FakeRiot.cs`, `FakeAi.cs`).
 - **No duplicated flows:** shared steps get one home (e.g. `RiotPlayerRunner` does key check → Riot ID parse → account
   lookup → Riot error messages for every LoL command). Test that shared code once, not in every command.
 - **No magic numbers or strings:** named constants with a comment saying why (`RemakeSeconds`, `VerdictMaxTokens`).
-- Small methods with intention-revealing names; one type per file unless it's a tiny record that only exists for its neighbour.
+- **One type per file, no exceptions:** every class, record, interface, enum or exception gets its own file named after it
+  (`IRiotApiClient.cs`, `RiotApiClient.cs`, `RiotApiException.cs`). Only private types nested inside a class may share its file.
+- Small methods with intention-revealing names.
 - Before pushing, re-read the diff for these points, not only for bugs.
 
 ## Privacy

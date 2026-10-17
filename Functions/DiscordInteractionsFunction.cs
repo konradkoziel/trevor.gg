@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using trevor.Core;
 using trevor.Infrastructure.Discord;
@@ -67,14 +66,4 @@ public class DiscordInteractionsFunction(
                 : null
         };
     }
-}
-
-public class InteractionOutput
-{
-    [HttpResult]
-    public required IActionResult Result { get; init; }
-
-    // Null means nothing is written to the queue
-    [QueueOutput(DeferredCommandFunction.QueueName)]
-    public string? DeferredInteraction { get; init; }
 }

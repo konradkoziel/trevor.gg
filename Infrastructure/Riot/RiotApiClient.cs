@@ -4,28 +4,6 @@ using Microsoft.Extensions.Options;
 
 namespace trevor.Infrastructure.Riot;
 
-public interface IRiotApiClient
-{
-    bool IsConfigured { get; }
-
-    // Null when the Riot ID doesn't exist
-    Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default);
-
-    Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default);
-
-    // Newest first
-    Task<IReadOnlyList<string>> GetRecentMatchIdsAsync(string puuid, int count, CancellationToken ct = default);
-
-    // Null when the match doesn't exist
-    Task<RiotMatch?> GetMatchAsync(string matchId, CancellationToken ct = default);
-}
-
-public class RiotApiException(HttpStatusCode statusCode)
-    : Exception($"Riot API returned {(int)statusCode}")
-{
-    public HttpStatusCode StatusCode { get; } = statusCode;
-}
-
 // Typed client: the rest of the app sees RiotAccount/LeagueEntry, never Riot's HTTP details.
 // Retries, timeouts and 429 back-off come from the resilience handler registered in Program.cs.
 public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options) : IRiotApiClient
