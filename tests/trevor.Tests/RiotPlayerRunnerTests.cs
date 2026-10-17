@@ -1,15 +1,17 @@
 using System.Net;
 using trevor.Features.Lol.Common;
+using trevor.Infrastructure.Discord.Models;
 using trevor.Infrastructure.Riot;
 
 namespace trevor.Tests;
 
 public class RiotPlayerRunnerTests
 {
-    private static Task<string> Run(FakeRiot riot, string nick = "Player#EUNE", Func<RiotPlayer, Task<string>>? action = null) =>
-        new RiotPlayerRunner(riot).RunAsync(
+    private static async Task<string> Run(FakeRiot riot, string nick = "Player#EUNE", Func<RiotPlayer, Task<string>>? action = null) =>
+        (await new RiotPlayerRunner(riot).RunAsync(
             TestInteractions.Command("x", $$"""[{ "name": "nick", "type": 3, "value": "{{nick}}" }]"""),
-            (player, _) => action?.Invoke(player) ?? Task.FromResult($"ok:{player.Puuid}:{player.DisplayName}"));
+            async (player, _) => DiscordResponseData.FromText(
+                await (action?.Invoke(player) ?? Task.FromResult($"ok:{player.Puuid}:{player.DisplayName}"))))).Content!;
 
     [Fact]
     public async Task KnownPlayer_RunsAction_WithRiotsSpellingOfTheName()

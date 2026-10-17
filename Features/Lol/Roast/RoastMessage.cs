@@ -1,18 +1,26 @@
 ﻿using System.Globalization;
+using trevor.Infrastructure.Discord.Models;
 
 namespace trevor.Features.Lol.Roast;
 
-// Text of the /roast reply: Discord message, AI input and canned lines
+// The /roast reply: an embed with the match stats, plus AI input and canned lines
 public static class RoastMessage
 {
-    public static string Format(string displayName, MatchStats stats, string roast) =>
-        $"{Header(displayName, stats)}\n{roast}";
+    private const int WinColor = 0x2ECC71;
+    private const int LossColor = 0xE74C3C;
+    private const int RemakeColor = 0x95A5A6;
+    private const string Footer = "Trevor.gg · Riot API";
+    private const string VerdictTitle = "Werdykt Trevora";
+    private const string RemakeText = "*Remake. Nawet nie zdążyłeś zawieść, a już po meczu.*";
 
-    public static string Remake(string displayName, MatchStats stats) =>
-        $"{Header(displayName, stats)}\n*Remake. Nawet nie zdążyłeś zawieść, a już po meczu.*";
+    public static DiscordResponseData Format(string displayName, MatchStats stats, string roast, string? championIconUrl) =>
+        Card(displayName, stats, championIconUrl, stats.Win ? WinColor : LossColor, roast);
 
-    public static string NoMatches(string displayName) =>
-        $"**{displayName}** nie ma żadnego meczu. Nie da się zroastować kogoś, kto nawet nie gra.";
+    public static DiscordResponseData Remake(string displayName, MatchStats stats, string? championIconUrl) =>
+        Card(displayName, stats, championIconUrl, RemakeColor, RemakeText);
+
+    public static DiscordResponseData NoMatches(string displayName) =>
+        DiscordResponseData.FromText($"**{displayName}** nie ma żadnego meczu. Nie da się zroastować kogoś, kto nawet nie gra.");
 
     // Used when the AI is unavailable
     public static string FallbackRoast(MatchStats s) =>
@@ -35,13 +43,28 @@ public static class RoastMessage
          Złoto: {s.Gold}
          """);
 
-    private static string Header(string displayName, MatchStats s)
+    private static DiscordResponseData Card(string displayName, MatchStats s, string? championIconUrl, int color, string verdict)
     {
         var role = s.Role is null ? string.Empty : $" ({s.Role})";
         var result = s.Win ? "Wygrana" : "Przegrana";
-        return string.Create(CultureInfo.InvariantCulture,
-            $"🔥 **{displayName}** — {s.Champion}{role}, {s.Queue}, **{result}** w {s.DurationSeconds / 60} min\n" +
-            $"KDA **{s.Kills}/{s.Deaths}/{s.Assists}** · CS {s.Cs} ({s.CsPerMinute:0.0}/min) · " +
-            $"DMG {s.Damage / 1000.0:0.0}k ({s.DamageShare:0%} drużyny) · KP {s.KillParticipation:0%} · Wizja {s.VisionScore}");
+        return DiscordResponseData.FromEmbed(new DiscordEmbed(
+            Title: $"🔥 {displayName} — {s.Champion}{role}",
+            Description: $"{s.Queue} · **{result}** · {s.DurationSeconds / 60} min",
+            Color: color,
+            Fields: [.. StatFields(s), new DiscordEmbedField(VerdictTitle, verdict)],
+            Thumbnail: championIconUrl is null ? null : new DiscordEmbedThumbnail(championIconUrl),
+            Footer: new DiscordEmbedFooter(Footer)));
+    }
+
+    private static IEnumerable<DiscordEmbedField> StatFields(MatchStats s)
+    {
+        string F(FormattableString text) => text.ToString(CultureInfo.InvariantCulture);
+
+        yield return new DiscordEmbedField("KDA", F($"{s.Kills}/{s.Deaths}/{s.Assists}"), Inline: true);
+        yield return new DiscordEmbedField("CS", F($"{s.Cs} ({s.CsPerMinute:0.0}/min)"), Inline: true);
+        yield return new DiscordEmbedField("Obrażenia", F($"{s.Damage / 1000.0:0.0}k ({s.DamageShare:0%})"), Inline: true);
+        yield return new DiscordEmbedField("Udział w zabójstwach", F($"{s.KillParticipation:0%}"), Inline: true);
+        yield return new DiscordEmbedField("Wizja", F($"{s.VisionScore}"), Inline: true);
+        yield return new DiscordEmbedField("Złoto", F($"{s.Gold / 1000.0:0.0}k"), Inline: true);
     }
 }

@@ -8,28 +8,28 @@ public class RiotPlayerRunner(IRiotApiClient riot) : IRiotPlayerRunner
 {
     public const string NickOption = "nick";
 
-    public async Task<string> RunAsync(
+    public async Task<DiscordResponseData> RunAsync(
         DiscordInteraction interaction,
-        Func<RiotPlayer, CancellationToken, Task<string>> action,
+        Func<RiotPlayer, CancellationToken, Task<DiscordResponseData>> action,
         CancellationToken ct = default)
     {
         if (!riot.IsConfigured)
-            return LolMessages.MissingKey;
+            return DiscordResponseData.FromText(LolMessages.MissingKey);
 
         if (!RiotId.TryParse(interaction.GetOption(NickOption), out var riotId))
-            return LolMessages.MissingTag;
+            return DiscordResponseData.FromText(LolMessages.MissingTag);
 
         try
         {
             var account = await riot.GetAccountAsync(riotId, ct);
             if (account is null)
-                return LolMessages.NotFound(riotId);
+                return DiscordResponseData.FromText(LolMessages.NotFound(riotId));
 
             return await action(new RiotPlayer(account.Puuid, DisplayName(account, riotId)), ct);
         }
         catch (RiotApiException ex) when (LolMessages.ForRiotError(ex) is { } message)
         {
-            return message;
+            return DiscordResponseData.FromText(message);
         }
     }
 

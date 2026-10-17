@@ -25,8 +25,9 @@ Pulls Solo/Duo and Flex rank (tier, LP, wins/losses, winrate) from the **Riot AP
 Trevor reads your LP and writes a fresh AI verdict on it every time.
 
 ### `/roast nick: Nick#EUNE`
-Fetches the player's **last match** — champion, role, KDA, CS/min, damage share, kill participation, vision —
-and lets Trevor roast it. Played well? He'll still find something.
+Fetches the player's **last match** and shows it as a Discord **embed**: champion icon, a green/red bar for win/loss,
+and KDA, CS/min, damage share, kill participation, vision and gold in columns — topped off with Trevor's AI roast.
+Played well? He'll still find something.
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
@@ -90,7 +91,7 @@ dotnet test -c Release --no-build
 - **Azure Functions (.NET 10, isolated worker)** — webhook-based backend for Discord Interactions
 - **Azure Storage Queue** — reliable deferred responses for slow commands
 - **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict and `/roast`
-- **Riot API** — Account-V1, League-V4, Match-V5
+- **Riot API** — Account-V1, League-V4, Match-V5; **Data Dragon** for champion icons
 - **Discord Interactions API** — slash commands with Ed25519 signature verification
 - **C#** — DI, options validated at startup, typed HTTP clients with resilience, xUnit tests
 - **Trevor Personality Engine™** — sarcasm-driven orchestration layer

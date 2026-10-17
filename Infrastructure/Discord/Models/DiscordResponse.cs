@@ -10,6 +10,9 @@ public record DiscordResponse(
     public static DiscordResponse Pong { get; } = new(ResponseType.Pong);
     public static DiscordResponse Deferred { get; } = new(ResponseType.DeferredChannelMessage);
 
+    public static DiscordResponse Message(DiscordResponseData data) =>
+        new(ResponseType.ChannelMessage, data);
+
     public static DiscordResponse Message(string content) =>
-        new(ResponseType.ChannelMessage, DiscordResponseData.FromText(content));
+        Message(DiscordResponseData.FromText(content));
 }

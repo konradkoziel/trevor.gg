@@ -9,15 +9,15 @@ public class TeamsCommand : ICommand
     public string Name => "teams";
     public bool IsDeferred => false;
 
-    public Task<string> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default)
+    public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default)
     {
         var players = ParsePlayers(interaction.GetOption("gracze"));
         if (players.Length == 0)
-            return Task.FromResult("Podaj graczy po przecinku, np. `Gracz1,Gracz2,Gracz3,Gracz4`.");
+            return Task.FromResult(DiscordResponseData.FromText("Podaj graczy po przecinku, np. `Gracz1,Gracz2,Gracz3,Gracz4`."));
 
         var (blue, red) = Split(players, Random.Shared);
 
-        return Task.FromResult($"""
+        return Task.FromResult(DiscordResponseData.FromText($"""
                                 🏆 **Wynik losowania drużyn**
 
                                 🔵 **Niebiescy**
@@ -27,7 +27,7 @@ public class TeamsCommand : ICommand
                                 🔴 **Czerwoni**
                                 —————————————---
                                 {string.Join("\n", red.Select(p => $"• {p}"))}
-                                """);
+                                """));
     }
 
     public static string[] ParsePlayers(string? raw) =>

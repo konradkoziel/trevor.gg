@@ -30,6 +30,31 @@ public class DiscordModelTests
     }
 
     [Fact]
+    public void Embed_SerializesInDiscordShape_WithAllowedMentions()
+    {
+        var message = DiscordResponseData.FromEmbed(new DiscordEmbed(
+            "Title", "Desc", 0xFF0000,
+            [new DiscordEmbedField("KDA", "1/2/3", Inline: true)],
+            new DiscordEmbedThumbnail("https://icons.test/x.png"),
+            new DiscordEmbedFooter("Footer")));
+
+        Assert.Equal(
+            """{"embeds":[{"title":"Title","description":"Desc","color":16711680,"fields":[{"name":"KDA","value":"1/2/3","inline":true}],"thumbnail":{"url":"https://icons.test/x.png"},"footer":{"text":"Footer"}}],"allowed_mentions":{"parse":[]}}""",
+            JsonSerializer.Serialize(message, DiscordJson.Options));
+    }
+
+    [Fact]
+    public void Embed_IsTrimmedToDiscordLimits()
+    {
+        var message = DiscordResponseData.FromEmbed(new DiscordEmbed(
+            new string('t', 300), Fields: [new DiscordEmbedField("Werdykt", new string('v', 2000))]));
+
+        var embed = Assert.Single(message.Embeds!);
+        Assert.Equal(DiscordEmbed.MaxTitleLength, embed.Title.Length);
+        Assert.Equal(DiscordEmbedField.MaxValueLength, Assert.Single(embed.Fields!).Value.Length);
+    }
+
+    [Fact]
     public void Options_OfAnyType_AreReadAsText()
     {
         var interaction = TestInteractions.Command("x", """

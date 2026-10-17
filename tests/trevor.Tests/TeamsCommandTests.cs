@@ -30,7 +30,7 @@ public class TeamsCommandTests
     [Fact]
     public async Task Execute_WithoutPlayers_ReturnsHint()
     {
-        var text = await new TeamsCommand().ExecuteAsync(TestInteractions.Command("teams", """[{ "name": "gracze", "type": 3, "value": ",," }]"""));
+        var text = (await new TeamsCommand().ExecuteAsync(TestInteractions.Command("teams", """[{ "name": "gracze", "type": 3, "value": ",," }]"""))).Content!;
 
         Assert.Contains("Podaj graczy", text);
     }
@@ -38,7 +38,7 @@ public class TeamsCommandTests
     [Fact]
     public async Task Execute_ListsAllPlayers()
     {
-        var text = await new TeamsCommand().ExecuteAsync(TestInteractions.Command("teams", """[{ "name": "gracze", "type": 3, "value": "A,B,C,D" }]"""));
+        var text = (await new TeamsCommand().ExecuteAsync(TestInteractions.Command("teams", """[{ "name": "gracze", "type": 3, "value": "A,B,C,D" }]"""))).Content!;
 
         Assert.All(["A", "B", "C", "D"], p => Assert.Contains($"• {p}", text));
     }

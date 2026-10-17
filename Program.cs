@@ -70,14 +70,19 @@ builder.Services.AddSingleton<ITrevorAi, TrevorAi>();
 builder.Services.AddSingleton<IRiotPlayerRunner, RiotPlayerRunner>();
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
 builder.Services.AddHttpClient<DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
-// Commands are singletons, so this client lives for the whole app: rotate connections
+builder.Services.AddSingleton(TimeProvider.System);
+
+// Commands are singletons, so these clients live for the whole app: rotate connections
 // in the handler instead of relying on IHttpClientFactory's handler recycling
+builder.Services.AddHttpClient<IDataDragon, DataDragonClient>(client => client.Timeout = TimeSpan.FromSeconds(5))
+    .ConfigurePrimaryHttpMessageHandler(LongLivedHandler)
+    .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
 builder.Services.AddHttpClient<IRiotApiClient, RiotApiClient>()
-    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
+    .ConfigurePrimaryHttpMessageHandler(LongLivedHandler)
     .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
     .AddStandardResilienceHandler(); // retries 429/5xx with back-off, per-attempt and total timeouts
 
-// Commands: register a new slash command here (and in the Discord Developer Portal)
+// Commands: register a new slash command here and add its definition to discord/commands.json
 builder.Services.AddSingleton<ICommand, PingCommand>();
 builder.Services.AddSingleton<ICommand, TeamsCommand>();
 builder.Services.AddSingleton<ICommand, AskCommand>();
@@ -91,3 +96,6 @@ builder.Logging.AddApplicationInsights();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Build().Run();
+
+// Re-resolves DNS every few minutes, which a handler that is never recycled wouldn't do
+static SocketsHttpHandler LongLivedHandler() => new() { PooledConnectionLifetime = TimeSpan.FromMinutes(5) };
