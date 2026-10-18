@@ -7,6 +7,10 @@ namespace trevor.Features.Lol.Common;
 // Messages shared by every Riot-backed command
 public static class LolMessages
 {
+    // Embed footer and verdict field title of every LoL card
+    public const string EmbedFooter = "Trevor.gg · Riot API";
+    public const string VerdictTitle = "Werdykt Trevora";
+
     public const string MissingKey = "Nie mam klucza do Riot API. Ktoś tu miał go dodać i jak zwykle zapomniał.";
     public const string MissingTag = "Podaj nick z tagiem, np. `Nick#EUNE`. Tag znajdziesz w kliencie pod swoim nickiem.";
 

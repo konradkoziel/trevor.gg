@@ -1,5 +1,6 @@
-using trevor.Features.Lol.Common;
+﻿using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Rank;
+using trevor.Infrastructure.Discord.Models;
 using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot;
 using trevor.Infrastructure.Riot.Models;
@@ -15,30 +16,50 @@ public class RankCommandTests
         new(LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61),
     ];
 
-    private static async Task<string> Run(FakeRiot riot, FakeAi? ai = null) =>
-        (await new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
-            TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""))).Content!;
+    private static Task<DiscordResponseData> Run(FakeRiot riot, FakeAi? ai = null) =>
+        new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
+            TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""));
+
+    private static async Task<DiscordEmbed> RunEmbed(FakeRiot riot, FakeAi? ai = null) =>
+        Assert.Single((await Run(riot, ai)).Embeds!);
+
+    private static string Field(DiscordEmbed embed, string name) =>
+        Assert.Single(embed.Fields!, f => f.Name == name).Value;
 
     [Fact]
     public async Task Unranked_IsReported_WithoutCallingAi()
     {
         var ai = new FakeAi();
 
-        Assert.Equal(RankMessage.Unranked("Player#EUNE"), await Run(new FakeRiot(), ai));
+        var embed = await RunEmbed(new FakeRiot(), ai);
+
+        Assert.Equal("🏅 Player#EUNE", embed.Title);
+        Assert.StartsWith("Unranked.", embed.Description);
+        Assert.Null(embed.Fields);
         Assert.Equal(0, ai.Calls);
     }
 
     [Fact]
-    public async Task SoloAndFlex_AreFormatted_WithAiVerdict()
+    public async Task SoloAndFlex_AreFields_WithAiVerdict()
     {
-        var text = await Run(new FakeRiot { Entries = GoldAndSilver }, new FakeAi("Gold II po 119 grach. Konsekwentna przeciętność."));
+        var embed = await RunEmbed(new FakeRiot { Entries = GoldAndSilver }, new FakeAi("Gold II po 119 grach. Konsekwentna przeciętność."));
 
-        Assert.Equal("""
-                     🏅 **Player#EUNE**
-                     Solo/Duo: **Gold II, 47 LP** — 58W / 61L (48.7%)
-                     Flex: **Silver I, 12 LP** — 10W / 10L (50.0%)
-                     *Gold II po 119 grach. Konsekwentna przeciętność.*
-                     """.ReplaceLineEndings("\n"), text);
+        Assert.Equal("🏅 Player#EUNE", embed.Title);
+        Assert.Equal(["Solo/Duo", "Flex", LolMessages.VerdictTitle], embed.Fields!.Select(f => f.Name));
+        Assert.Equal("**Gold II, 47 LP**\n58W / 61L (48.7%)", Field(embed, "Solo/Duo"));
+        Assert.Equal("**Silver I, 12 LP**\n10W / 10L (50.0%)", Field(embed, "Flex"));
+        Assert.Equal("*Gold II po 119 grach. Konsekwentna przeciętność.*", Field(embed, LolMessages.VerdictTitle));
+        Assert.Equal(LolMessages.EmbedFooter, embed.Footer!.Text);
+    }
+
+    [Fact]
+    public async Task ColorAndEmblem_FollowSoloTier()
+    {
+        var embed = await RunEmbed(new FakeRiot { Entries = GoldAndSilver });
+
+        Assert.Equal(CommunityDragon.RankEmblemUrl("GOLD"), embed.Thumbnail!.Url);
+        Assert.EndsWith("/emblem-gold.png", embed.Thumbnail.Url);
+        Assert.NotEqual((await RunEmbed(new FakeRiot { Entries = [GoldAndSilver[0]] })).Color, embed.Color);
     }
 
     [Fact]
@@ -58,25 +79,26 @@ public class RankCommandTests
     [Fact]
     public async Task AiUnavailable_FallsBackToVerdictForSoloTier()
     {
-        var text = await Run(new FakeRiot { Entries = GoldAndSilver }, new FakeAi(reply: null));
+        var embed = await RunEmbed(new FakeRiot { Entries = GoldAndSilver }, new FakeAi(reply: null));
 
-        Assert.EndsWith($"*{RankMessage.FallbackVerdict("GOLD")}*", text);
+        Assert.Equal($"*{RankMessage.FallbackVerdict("GOLD")}*", Field(embed, LolMessages.VerdictTitle));
     }
 
     [Fact]
-    public async Task FlexOnly_UsesFlexForVerdict()
+    public async Task FlexOnly_UsesFlexForVerdictAndEmblem()
     {
-        var text = await Run(new FakeRiot { Entries = [GoldAndSilver[0]] }, new FakeAi(reply: null));
+        var embed = await RunEmbed(new FakeRiot { Entries = [GoldAndSilver[0]] }, new FakeAi(reply: null));
 
-        Assert.EndsWith($"*{RankMessage.FallbackVerdict("SILVER")}*", text);
-        Assert.DoesNotContain("Solo/Duo", text);
+        Assert.Equal($"*{RankMessage.FallbackVerdict("SILVER")}*", Field(embed, LolMessages.VerdictTitle));
+        Assert.Equal(CommunityDragon.RankEmblemUrl("SILVER"), embed.Thumbnail!.Url);
+        Assert.DoesNotContain(embed.Fields!, f => f.Name == "Solo/Duo");
     }
 
     [Fact]
     public async Task ApexTier_HasNoDivision()
     {
-        var text = await Run(new FakeRiot { Entries = [new LeagueEntry(LeagueEntry.SoloQueue, "CHALLENGER", "I", 1200, 300, 200)] });
+        var embed = await RunEmbed(new FakeRiot { Entries = [new LeagueEntry(LeagueEntry.SoloQueue, "CHALLENGER", "I", 1200, 300, 200)] });
 
-        Assert.Contains("**Challenger, 1200 LP**", text);
+        Assert.StartsWith("**Challenger, 1200 LP**", Field(embed, "Solo/Duo"));
     }
 }
