@@ -35,7 +35,6 @@ builder.Services.AddOptions<DiscordOptions>()
     .Configure<IConfiguration>((options, config) =>
     {
         options.PublicKey = config["DISCORD_API_KEY"] ?? string.Empty;
-        options.GeneralWebhookUrl = config["DISCORD_URL_OGÓLNY"];
         options.MatchesWebhookUrl = config["DISCORD_URL_MATCHES"];
         options.SkipSignatureValidation = string.Equals(config["DISCORD_SKIP_SIGNATURE"], "true", StringComparison.OrdinalIgnoreCase);
     })
@@ -78,7 +77,9 @@ builder.Services.AddSingleton<IRiotPlayerRunner, RiotPlayerRunner>();
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
 builder.Services.AddHttpClient<IDiscordApiClient, DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<StorageTables>();
 builder.Services.AddSingleton<ITrackedPlayerStore, TableTrackedPlayerStore>();
+builder.Services.AddSingleton<IReportedMatchStore, TableReportedMatchStore>();
 
 // Commands are singletons, so these clients live for the whole app: rotate connections
 // in the handler instead of relying on IHttpClientFactory's handler recycling

@@ -7,7 +7,5 @@ public interface IDiscordApiClient
 {
     Task SendFollowupAsync(string applicationId, string interactionToken, DiscordResponseData message, CancellationToken ct = default);
 
-    Task SendWebhookAsync(string webhookUrl, string content, CancellationToken ct = default);
-
     Task SendWebhookAsync(string webhookUrl, DiscordResponseData message, CancellationToken ct = default);
 }

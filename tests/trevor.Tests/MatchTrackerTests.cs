@@ -19,8 +19,9 @@ public class MatchTrackerTests
         new() { MatchIds = [matchId], MatchesById = new Dictionary<string, RiotMatch> { [matchId] = match } };
 
     private static Task<int> Run(
-        FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, FakeAi? ai = null, string? webhook = Webhook) =>
-        new MatchTracker(store, riot, ai ?? new FakeAi("Komentarz."), discord,
+        FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, FakeAi? ai = null, string? webhook = Webhook,
+        FakeReportedMatchStore? reported = null) =>
+        new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, ai ?? new FakeAi("Komentarz."), discord,
                 Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }), NullLogger<MatchTracker>.Instance)
             .PostNewMatchesAsync();
 
@@ -54,6 +55,36 @@ public class MatchTrackerTests
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
     }
 
+    // Riot can list a shared match for one friend minutes before the other
+    [Fact]
+    public async Task FriendWhoseMatchShowsUpLater_DoesNotGetASecondReport()
+    {
+        var store = new FakeTrackedPlayerStore(Ann(), Bob());
+        var latest = new Dictionary<string, IReadOnlyList<string>> { ["puuid-1"] = ["EUN1_1"], ["puuid-2"] = ["EUN1_0"] };
+        var riot = new FakeRiot { MatchIdsByPuuid = latest, MatchesById = new Dictionary<string, RiotMatch> { ["EUN1_1"] = Match() } };
+        var reported = new FakeReportedMatchStore();
+        var discord = new FakeDiscordApi();
+
+        Assert.Equal(1, await Run(store, riot, discord, reported: reported));
+        latest["puuid-2"] = ["EUN1_1"];
+        Assert.Equal(0, await Run(store, riot, discord, reported: reported));
+
+        var embed = Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!);
+        Assert.Contains("Bob#EUNE", embed.Description);
+        Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
+    }
+
+    [Fact]
+    public async Task AlreadyReportedMatch_IsNotPostedAgain()
+    {
+        var reported = new FakeReportedMatchStore();
+        reported.MatchIds.Add("EUN1_1");
+        var discord = new FakeDiscordApi();
+
+        Assert.Equal(0, await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, reported: reported));
+        Assert.Empty(discord.Webhooks);
+    }
+
     [Fact]
     public async Task AlreadySeenMatch_IsNotPosted()
     {
@@ -67,11 +98,13 @@ public class MatchTrackerTests
     public async Task Remake_IsSkipped_ButMarkedAsSeen()
     {
         var store = new FakeTrackedPlayerStore(Ann());
+        var reported = new FakeReportedMatchStore();
         var discord = new FakeDiscordApi();
 
-        Assert.Equal(0, await Run(store, RiotWith(Match(duration: 200)), discord));
+        Assert.Equal(0, await Run(store, RiotWith(Match(duration: 200)), discord, reported: reported));
         Assert.Empty(discord.Webhooks);
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-1"));
+        Assert.Contains("EUN1_1", reported.MatchIds);
     }
 
     [Fact]
@@ -81,8 +114,10 @@ public class MatchTrackerTests
         var riot = RiotWith(Match());
         var discord = new FakeDiscordApi { Fail = true };
 
-        Assert.Equal(0, await Run(store, riot, discord));
+        var reported = new FakeReportedMatchStore();
+        Assert.Equal(0, await Run(store, riot, discord, reported: reported));
         Assert.Equal("EUN1_0", store.LastMatchOf("puuid-1"));
+        Assert.Empty(reported.MatchIds);
 
         discord.Fail = false;
         Assert.Equal(1, await Run(store, riot, discord));

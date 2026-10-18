@@ -38,7 +38,8 @@ Works on any text message on the server; images and embeds without text get a sn
 Puts a player on (or off) Trevor's watch list, up to 20 players. Every 5 minutes he checks their matches, and after each
 finished game posts a short card to a dedicated matches channel: result, queue, length, every tracked player's champion and KDA,
 the **report candidate** (the worst KDA in the whole match, ally or enemy) and a one-line AI comment.
-Friends in the same game get one shared card; remakes are skipped. Needs `DISCORD_URL_MATCHES`.
+Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
+(reported match ids are remembered); remakes are skipped. Needs `DISCORD_URL_MATCHES`.
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
@@ -75,9 +76,8 @@ Azure Function App settings (locally: copy `src/trevor/local.settings.example.js
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | yes | Azure OpenAI endpoint, key and deployment name |
 | `RIOT_API_KEY` | no | Riot API key; without it the LoL commands say the key is missing and match tracking is off |
 | `RIOT_PLATFORM` | no | Players' server, default `eun1` (EUNE); `euw1` for EUW |
-| `DISCORD_URL_OGÓLNY` | no | Webhook of the general channel for the timer message |
 | `DISCORD_URL_MATCHES` | no | Webhook of the channel for tracked players' match cards; without it tracking posts nothing |
-| `AzureWebJobsStorage` | yes (Functions host) | Storage account **connection string**: queue, timers and the `trackedplayers` table |
+| `AzureWebJobsStorage` | yes (Functions host) | Storage account **connection string**: queue, timers and the `trackedplayers` / `reportedmatches` tables |
 | `DISCORD_SKIP_SIGNATURE` | local only | `true` disables Discord signature checks for local testing |
 
 GitHub repository secrets used by the deploy workflow:
@@ -112,7 +112,7 @@ dotnet test -c Release --no-build
 
 - **Azure Functions (.NET 10, isolated worker)** — webhook-based backend for Discord Interactions
 - **Azure Storage Queue** — reliable deferred responses for slow commands
-- **Azure Table Storage** — the list of tracked players and their last reported match
+- **Azure Table Storage** — tracked players and the matches already reported
 - **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict, `/roast`, `Rate this` and match card comments
 - **Riot API** — Account-V1, League-V4, Match-V5; **Data Dragon** for champion icons
 - **Discord Interactions API** — slash commands with Ed25519 signature verification

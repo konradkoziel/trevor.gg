@@ -11,9 +11,6 @@ public sealed class FakeDiscordApi : IDiscordApiClient
     public Task SendFollowupAsync(string applicationId, string interactionToken, DiscordResponseData message, CancellationToken ct = default) =>
         Task.CompletedTask;
 
-    public Task SendWebhookAsync(string webhookUrl, string content, CancellationToken ct = default) =>
-        SendWebhookAsync(webhookUrl, DiscordResponseData.FromText(content), ct);
-
     public Task SendWebhookAsync(string webhookUrl, DiscordResponseData message, CancellationToken ct = default)
     {
         if (Fail)

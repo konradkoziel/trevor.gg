@@ -9,6 +9,7 @@ namespace trevor.Features.Lol.Tracking;
 // Finds tracked players' new matches and posts one short report per match to the matches channel
 public class MatchTracker(
     ITrackedPlayerStore store,
+    IReportedMatchStore reported,
     IRiotApiClient riot,
     ITrevorAi ai,
     IDiscordApiClient discord,
@@ -27,17 +28,20 @@ public class MatchTracker(
             return 0;
         }
 
-        var newMatches = await FindNewMatchesAsync(await store.ListAsync(ct), ct);
+        var tracked = await store.ListAsync(ct);
         var posted = 0;
-        foreach (var (matchId, players) in newMatches)
+        foreach (var (matchId, surfaced) in await FindNewMatchesAsync(tracked, ct))
         {
-            if (await ReportAsync(webhookUrl, matchId, players, ct))
+            if (await HandleAsync(webhookUrl, matchId, tracked, surfaced, ct))
                 posted++;
         }
+
+        logger.LogInformation("Checked {Players} tracked players, posted {Reports} match reports", tracked.Count, posted);
         return posted;
     }
 
-    // Friends who played together share the match id, so they end up in one report
+    // New match id → the tracked players whose latest match it is. Riot may list a shared match
+    // for one friend minutes before another, so this is only a hint of who played; the match itself decides
     private async Task<Dictionary<string, List<TrackedPlayer>>> FindNewMatchesAsync(IReadOnlyList<TrackedPlayer> players, CancellationToken ct)
     {
         var byMatch = new Dictionary<string, List<TrackedPlayer>>();
@@ -69,21 +73,16 @@ public class MatchTracker(
         }
     }
 
-    // The match is marked as handled only after the post went out, so a failed post is retried on the next run
-    private async Task<bool> ReportAsync(string webhookUrl, string matchId, List<TrackedPlayer> players, CancellationToken ct)
+    // One card per match, listing every tracked player in it. The match is marked as handled only after
+    // the post went out, so a failed post is retried on the next run
+    private async Task<bool> HandleAsync(
+        string webhookUrl, string matchId, IReadOnlyList<TrackedPlayer> tracked, List<TrackedPlayer> surfaced, CancellationToken ct)
     {
         try
         {
-            var match = await riot.GetMatchAsync(matchId, ct);
-            var report = match is null ? null : MatchReport.For(match, players);
-            var posted = false;
-            if (report is { IsRemake: false })
-            {
-                await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, await CommentAsync(report, ct)), ct);
-                posted = true;
-            }
+            var posted = !await reported.ContainsAsync(matchId, ct) && await PostAsync(webhookUrl, matchId, tracked, ct);
 
-            foreach (var player in players)
+            foreach (var player in surfaced)
                 await store.SetLastMatchAsync(player.Puuid, matchId, ct);
             return posted;
         }
@@ -92,6 +91,18 @@ public class MatchTracker(
             logger.LogError(ex, "Report of match {MatchId} failed", matchId);
             return false;
         }
+    }
+
+    // False for remakes and matches Riot no longer has; those are marked as reported all the same
+    private async Task<bool> PostAsync(string webhookUrl, string matchId, IReadOnlyList<TrackedPlayer> tracked, CancellationToken ct)
+    {
+        var match = await riot.GetMatchAsync(matchId, ct);
+        var report = match is null ? null : MatchReport.For(match, tracked);
+        if (report is { IsRemake: false })
+            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, await CommentAsync(report, ct)), ct);
+
+        await reported.AddAsync(matchId, ct);
+        return report is { IsRemake: false };
     }
 
     private async Task<string> CommentAsync(MatchReport report, CancellationToken ct) =>
