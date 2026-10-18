@@ -13,12 +13,14 @@ using trevor.Features.Ask;
 using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Rank;
 using trevor.Features.Lol.Roast;
+using trevor.Features.Lol.Tracking;
 using trevor.Features.Ping;
 using trevor.Features.RateThis;
 using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot;
+using trevor.Infrastructure.Storage;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -34,6 +36,7 @@ builder.Services.AddOptions<DiscordOptions>()
     {
         options.PublicKey = config["DISCORD_API_KEY"] ?? string.Empty;
         options.GeneralWebhookUrl = config["DISCORD_URL_OGÓLNY"];
+        options.MatchesWebhookUrl = config["DISCORD_URL_MATCHES"];
         options.SkipSignatureValidation = string.Equals(config["DISCORD_SKIP_SIGNATURE"], "true", StringComparison.OrdinalIgnoreCase);
     })
     .Validate(o => o.SkipSignatureValidation || o.HasValidPublicKey, "DISCORD_API_KEY must be the 64-char hex public key")
@@ -60,6 +63,9 @@ builder.Services.AddOptions<RiotOptions>()
     .Validate(o => RiotRouting.IsKnownPlatform(o.Platform), "RIOT_PLATFORM must be a Riot platform id, e.g. eun1 or euw1")
     .ValidateOnStart();
 
+builder.Services.AddOptions<StorageOptions>()
+    .Configure<IConfiguration>((options, config) => options.ConnectionString = config["AzureWebJobsStorage"]);
+
 // Infrastructure
 builder.Services.AddSingleton(sp =>
 {
@@ -70,8 +76,9 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<ITrevorAi, TrevorAi>();
 builder.Services.AddSingleton<IRiotPlayerRunner, RiotPlayerRunner>();
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
-builder.Services.AddHttpClient<DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddHttpClient<IDiscordApiClient, DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ITrackedPlayerStore, TableTrackedPlayerStore>();
 
 // Commands are singletons, so these clients live for the whole app: rotate connections
 // in the handler instead of relying on IHttpClientFactory's handler recycling
@@ -90,8 +97,13 @@ builder.Services.AddSingleton<ICommand, AskCommand>();
 builder.Services.AddSingleton<ICommand, RankCommand>();
 builder.Services.AddSingleton<ICommand, RoastCommand>();
 builder.Services.AddSingleton<ICommand, RateThisCommand>();
+builder.Services.AddSingleton<ICommand, TrackCommand>();
+builder.Services.AddSingleton<ICommand, UntrackCommand>();
 builder.Services.AddSingleton<CommandRegistry>();
 builder.Services.AddSingleton<InteractionHandler>();
+
+// Transient, so its typed Discord client isn't captured for the app's lifetime
+builder.Services.AddTransient<MatchTracker>();
 
 builder.Logging.AddConsole();
 builder.Logging.AddApplicationInsights();

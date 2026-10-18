@@ -1,8 +1,14 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿using trevor.Infrastructure.Riot.Models;
+
+namespace trevor.Infrastructure.Riot;
 
 // Human-readable names for Riot's ids and enums
 public static class RiotNames
 {
+    // "Name#Tag" of a match participant; null when Riot leaves it out (e.g. old matches)
+    public static string? RiotId(RiotMatchParticipant player) =>
+        string.IsNullOrEmpty(player.RiotIdGameName) ? null : $"{player.RiotIdGameName}#{player.RiotIdTagline}";
+
     // Match-V5 teamPosition; null when Riot doesn't assign one (ARAM, Arena)
     public static string? Role(string? teamPosition) => teamPosition switch
     {

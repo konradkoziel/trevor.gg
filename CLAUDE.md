@@ -45,11 +45,12 @@ Bound to options classes in `src/trevor/Program.cs`; required ones are validated
 |---|---|---|
 | `DISCORD_API_KEY` | `DiscordOptions.PublicKey` | Discord application **public key** (64 hex chars), despite the name. Required |
 | `DISCORD_URL_OGÓLNY` | `DiscordOptions.GeneralWebhookUrl` | Webhook for the general channel (timer). Optional. Non-ASCII name — don't rename without changing the Azure setting |
+| `DISCORD_URL_MATCHES` | `DiscordOptions.MatchesWebhookUrl` | Webhook for the match-reports channel (`MatchTracker`). Optional: without it nothing is posted |
 | `DISCORD_SKIP_SIGNATURE=true` | `DiscordOptions.SkipSignatureValidation` | **Disables signature verification.** Local only, never in Azure |
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | `OpenAiOptions` | Azure OpenAI. Required |
 | `RIOT_API_KEY` | `RiotOptions.ApiKey` | Riot API key. **Optional** — without it `/rank` answers that the key is missing. Dev keys expire every 24 h; use a Personal API Key |
 | `RIOT_PLATFORM` | `RiotOptions.Platform` | Server of the players, default `eun1` (EUNE); `euw1` for EUW. Validated at startup |
-| `AzureWebJobsStorage` | Functions host | Storage account: timer leases and the `deferred-commands` queue |
+| `AzureWebJobsStorage` | Functions host, `StorageOptions` | Storage account: timer leases, the `deferred-commands` queue and the `trackedplayers` table. Must be a **connection string** for the table (an identity-based `__accountName` setting breaks only tracking) |
 
 Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local.settings.json` (gitignored).
 
@@ -76,10 +77,10 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
 
 - Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `tests/trevor.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`.
 
-- `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `TimerFunction`.
+- `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `TimerFunction`, `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
-- `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `RateThis` (message context menu), `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`).
-- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — DTOs in `Infrastructure/Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
+- `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `RateThis` (message context menu), `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Tracking` (`TrackCommand`/`UntrackCommand`, `MatchTracker` posting via webhook, `MatchReport` + `MatchReportMessage`, `ITrackedPlayerStore`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`, `MatchRules`).
+- `Infrastructure/Discord/` — models, `DiscordJson`, `IDiscordApiClient`/`DiscordApiClient` (typed HttpClient: followups and webhooks), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/Storage/` — `TableTrackedPlayerStore` (Azure Table Storage, table created on first use). `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — DTOs in `Infrastructure/Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
 - Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
 - **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `deploy/discord-commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
 - **AI in commands:** go through `ITrevorAi`, add the instruction to `TrevorPrompts`, and always keep a canned fallback for when it returns null (tests use `FakeAi`).
@@ -113,4 +114,4 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
 
 ## Roadmap
 
-See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Done: `/rank` (AI verdict), `/roast`. Not done yet: `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.
+See `docs/ROADMAP.md` (Polish) — ranked feature ideas and the chosen patterns. Done: `/rank` (AI verdict), `/roast`, `Rate this`, `/track` match reports. Not done yet: `/lfg` buttons, results tracking, rank-balanced teams (Strategy), Table Storage repositories, IaC.

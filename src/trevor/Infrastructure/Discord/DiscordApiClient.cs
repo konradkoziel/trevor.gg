@@ -5,7 +5,7 @@ using trevor.Infrastructure.Discord.Models;
 namespace trevor.Infrastructure.Discord;
 
 // Typed client for outgoing calls to Discord. URLs carry tokens/secrets, so they are never logged.
-public class DiscordApiClient(HttpClient httpClient)
+public class DiscordApiClient(HttpClient httpClient) : IDiscordApiClient
 {
     public const string ApiBaseUrl = "https://discord.com/api/v10";
 
@@ -13,7 +13,10 @@ public class DiscordApiClient(HttpClient httpClient)
         PostMessageAsync($"{ApiBaseUrl}/webhooks/{applicationId}/{interactionToken}", message, ct);
 
     public Task SendWebhookAsync(string webhookUrl, string content, CancellationToken ct = default) =>
-        PostMessageAsync(webhookUrl, DiscordResponseData.FromText(content), ct);
+        SendWebhookAsync(webhookUrl, DiscordResponseData.FromText(content), ct);
+
+    public Task SendWebhookAsync(string webhookUrl, DiscordResponseData message, CancellationToken ct = default) =>
+        PostMessageAsync(webhookUrl, message, ct);
 
     private async Task PostMessageAsync(string url, DiscordResponseData message, CancellationToken ct)
     {

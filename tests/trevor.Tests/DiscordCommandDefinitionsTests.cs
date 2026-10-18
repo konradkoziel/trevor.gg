@@ -3,6 +3,7 @@ using trevor.Core;
 using trevor.Features.Ask;
 using trevor.Features.Lol.Rank;
 using trevor.Features.Lol.Roast;
+using trevor.Features.Lol.Tracking;
 using trevor.Features.Ping;
 using trevor.Features.RateThis;
 using trevor.Features.Teams;
@@ -20,6 +21,8 @@ public class DiscordCommandDefinitionsTests
         new RankCommand(null!, null!, null!),
         new RoastCommand(null!, null!, null!, null!),
         new RateThisCommand(null!),
+        new TrackCommand(null!, null!, null!, null!),
+        new UntrackCommand(null!, null!),
     ];
 
     // Option names each command reads via GetOption
@@ -31,6 +34,8 @@ public class DiscordCommandDefinitionsTests
         ["rank"] = ["nick"],
         ["roast"] = ["nick"],
         ["Rate this"] = [],
+        ["track"] = ["nick"],
+        ["untrack"] = ["nick"],
     };
 
     // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-types

@@ -57,6 +57,32 @@
     ]
   },
   {
+    "name": "track",
+    "type": 1,
+    "description": "Śledź gracza: Trevor wrzuci każdy jego mecz na kanał z meczami",
+    "options": [
+      {
+        "name": "nick",
+        "description": "Riot ID z tagiem, np. Nick#EUNE",
+        "type": 3,
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "untrack",
+    "type": 1,
+    "description": "Przestań śledzić mecze gracza",
+    "options": [
+      {
+        "name": "nick",
+        "description": "Riot ID z tagiem, np. Nick#EUNE",
+        "type": 3,
+        "required": true
+      }
+    ]
+  },
+  {
     "name": "Rate this",
     "type": 3
   }

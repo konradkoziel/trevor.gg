@@ -8,6 +8,9 @@ public class DiscordOptions
     // Webhook for the general channel, env var DISCORD_URL_OGÓLNY
     public string? GeneralWebhookUrl { get; set; }
 
+    // Webhook for the channel with tracked players' match reports, env var DISCORD_URL_MATCHES
+    public string? MatchesWebhookUrl { get; set; }
+
     // Local testing only, env var DISCORD_SKIP_SIGNATURE=true
     public bool SkipSignatureValidation { get; set; }
 

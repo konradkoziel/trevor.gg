@@ -11,9 +11,6 @@ public class RoastCommand(IRiotPlayerRunner players, IRiotApiClient riot, IDataD
 {
     private const int RoastMaxTokens = 220;
 
-    // Riot counts games under ~3.5 min as remakes; 5 min keeps early surrenders out too
-    private const int RemakeSeconds = 300;
-
     public string Name => "roast";
     public bool IsDeferred => true;
 
@@ -27,7 +24,7 @@ public class RoastCommand(IRiotPlayerRunner players, IRiotApiClient riot, IDataD
             return RoastMessage.NoMatches(player.DisplayName);
 
         var icon = await dataDragon.ChampionIconUrlAsync(stats.Champion, ct);
-        if (stats.DurationSeconds < RemakeSeconds)
+        if (MatchRules.IsRemake(stats.DurationSeconds))
             return RoastMessage.Remake(player.DisplayName, stats, icon);
 
         var roast = await ai.ReplyAsync(TrevorPrompts.MatchRoast, RoastMessage.AiInput(player.DisplayName, stats), RoastMaxTokens, ct)

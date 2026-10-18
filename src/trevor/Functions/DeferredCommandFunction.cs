@@ -12,7 +12,7 @@ namespace trevor.Functions;
 public class DeferredCommandFunction(
     ILogger<DeferredCommandFunction> logger,
     InteractionHandler handler,
-    DiscordApiClient discord)
+    IDiscordApiClient discord)
 {
     public const string QueueName = "deferred-commands";
 
