@@ -2,7 +2,7 @@
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11109.219
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trevor", "trevor.csproj", "{B7007EA2-A371-A68A-F63B-464A6CEAA22D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trevor", "src\trevor\trevor.csproj", "{B7007EA2-A371-A68A-F63B-464A6CEAA22D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{79449A4F-009B-473A-B254-FAAB0BD6AEF0}"
 EndProject

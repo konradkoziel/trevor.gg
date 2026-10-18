@@ -35,7 +35,7 @@ jobs:
         run: dotnet test --configuration Release --no-build
 
       - name: Publish
-        run: dotnet publish trevor.csproj --configuration Release --output ./publish
+        run: dotnet publish src/trevor/trevor.csproj --configuration Release --output ./publish
 
       - name: Logowanie do Azure za pomocą sekretów
         uses: azure/login@v3
@@ -50,7 +50,7 @@ jobs:
           app-name: Trevor
           package: ./publish
 
-      # Bulk overwrite of the app's global commands with discord/commands.json:
+      # Bulk overwrite of the app's global commands with deploy/discord-commands.json:
       # new commands appear, changed ones update, commands missing from the file are removed
       - name: Register Discord slash commands
         if: env.DISCORD_APP_ID != '' && env.DISCORD_BOT_TOKEN != ''
@@ -59,4 +59,4 @@ jobs:
             -X PUT "https://discord.com/api/v10/applications/${DISCORD_APP_ID}/commands" \
             -H "Authorization: Bot ${DISCORD_BOT_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data @discord/commands.json
+            --data @deploy/discord-commands.json

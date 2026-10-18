@@ -2,6 +2,7 @@ using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Rank;
 using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot;
+using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 

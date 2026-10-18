@@ -1,4 +1,5 @@
 using trevor.Infrastructure.Riot;
+using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 
