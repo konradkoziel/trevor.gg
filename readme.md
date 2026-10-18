@@ -37,7 +37,7 @@ Works on any text message on the server; images and embeds without text get a sn
 ### `/track nick: Nick#EUNE` and `/untrack nick: Nick#EUNE`
 Puts a player on (or off) Trevor's watch list, up to 20 players. Every 5 minutes he checks their matches, and after each
 finished game posts a short card to a dedicated matches channel: result, queue, length, every tracked player's champion and KDA,
-the **report candidate** (the worst KDA in the whole match, ally or enemy) and a one-line AI comment.
+the **report candidate** (the worst KDA among the randoms on their team, with the champion's icon) and a one-line AI comment.
 Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
 (reported match ids are remembered); remakes are skipped. Needs `DISCORD_URL_MATCHES`.
 

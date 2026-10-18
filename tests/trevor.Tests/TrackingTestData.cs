@@ -2,7 +2,8 @@ using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 
-// A ranked 30-min match: Ann (puuid-1, Yasuo mid) and Bob (puuid-2) on team 100, the enemy Teemo feeds 0/12/1
+// A ranked 30-min match: Ann (puuid-1, Yasuo mid) and Bob (puuid-2) on team 100 with a random Amumu feeding 0/10/2;
+// the enemy Teemo is even worse at 0/12/1
 public static class TrackingTestData
 {
     public static RiotMatchParticipant Player(
@@ -17,7 +18,7 @@ public static class TrackingTestData
             Player("puuid-2", bobOnEnemyTeam ? 200 : 100, bobOnEnemyTeam ? !annWins : annWins, 7, 2, 10, "Thresh", "UTILITY"),
             Player("ally-1", 100, annWins, 5, 4, 6),
             Player("ally-2", 100, annWins, 3, 5, 8),
-            Player("ally-3", 100, annWins, 1, 6, 10),
+            Player("ally-3", 100, annWins, 0, 10, 2, "Amumu", "JUNGLE", "Random", "EUNE"),
             Player("enemy-1", 200, !annWins, 0, 12, 1, "Teemo", "TOP", "Nick", "EUNE"),
             Player("enemy-2", 200, !annWins, 15, 2, 4),
             Player("enemy-3", 200, !annWins, 6, 3, 9),

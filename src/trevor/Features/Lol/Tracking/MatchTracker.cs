@@ -11,6 +11,7 @@ public class MatchTracker(
     ITrackedPlayerStore store,
     IReportedMatchStore reported,
     IRiotApiClient riot,
+    IDataDragon dataDragon,
     ITrevorAi ai,
     IDiscordApiClient discord,
     IOptions<DiscordOptions> options,
@@ -99,7 +100,10 @@ public class MatchTracker(
         var match = await riot.GetMatchAsync(matchId, ct);
         var report = match is null ? null : MatchReport.For(match, tracked);
         if (report is { IsRemake: false })
-            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, await CommentAsync(report, ct)), ct);
+        {
+            var icon = await dataDragon.ChampionIconUrlAsync(report.Feeder.Champion, ct);
+            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, await CommentAsync(report, ct), icon), ct);
+        }
 
         await reported.AddAsync(matchId, ct);
         return report is { IsRemake: false };

@@ -21,13 +21,33 @@ public class MatchReportTests
     }
 
     [Fact]
-    public void Feeder_IsTheLowestKdaInTheMatch_ByRiotId()
+    public void Feeder_IsTheWorstRandomOnTheirTeam_ByRiotId()
     {
         var feeder = MatchReport.For(Match(), [Ann])!.Feeder;
 
-        Assert.Equal("Nick#EUNE", feeder.Name);
-        Assert.Equal((0, 12, 1), (feeder.Kills, feeder.Deaths, feeder.Assists));
+        Assert.Equal("Random#EUNE", feeder.Name);
+        Assert.Equal((0, 10, 2), (feeder.Kills, feeder.Deaths, feeder.Assists));
         Assert.False(feeder.IsTracked);
+    }
+
+    [Fact]
+    public void FullPremade_BlamesTheWorstFriend()
+    {
+        TrackedPlayer[] premade =
+        [
+            Ann, Bob, new("ally-1", "Gracz1#EUNE", null), new("ally-2", "Gracz2#EUNE", null), new("ally-3", "Gracz3#EUNE", null)
+        ];
+
+        var feeder = MatchReport.For(Match(), premade)!.Feeder;
+
+        Assert.Equal("Gracz3#EUNE", feeder.Name);
+        Assert.True(feeder.IsTracked);
+    }
+
+    [Fact]
+    public void TrackedPlayersOnBothTeams_BlameTheWorstOfTheMatch()
+    {
+        Assert.Equal("Nick#EUNE", MatchReport.For(Match(bobOnEnemyTeam: true), [Ann, Bob])!.Feeder.Name);
     }
 
     [Fact]
@@ -36,7 +56,7 @@ public class MatchReportTests
         var match = Match();
         var noName = match with { Info = match.Info with { Participants = [.. match.Info.Participants.Select(p => p with { RiotIdGameName = null })] } };
 
-        Assert.Equal("Teemo", MatchReport.For(noName, [Ann])!.Feeder.Name);
+        Assert.Equal("Amumu", MatchReport.For(noName, [Ann])!.Feeder.Name);
     }
 
     [Fact]
@@ -62,22 +82,30 @@ public class MatchReportTests
     {
         var report = MatchReport.For(Match(), [Ann, Bob])!;
 
-        var embed = Assert.Single(MatchReportMessage.Format(report, "Typowe.").Embeds!);
+        var embed = Assert.Single(MatchReportMessage.Format(report, "Typowe.", "https://icons.test/Amumu.png").Embeds!);
 
         Assert.Equal("❌ Przegrana · Ranked Solo/Duo · 30 min", embed.Title);
-        Assert.Equal("**Ann#EUNE** — Yasuo (Mid) · 2/9/3\n**Bob#EUNE** — Thresh (Support) · 7/2/10", embed.Description);
-        Assert.Equal("**Nick#EUNE** — Teemo (Top) · 0/12/1 (z drużyny wroga)", embed.Fields![0].Value);
-        Assert.Equal("*Typowe.*", embed.Fields[1].Value);
+        var fields = embed.Fields!;
+        Assert.Equal(["Ann#EUNE", "Bob#EUNE", "🚨 Do reportu", "Werdykt Trevora"], fields.Select(f => f.Name));
+        Assert.Equal("Yasuo (Mid)\n**2/9/3**", fields[0].Value);
+        Assert.True(fields[0].Inline);
+        Assert.Equal("**Random#EUNE** — Amumu (Jungle) · 0/10/2", fields[2].Value);
+        Assert.Equal("*Typowe.*", fields[3].Value);
+        Assert.Equal("https://icons.test/Amumu.png", embed.Thumbnail!.Url);
     }
 
     [Fact]
     public void Message_CallsOutATrackedFeeder()
     {
         var match = Match();
-        var annFeeds = match with { Info = match.Info with { Participants = [.. match.Info.Participants.Select(p => p.Puuid == "puuid-1" ? p with { Kills = 0, Deaths = 20, Assists = 0 } : p)] } };
+        TrackedPlayer[] premade =
+        [
+            Ann, Bob, new("ally-1", "Gracz1#EUNE", null), new("ally-2", "Gracz2#EUNE", null), new("ally-3", "Gracz3#EUNE", null)
+        ];
 
-        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(annFeeds, [Ann])!, "x").Embeds!);
+        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(match, premade)!, "x", null).Embeds!);
 
-        Assert.EndsWith("swój, wstyd podwójny", embed.Fields![0].Value);
+        Assert.EndsWith("swój, wstyd podwójny", Assert.Single(embed.Fields!, f => f.Name == "🚨 Do reportu").Value);
+        Assert.Null(embed.Thumbnail);
     }
 }
