@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace trevor.Infrastructure.Riot.Models;
 
 // Match-V5 InfoDto (only the fields we use)
 public record RiotMatchInfo(

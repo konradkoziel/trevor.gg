@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace trevor.Infrastructure.Riot.Models;
 
 // League-V4 LeagueEntryDTO (only the fields we use)
 public record LeagueEntry(string QueueType, string Tier, string Rank, int LeaguePoints, int Wins, int Losses)

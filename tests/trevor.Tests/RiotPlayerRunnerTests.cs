@@ -2,6 +2,7 @@ using System.Net;
 using trevor.Features.Lol.Common;
 using trevor.Infrastructure.Discord.Models;
 using trevor.Infrastructure.Riot;
+using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 

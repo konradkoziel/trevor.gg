@@ -86,20 +86,25 @@ Discord ──HTTP──▶ DiscordInteractions (HTTP)                          
 - **Osobny serwis na Gateway**: dopiero wtedy, gdy naprawdę będzie potrzebny voice albo reagowanie na wiadomości.
 - **Mikroserwisy**: jedna Function App, kilka funkcji.
 
-### Struktura folderów (docelowo)
+### Struktura folderów (stan obecny)
 
 ```
-Features/
-  Ask/        AskCommand.cs, TrevorPrompts.cs
-  Teams/      TeamsCommand.cs, ITeamSplitStrategy.cs, RandomSplit.cs, RankBalancedSplit.cs
-  Lol/        RankCommand.cs, RoastCommand.cs, LinkCommand.cs
-  Lfg/        LfgCommand.cs, LfgButtonHandler.cs
-Infrastructure/
-  Discord/    DiscordApiClient.cs, SignatureMiddleware.cs, Dtos/
-  Riot/       RiotApiClient.cs, Dtos/
-  Storage/    *Repository.cs
-Functions/    DiscordInteractions.cs, DeferredCommands.cs, Timers.cs
-tests/        trevor.Tests (xUnit): strategie drużyn, parsowanie opcji, router, podpis
+src/trevor/
+  Functions/        DiscordInteractionsFunction, DeferredCommandFunction, TimerFunction
+  Core/             ICommand, CommandRegistry, InteractionHandler
+  Features/
+    Ask/  Ping/  Teams/
+    Lol/Common/     RiotPlayerRunner, LolMessages
+    Lol/Rank/       RankCommand, RankMessage, PlayerRanks
+    Lol/Roast/      RoastCommand, RoastMessage, MatchStats
+  Infrastructure/
+    Discord/        DiscordApiClient, DiscordSignatureVerifier, Models/
+    Riot/           RiotApiClient, DataDragonClient, RiotRouting, RiotNames, Models/
+    OpenAi/         TrevorAi, TrevorPrompts
+tests/trevor.Tests/ xUnit
+deploy/             discord-commands.json
 ```
+
+Kolejne funkcje dochodzą jako nowe foldery w `Features/` (np. `Lfg/`), a trwałe dane jako `Infrastructure/Storage/`.
 
 Do budowy dochodzi **projekt testów** podpięty pod `build.yml`, żeby PR sprawdzał coś więcej niż kompilację.

@@ -1,4 +1,6 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿using trevor.Infrastructure.Riot.Models;
+
+namespace trevor.Infrastructure.Riot;
 
 public interface IRiotApiClient
 {

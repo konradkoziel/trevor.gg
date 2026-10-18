@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
+using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Infrastructure.Riot;
 

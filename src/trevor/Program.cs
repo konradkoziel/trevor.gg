@@ -82,7 +82,7 @@ builder.Services.AddHttpClient<IRiotApiClient, RiotApiClient>()
     .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
     .AddStandardResilienceHandler(); // retries 429/5xx with back-off, per-attempt and total timeouts
 
-// Commands: register a new slash command here and add its definition to discord/commands.json
+// Commands: register a new slash command here and add its definition to deploy/discord-commands.json
 builder.Services.AddSingleton<ICommand, PingCommand>();
 builder.Services.AddSingleton<ICommand, TeamsCommand>();
 builder.Services.AddSingleton<ICommand, AskCommand>();

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using Microsoft.Extensions.Options;
 using trevor.Infrastructure.Riot;
+using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 

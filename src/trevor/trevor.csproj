@@ -9,18 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove=".gitignore" />
-    <None Remove="readme.md" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- The test project lives inside this folder; keep it out of the app build -->
-    <Compile Remove="tests/**" />
-    <None Remove="tests/**" />
-    <Content Remove="tests/**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />

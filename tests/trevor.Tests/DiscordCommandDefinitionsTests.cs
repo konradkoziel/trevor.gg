@@ -8,7 +8,7 @@ using trevor.Features.Teams;
 
 namespace trevor.Tests;
 
-// discord/commands.json is what the deploy registers in Discord; keep it in sync with the code
+// deploy/discord-commands.json is what the deploy registers in Discord; keep it in sync with the code
 public class DiscordCommandDefinitionsTests
 {
     private static readonly ICommand[] Commands =

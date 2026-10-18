@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../trevor.csproj" />
+    <ProjectReference Include="../../src/trevor/trevor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../discord/commands.json" Link="commands.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../deploy/discord-commands.json" Link="commands.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

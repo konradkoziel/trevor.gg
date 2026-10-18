@@ -27,19 +27,19 @@ Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure Ope
 
 ## Deploy flow — read before pushing
 
-- **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → test → `dotnet publish trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
+- **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → test → `dotnet publish src/trevor/trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
 - Work on a branch, open a PR to `main`. `.github/workflows/build.yml` builds and runs the tests on every PR.
 - **Local build in cloud sessions:** the dotnet-install script is blocked, but Ubuntu's own package works:
   `apt-get update && apt-get install -y dotnet-sdk-10.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
-- Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `bin/Release/net10.0/functions.metadata` instead.
+- Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `src/trevor/bin/Release/net10.0/functions.metadata` instead.
 - After merge, check the `Deploy Azure Function` run via GitHub Actions; the person you work for tests on Discord (Claude has no Discord access).
 - The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
   stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
-- `main.tf` is empty — infrastructure is not in code. Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were created by hand.
+- Infrastructure is not in code. Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were created by hand.
 
 ## Configuration (env vars / Azure app settings)
 
-Bound to options classes in `Program.cs`; required ones are validated **at startup** (`ValidateOnStart`) — a missing value stops the host.
+Bound to options classes in `src/trevor/Program.cs`; required ones are validated **at startup** (`ValidateOnStart`) — a missing value stops the host.
 
 | Name | Options | Notes |
 |---|---|---|
@@ -51,7 +51,7 @@ Bound to options classes in `Program.cs`; required ones are validated **at start
 | `RIOT_PLATFORM` | `RiotOptions.Platform` | Server of the players, default `eun1` (EUNE); `euw1` for EUW. Validated at startup |
 | `AzureWebJobsStorage` | Functions host | Storage account: timer leases and the `deferred-commands` queue |
 
-Template: `local.settings.example.json` → copy to `local.settings.json` (gitignored).
+Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local.settings.json` (gitignored).
 
 ## Discord Interactions — gotchas learned the hard way
 
@@ -63,7 +63,7 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 - Embeds: one `DiscordEmbed*` model per file in `Infrastructure/Discord/Models`. Colours and field titles are named constants in the feature's `<Feature>Message` class (see `RoastMessage`).
 - Discord JSON is snake_case: `DiscordJson.Options` uses `SnakeCaseLower`, and models pin names with `[JsonPropertyName]`.
 - Option values can be string/number/bool → `InteractionOption.Value` is a `JsonElement`; read options with `interaction.GetOption("name")`.
-- Slash-command definitions live in **`discord/commands.json`** (all commands, one array). The deploy workflow PUTs that file to
+- Slash-command definitions live in **`deploy/discord-commands.json`** (all commands, one array). The deploy workflow PUTs that file to
   Discord after every deploy (bulk overwrite of global commands: commands missing from the file get removed). The step is skipped
   unless the GitHub secrets `DISCORD_APP_ID` and `DISCORD_BOT_TOKEN` are set. `DiscordCommandDefinitionsTests` fails when the file
   and the `ICommand`s / option names drift apart.
@@ -71,15 +71,17 @@ Template: `local.settings.example.json` → copy to `local.settings.json` (gitig
 
 ## Code layout & conventions
 
+- Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `tests/trevor.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`.
+
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `TimerFunction`.
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
 - `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`).
-- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h, null when unreachable), `RiotId`, routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
+- `Infrastructure/Discord/` — models, `DiscordJson`, `DiscordApiClient` (typed HttpClient), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — DTOs in `Infrastructure/Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
 - Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
-- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `discord/commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
+- **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `deploy/discord-commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
 - **AI in commands:** go through `ITrevorAi`, add the instruction to `TrevorPrompts`, and always keep a canned fallback for when it returns null (tests use `FakeAi`).
 - **Keep `readme.md` current:** every PR that adds or changes a command, a setting, a secret or the architecture updates `readme.md` in the same PR.
-- Tests: xUnit in `tests/trevor.Tests` (excluded from the app build in `trevor.csproj`). Build interactions from Discord-shaped JSON with `TestInteractions`.
+- Tests: xUnit in `tests/trevor.Tests`, referencing `src/trevor/trevor.csproj`. Build interactions from Discord-shaped JSON with `TestInteractions`.
 - Style: file-scoped namespaces, primary constructors, records, `ImplicitUsings` + `Nullable` on, zero build warnings. App source files are **UTF-8 with BOM, LF**.
 
 ## Code quality — required in every change

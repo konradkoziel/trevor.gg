@@ -54,7 +54,7 @@ More detail: [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`
 
 ## ⚙️ Configuration
 
-Azure Function App settings (locally: copy `local.settings.example.json` to `local.settings.json`):
+Azure Function App settings (locally: copy `src/trevor/local.settings.example.json` to `src/trevor/local.settings.json`):
 
 | Setting | Required | What it is |
 |---|---|---|
@@ -70,18 +70,25 @@ GitHub repository secrets used by the deploy workflow:
 | Secret | What it is |
 |---|---|
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | OIDC login to Azure |
-| `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `discord/commands.json` after each deploy (skipped if missing) |
+| `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
 
 ---
 
 ## 🛠️ Development
+
+```
+src/trevor/            Function App: Functions/, Core/, Features/, Infrastructure/, Program.cs, host.json
+tests/trevor.Tests/    xUnit tests
+deploy/                discord-commands.json (registered with Discord on every deploy)
+docs/                  roadmap, Riot API notes
+```
 
 ```bash
 dotnet build -c Release
 dotnet test -c Release --no-build
 ```
 
-- **Adding a command:** create `Features/<Name>/<Name>Command.cs` implementing `ICommand`, register it in `Program.cs`, add its definition to `discord/commands.json` and write tests in `tests/trevor.Tests`. A test fails if the JSON and the code drift apart.
+- **Adding a command:** create `src/trevor/Features/<Name>/<Name>Command.cs` implementing `ICommand`, register it in `Program.cs`, add its definition to `deploy/discord-commands.json` and write tests in `tests/trevor.Tests`. A test fails if the JSON and the code drift apart.
 - **Deploy:** open a PR to `main` (CI builds and tests it). Merging deploys to Azure and registers the slash commands automatically.
 
 ---
