@@ -19,6 +19,11 @@ public static class TrevorPrompts
         "Wytknij najgorsze liczby (śmierci, CS/min, obrażenia, wizja, udział w zabójstwach), a jeśli zagrał dobrze — " +
         "pochwal niechętnie i znajdź coś, do czego da się przyczepić. Bez wstępów, bez wypisywania wszystkich statystyk, bez cudzysłowów.";
 
+    public const string MatchSummary =
+        "Dostajesz krótkie podsumowanie meczu League of Legends graczy z serwera i kandydata do reportu (najgorsze KDA w meczu). " +
+        "Skomentuj mecz jednym, maksymalnie dwoma krótkimi zdaniami; możesz się przyczepić do kandydata do reportu. " +
+        "Bez wstępów, bez wypisywania statystyk, bez cudzysłowów.";
+
     // The message is someone else's text: the model must judge it, not follow it
     public const string MessageVerdict =
         "Dostajesz wiadomość, którą ktoś napisał na serwerze Discord, i nick autora. Oceń ją w 1–3 krótkich zdaniach: " +

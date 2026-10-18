@@ -34,6 +34,13 @@ Played well? He'll still find something.
 A message context-menu command: Trevor quotes the message and judges it (meaning, cringe level, spelling, maybe a 1–10 score).
 Works on any text message on the server; images and embeds without text get a snarky refusal instead.
 
+### `/track nick: Nick#EUNE` and `/untrack nick: Nick#EUNE`
+Puts a player on (or off) Trevor's watch list, up to 20 players. Every 5 minutes he checks their matches, and after each
+finished game posts a short card to a dedicated matches channel: result, queue, length, every tracked player's champion and KDA,
+the **report candidate** (the worst KDA in the whole match, ally or enemy) and a one-line AI comment.
+Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
+(reported match ids are remembered); remakes are skipped. Needs `DISCORD_URL_MATCHES`.
+
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
 ---
@@ -47,10 +54,12 @@ Discord ──HTTP──▶ DiscordCommands (HTTP function: signature check)
                                                                    │
                   DeferredCommands (queue function) ◀──────────────┘
                     └─ runs the command (Azure OpenAI / Riot API) → posts the answer back to Discord
+
+MatchTracker (timer, every 5 min) → tracked players (Table Storage) → new matches (Riot API) → card on the matches channel (webhook)
 ```
 
 - **Vertical slices:** each command lives in `Features/<Name>/` and implements `ICommand`; commands are picked up from DI by name.
-- **Infrastructure:** `Infrastructure/Discord` (models, signature verification, API client), `Infrastructure/Riot` (typed client with retries on 429/5xx), `Infrastructure/OpenAi` (`ITrevorAi` — Trevor's persona and prompts in one place).
+- **Infrastructure:** `Infrastructure/Discord` (models, signature verification, API client), `Infrastructure/Riot` (typed client with retries on 429/5xx), `Infrastructure/OpenAi` (`ITrevorAi` — Trevor's persona and prompts in one place), `Infrastructure/Storage` (tracked players in Azure Table Storage).
 - **Queue-based deferral:** Discord needs an answer within 3 s; slow work goes through the `deferred-commands` queue and is retried if posting to Discord fails.
 
 More detail: [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
@@ -65,9 +74,10 @@ Azure Function App settings (locally: copy `src/trevor/local.settings.example.js
 |---|---|---|
 | `DISCORD_API_KEY` | yes | Discord application **public key** (64 hex chars) |
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | yes | Azure OpenAI endpoint, key and deployment name |
-| `RIOT_API_KEY` | no | Riot API key; without it `/rank` and `/roast` say the key is missing |
+| `RIOT_API_KEY` | no | Riot API key; without it the LoL commands say the key is missing and match tracking is off |
 | `RIOT_PLATFORM` | no | Players' server, default `eun1` (EUNE); `euw1` for EUW |
-| `DISCORD_URL_OGÓLNY` | no | Webhook of the general channel for the timer message |
+| `DISCORD_URL_MATCHES` | no | Webhook of the channel for tracked players' match cards; without it tracking posts nothing |
+| `AzureWebJobsStorage` | yes (Functions host) | Storage account **connection string**: queue, timers and the `trackedplayers` / `reportedmatches` tables |
 | `DISCORD_SKIP_SIGNATURE` | local only | `true` disables Discord signature checks for local testing |
 
 GitHub repository secrets used by the deploy workflow:
@@ -102,7 +112,8 @@ dotnet test -c Release --no-build
 
 - **Azure Functions (.NET 10, isolated worker)** — webhook-based backend for Discord Interactions
 - **Azure Storage Queue** — reliable deferred responses for slow commands
-- **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict and `/roast`
+- **Azure Table Storage** — tracked players and the matches already reported
+- **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict, `/roast`, `Rate this` and match card comments
 - **Riot API** — Account-V1, League-V4, Match-V5; **Data Dragon** for champion icons
 - **Discord Interactions API** — slash commands with Ed25519 signature verification
 - **C#** — DI, options validated at startup, typed HTTP clients with resilience, xUnit tests

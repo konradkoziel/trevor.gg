@@ -4,7 +4,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "DISCORD_API_KEY": "<application public key, 64 hex chars>",
-    "DISCORD_URL_OGÓLNY": "<webhook URL of the general channel, optional>",
+    "DISCORD_URL_MATCHES": "<webhook URL of the match reports channel, optional>",
     "DISCORD_SKIP_SIGNATURE": "true",
     "OPENAI_URL": "https://<resource>.openai.azure.com/",
     "OPENAI_KEY": "<key>",

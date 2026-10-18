@@ -10,6 +10,10 @@ public sealed class FakeRiot : IRiotApiClient
     public IReadOnlyList<LeagueEntry> Entries { get; init; } = [];
     public IReadOnlyList<string> MatchIds { get; init; } = ["EUN1_1"];
     public RiotMatch? Match { get; init; }
+    // Per-player / per-match answers; fall back to MatchIds / Match when not set
+    public IReadOnlyDictionary<string, IReadOnlyList<string>>? MatchIdsByPuuid { get; init; }
+    public IReadOnlyDictionary<string, RiotMatch>? MatchesById { get; init; }
+    public ISet<string> FailingPuuids { get; init; } = new HashSet<string>();
     public Exception? Error { get; init; }
     public RiotId? RequestedId { get; private set; }
 
@@ -23,8 +27,10 @@ public sealed class FakeRiot : IRiotApiClient
         Task.FromResult(Entries);
 
     public Task<IReadOnlyList<string>> GetRecentMatchIdsAsync(string puuid, int count, CancellationToken ct = default) =>
-        Task.FromResult(MatchIds);
+        FailingPuuids.Contains(puuid)
+            ? Task.FromException<IReadOnlyList<string>>(new RiotApiException(System.Net.HttpStatusCode.InternalServerError))
+            : Task.FromResult(MatchIdsByPuuid?.GetValueOrDefault(puuid) ?? MatchIds);
 
     public Task<RiotMatch?> GetMatchAsync(string matchId, CancellationToken ct = default) =>
-        Task.FromResult(Match);
+        Task.FromResult(MatchesById is null ? Match : MatchesById.GetValueOrDefault(matchId));
 }

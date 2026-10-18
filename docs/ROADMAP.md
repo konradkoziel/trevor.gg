@@ -90,7 +90,7 @@ Discord ──HTTP──▶ DiscordInteractions (HTTP)                          
 
 ```
 src/trevor/
-  Functions/        DiscordInteractionsFunction, DeferredCommandFunction, TimerFunction
+  Functions/        DiscordInteractionsFunction, DeferredCommandFunction, MatchTrackerFunction
   Core/             ICommand, CommandRegistry, InteractionHandler
   Features/
     Ask/  Ping/  Teams/

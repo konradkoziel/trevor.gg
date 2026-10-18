@@ -14,4 +14,6 @@ public record RiotMatchParticipant(
     int NeutralMinionsKilled,
     int TotalDamageDealtToChampions,
     int VisionScore,
-    int GoldEarned);
+    int GoldEarned,
+    string? RiotIdGameName = null,
+    string? RiotIdTagline = null);
