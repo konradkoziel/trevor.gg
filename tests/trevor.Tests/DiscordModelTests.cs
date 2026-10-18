@@ -84,4 +84,17 @@ public class DiscordModelTests
         Assert.Equal("ask", copy.Data?.Name);
         Assert.Equal("kto jest noobem?", copy.GetOption("question"));
     }
+
+    // The deferred queue must keep the clicked message, or "Rate this" has nothing to rate
+    [Fact]
+    public void TargetMessage_SurvivesQueueRoundTrip()
+    {
+        var original = TestInteractions.MessageCommand("Rate this", "gg ez");
+
+        var json = JsonSerializer.Serialize(original, DiscordJson.Options);
+        var copy = JsonSerializer.Deserialize<DiscordInteraction>(json, DiscordJson.Options)!;
+
+        Assert.Equal("gg ez", copy.GetTargetMessage()?.Content);
+        Assert.Equal("Ann", copy.GetTargetMessage()?.Author?.DisplayName);
+    }
 }

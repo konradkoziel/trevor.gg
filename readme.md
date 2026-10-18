@@ -30,6 +30,10 @@ Fetches the player's **last match** and shows it as a Discord **embed**: champio
 and KDA, CS/min, damage share, kill participation, vision and gold in columns — topped off with Trevor's AI roast.
 Played well? He'll still find something.
 
+### Right-click a message → Apps → `Rate this`
+A message context-menu command: Trevor quotes the message and judges it (meaning, cringe level, spelling, maybe a 1–10 score).
+Works on any text message on the server; images and embeds without text get a snarky refusal instead.
+
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
 ---
@@ -39,7 +43,7 @@ Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is
 ```
 Discord ──HTTP──▶ DiscordCommands (HTTP function: signature check)
                     ├─ fast commands (/ping, /teams) → answered right away
-                    └─ slow commands (/ask, /rank, /roast) → "Trevor is thinking…" + message on a Storage Queue
+                    └─ slow commands (/ask, /rank, /roast, Rate this) → "Trevor is thinking…" + message on a Storage Queue
                                                                    │
                   DeferredCommands (queue function) ◀──────────────┘
                     └─ runs the command (Azure OpenAI / Riot API) → posts the answer back to Discord

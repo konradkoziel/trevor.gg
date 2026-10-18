@@ -55,5 +55,9 @@
         "required": true
       }
     ]
+  },
+  {
+    "name": "Rate this",
+    "type": 3
   }
 ]
