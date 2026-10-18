@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using trevor.Features.Lol.Common;
 using trevor.Infrastructure.Discord.Models;
 
 namespace trevor.Features.Lol.Roast;
@@ -9,8 +10,6 @@ public static class RoastMessage
     private const int WinColor = 0x2ECC71;
     private const int LossColor = 0xE74C3C;
     private const int RemakeColor = 0x95A5A6;
-    private const string Footer = "Trevor.gg · Riot API";
-    private const string VerdictTitle = "Werdykt Trevora";
     private const string RemakeText = "*Remake. Nawet nie zdążyłeś zawieść, a już po meczu.*";
 
     public static DiscordResponseData Format(string displayName, MatchStats stats, string roast, string? championIconUrl) =>
@@ -51,9 +50,9 @@ public static class RoastMessage
             Title: $"🔥 {displayName} — {s.Champion}{role}",
             Description: $"{s.Queue} · **{result}** · {s.DurationSeconds / 60} min",
             Color: color,
-            Fields: [.. StatFields(s), new DiscordEmbedField(VerdictTitle, verdict)],
+            Fields: [.. StatFields(s), new DiscordEmbedField(LolMessages.VerdictTitle, verdict)],
             Thumbnail: championIconUrl is null ? null : new DiscordEmbedThumbnail(championIconUrl),
-            Footer: new DiscordEmbedFooter(Footer)));
+            Footer: new DiscordEmbedFooter(LolMessages.EmbedFooter)));
     }
 
     private static IEnumerable<DiscordEmbedField> StatFields(MatchStats s)

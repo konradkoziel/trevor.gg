@@ -6,7 +6,7 @@ using trevor.Infrastructure.Riot;
 
 namespace trevor.Features.Lol.Rank;
 
-// /rank nick:<Riot ID> — Solo/Duo and Flex rank with Trevor's AI verdict
+// /rank nick:<Riot ID> — Solo/Duo and Flex rank as an embed, with Trevor's AI verdict
 public class RankCommand(IRiotPlayerRunner players, IRiotApiClient riot, ITrevorAi ai) : ICommand
 {
     private const int VerdictMaxTokens = 120;
@@ -23,10 +23,10 @@ public class RankCommand(IRiotPlayerRunner players, IRiotApiClient riot, ITrevor
     {
         var ranks = PlayerRanks.From(await riot.GetLeagueEntriesAsync(player.Puuid, ct));
         if (ranks.IsUnranked)
-            return DiscordResponseData.FromText(RankMessage.Unranked(player.DisplayName));
+            return RankMessage.Unranked(player.DisplayName);
 
         var verdict = await ai.ReplyAsync(TrevorPrompts.RankVerdict, RankMessage.AiInput(player.DisplayName, ranks), VerdictMaxTokens, ct)
                       ?? RankMessage.FallbackVerdict(ranks.Main!.Tier);
-        return DiscordResponseData.FromText(RankMessage.Format(player.DisplayName, ranks, verdict));
+        return RankMessage.Format(player.DisplayName, ranks, verdict);
     }
 }

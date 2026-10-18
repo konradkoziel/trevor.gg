@@ -21,7 +21,8 @@ Trevor reads your question, consults the neural gods, and answers briefly and pr
 He’s helpful by contract, but not necessarily polite.
 
 ### `/rank nick: Nick#EUNE`
-Pulls Solo/Duo and Flex rank (tier, LP, wins/losses, winrate) from the **Riot API**.
+Pulls Solo/Duo and Flex rank (tier, LP, wins/losses, winrate) from the **Riot API** and shows it as a Discord **embed**:
+the ranked emblem of your main queue (Solo/Duo, else Flex), a bar in the tier's colour, and both queues in columns.
 Trevor reads your LP and writes a fresh AI verdict on it every time.
 
 ### `/roast nick: Nick#EUNE`
