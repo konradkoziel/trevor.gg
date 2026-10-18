@@ -18,4 +18,11 @@ public static class InteractionExtensions
             _ => option.Value.GetRawText()
         };
     }
+
+    // The message a context-menu command was used on; null for slash commands
+    public static DiscordMessage? GetTargetMessage(this DiscordInteraction interaction)
+    {
+        var data = interaction.Data;
+        return data?.TargetId is { } id && data.Resolved?.Messages?.TryGetValue(id, out var message) == true ? message : null;
+    }
 }

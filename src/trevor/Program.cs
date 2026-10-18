@@ -1,4 +1,4 @@
-using Azure.AI.OpenAI;
+﻿using Azure.AI.OpenAI;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +14,7 @@ using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Rank;
 using trevor.Features.Lol.Roast;
 using trevor.Features.Ping;
+using trevor.Features.RateThis;
 using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.OpenAi;
@@ -88,6 +89,7 @@ builder.Services.AddSingleton<ICommand, TeamsCommand>();
 builder.Services.AddSingleton<ICommand, AskCommand>();
 builder.Services.AddSingleton<ICommand, RankCommand>();
 builder.Services.AddSingleton<ICommand, RoastCommand>();
+builder.Services.AddSingleton<ICommand, RateThisCommand>();
 builder.Services.AddSingleton<CommandRegistry>();
 builder.Services.AddSingleton<InteractionHandler>();
 

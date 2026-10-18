@@ -18,7 +18,6 @@ public class AskCommand(ITrevorAi ai) : ICommand
 
         var answer = await ai.ReplyAsync(string.Empty, question, ct: ct)
                      ?? "Brak odpowiedzi. Nawet ja nie mam na to słów.";
-        var quoted = string.Join("\n", question.Split('\n').Select(line => $"> {line}"));
-        return DiscordResponseData.FromText($"**🧠 Pytanie:**\n{quoted}\n{answer}");
+        return DiscordResponseData.FromText($"**🧠 Pytanie:**\n{DiscordText.Quote(question)}\n{answer}");
     }
 }
