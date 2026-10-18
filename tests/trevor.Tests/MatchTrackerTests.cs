@@ -21,7 +21,7 @@ public class MatchTrackerTests
     private static Task<int> Run(
         FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, FakeAi? ai = null, string? webhook = Webhook,
         FakeReportedMatchStore? reported = null) =>
-        new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, ai ?? new FakeAi("Komentarz."), discord,
+        new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, new FakeDataDragon(), ai ?? new FakeAi("Komentarz."), discord,
                 Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }), NullLogger<MatchTracker>.Instance)
             .PostNewMatchesAsync();
 
@@ -37,7 +37,7 @@ public class MatchTrackerTests
 
         var (url, message) = Assert.Single(discord.Webhooks);
         Assert.Equal(Webhook, url);
-        Assert.Contains("Ann#EUNE", Assert.Single(message.Embeds!).Description);
+        Assert.Contains(Assert.Single(message.Embeds!).Fields!, f => f.Name == "Ann#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-1"));
     }
 
@@ -50,8 +50,8 @@ public class MatchTrackerTests
         await Run(store, RiotWith(Match()), discord);
 
         var embed = Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!);
-        Assert.Contains("Ann#EUNE", embed.Description);
-        Assert.Contains("Bob#EUNE", embed.Description);
+        Assert.Contains(embed.Fields!, f => f.Name == "Ann#EUNE");
+        Assert.Contains(embed.Fields!, f => f.Name == "Bob#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
     }
 
@@ -70,7 +70,7 @@ public class MatchTrackerTests
         Assert.Equal(0, await Run(store, riot, discord, reported: reported));
 
         var embed = Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!);
-        Assert.Contains("Bob#EUNE", embed.Description);
+        Assert.Contains(embed.Fields!, f => f.Name == "Bob#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
     }
 
@@ -145,7 +145,7 @@ public class MatchTrackerTests
         await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, ai);
 
         Assert.Equal(TrevorPrompts.MatchSummary, ai.LastInstruction);
-        Assert.Contains("Kandydat do reportu (najgorsze KDA w meczu): Nick#EUNE", ai.LastInput);
+        Assert.Contains("Kandydat do reportu (najgorsze KDA w ich drużynie): Random#EUNE", ai.LastInput);
         var verdict = Assert.Single(discord.Webhooks).Message.Embeds![0].Fields![^1].Value;
         Assert.Equal("*Przegrana. Nikt nie jest zaskoczony.*", verdict);
     }

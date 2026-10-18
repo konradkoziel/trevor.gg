@@ -4,7 +4,7 @@ using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Features.Lol.Tracking;
 
-// A finished match from the tracked players' side, plus the match's worst player as the report candidate
+// A finished match from the tracked players' side, plus the worst player of their team as the report candidate
 public record MatchReport(string Queue, long DurationSeconds, IReadOnlyList<MatchReportPlayer> Players, MatchReportPlayer Feeder)
 {
     public bool IsRemake => MatchRules.IsRemake(DurationSeconds);
@@ -24,7 +24,8 @@ public record MatchReport(string Queue, long DurationSeconds, IReadOnlyList<Matc
         if (ours.Count == 0 || info.Participants.Count == 0)
             return null;
 
-        var feeder = info.Participants.OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).First();
+        var feeder = ReportCandidates(info.Participants, names.Keys.ToHashSet())
+            .OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).First();
         var feederName = names.GetValueOrDefault(feeder.Puuid) ?? RiotNames.RiotId(feeder) ?? feeder.ChampionName;
 
         return new MatchReport(
@@ -32,6 +33,19 @@ public record MatchReport(string Queue, long DurationSeconds, IReadOnlyList<Matc
             info.GameDuration,
             ours,
             MatchReportPlayer.From(feeder, feederName, names.ContainsKey(feeder.Puuid)));
+    }
+
+    // Randoms on the tracked players' team; the tracked players themselves when they were a full premade;
+    // the whole match when tracked players were on both teams (a custom game among friends)
+    private static IEnumerable<RiotMatchParticipant> ReportCandidates(IReadOnlyList<RiotMatchParticipant> participants, HashSet<string> tracked)
+    {
+        var teams = participants.Where(p => tracked.Contains(p.Puuid)).Select(p => p.TeamId).Distinct().ToList();
+        if (teams.Count != 1)
+            return participants;
+
+        var team = participants.Where(p => p.TeamId == teams[0]).ToList();
+        var randoms = team.Where(p => !tracked.Contains(p.Puuid)).ToList();
+        return randoms.Count > 0 ? randoms : team;
     }
 
     // Deaths count as at least one, so a deathless game ranks by kills + assists

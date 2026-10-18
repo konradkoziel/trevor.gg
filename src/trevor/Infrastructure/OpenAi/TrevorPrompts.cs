@@ -20,7 +20,7 @@ public static class TrevorPrompts
         "pochwal niechętnie i znajdź coś, do czego da się przyczepić. Bez wstępów, bez wypisywania wszystkich statystyk, bez cudzysłowów.";
 
     public const string MatchSummary =
-        "Dostajesz krótkie podsumowanie meczu League of Legends graczy z serwera i kandydata do reportu (najgorsze KDA w meczu). " +
+        "Dostajesz krótkie podsumowanie meczu League of Legends graczy z serwera i kandydata do reportu (najgorsze KDA w ich drużynie). " +
         "Skomentuj mecz jednym, maksymalnie dwoma krótkimi zdaniami; możesz się przyczepić do kandydata do reportu. " +
         "Bez wstępów, bez wypisywania statystyk, bez cudzysłowów.";
 

@@ -3,7 +3,7 @@ using trevor.Infrastructure.Discord.Models;
 
 namespace trevor.Features.Lol.Tracking;
 
-// The automatic post about a tracked match: a short embed, plus AI input and canned comments
+// The automatic post about a tracked match: an embed with a column per tracked player, plus AI input and canned comments
 public static class MatchReportMessage
 {
     private const int WinColor = 0x2ECC71;
@@ -11,22 +11,23 @@ public static class MatchReportMessage
     private const int MixedColor = 0x95A5A6;
     private const string FeederTitle = "🚨 Do reportu";
 
-    public static DiscordResponseData Format(MatchReport r, string comment) =>
+    public static DiscordResponseData Format(MatchReport r, string comment, string? feederIconUrl) =>
         DiscordResponseData.FromEmbed(new DiscordEmbed(
             Title: $"{Result(r)} · {r.Queue} · {r.DurationSeconds / 60} min",
-            Description: string.Join("\n", r.Players.Select(p => $"**{p.Name}** — {Line(p)}")),
             Color: r.Win switch { true => WinColor, false => LossColor, null => MixedColor },
             Fields:
             [
-                new DiscordEmbedField(FeederTitle, $"**{r.Feeder.Name}** — {Line(r.Feeder)}{Side(r)}"),
+                .. r.Players.Select(p => new DiscordEmbedField(p.Name, PlayerColumn(p), Inline: true)),
+                new DiscordEmbedField(FeederTitle, $"**{r.Feeder.Name}** — {Line(r.Feeder)}{Shame(r.Feeder)}"),
                 new DiscordEmbedField(LolMessages.VerdictTitle, $"*{comment}*")
             ],
+            Thumbnail: feederIconUrl is null ? null : new DiscordEmbedThumbnail(feederIconUrl),
             Footer: new DiscordEmbedFooter(LolMessages.EmbedFooter)));
 
     public static string AiInput(MatchReport r) =>
         $"Tryb: {r.Queue}, czas gry: {r.DurationSeconds / 60} min, wynik: {Result(r)}\n" +
         $"Gracze z serwera:\n{string.Join("\n", r.Players.Select(p => $"- {p.Name}: {Line(p)}"))}\n" +
-        $"Kandydat do reportu (najgorsze KDA w meczu): {r.Feeder.Name}: {Line(r.Feeder)}{Side(r)}";
+        $"Kandydat do reportu (najgorsze KDA w ich drużynie): {r.Feeder.Name}: {Line(r.Feeder)}{Shame(r.Feeder)}";
 
     // Used when the AI is unavailable
     public static string FallbackComment(MatchReport r) => r.Win switch
@@ -43,17 +44,14 @@ public static class MatchReportMessage
         null => "⚔️ Swój na swojego"
     };
 
-    private static string Line(MatchReportPlayer p)
-    {
-        var role = p.Role is null ? string.Empty : $" ({p.Role})";
-        return $"{p.Champion}{role} · {p.Kills}/{p.Deaths}/{p.Assists}";
-    }
+    // Narrow inline column: champion and role on top, KDA in bold below
+    private static string PlayerColumn(MatchReportPlayer p) =>
+        $"{p.Champion}{Role(p)}\n**{p.Kills}/{p.Deaths}/{p.Assists}**";
 
-    private static string Side(MatchReport r) => r.Feeder switch
-    {
-        { IsTracked: true } => " — swój, wstyd podwójny",
-        _ when r.Win is null => string.Empty,
-        var f when f.Win == r.Win => " (z waszej drużyny)",
-        _ => " (z drużyny wroga)"
-    };
+    private static string Line(MatchReportPlayer p) => $"{p.Champion}{Role(p)} · {p.Kills}/{p.Deaths}/{p.Assists}";
+
+    private static string Role(MatchReportPlayer p) => p.Role is null ? string.Empty : $" ({p.Role})";
+
+    // A full premade has only friends to blame
+    private static string Shame(MatchReportPlayer feeder) => feeder.IsTracked ? " — swój, wstyd podwójny" : string.Empty;
 }
