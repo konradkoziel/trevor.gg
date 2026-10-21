@@ -48,6 +48,26 @@ public class RiotApiClientTests
     }
 
     [Fact]
+    public async Task GetSummoner_UsesPlatformHost_AndReadsTheIcon()
+    {
+        var handler = new StubHandler(_ => Json("""{"puuid":"p1","profileIconId":4,"revisionDate":1,"summonerLevel":312}"""));
+
+        var summoner = await Client(handler).GetSummonerAsync("p1");
+
+        Assert.Equal("https://eun1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/p1",
+            Assert.Single(handler.Requests).RequestUri!.AbsoluteUri);
+        Assert.Equal(new RiotSummoner(4, 312), summoner);
+    }
+
+    [Fact]
+    public async Task GetSummoner_NeverPlayed_IsNull()
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        Assert.Null(await Client(handler).GetSummonerAsync("p1"));
+    }
+
+    [Fact]
     public async Task GetLeagueEntries_UsesPlatformHost_AndParsesEntries()
     {
         var handler = new StubHandler(_ => Json("""

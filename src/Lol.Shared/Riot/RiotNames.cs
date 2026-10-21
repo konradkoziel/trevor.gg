@@ -9,6 +9,10 @@ public static class RiotNames
     public static string? RiotId(RiotMatchParticipant player) =>
         string.IsNullOrEmpty(player.RiotIdGameName) ? null : $"{player.RiotIdGameName}#{player.RiotIdTagline}";
 
+    // "Name#Tag" of an Account-V1 account, as Riot spells it; null when Riot leaves the name out
+    public static string? RiotId(RiotAccount account) =>
+        string.IsNullOrEmpty(account.GameName) ? null : $"{account.GameName}#{account.TagLine}";
+
     // Match-V5 teamPosition; null when Riot doesn't assign one (ARAM, Arena)
     public static string? Role(string? teamPosition) => teamPosition switch
     {

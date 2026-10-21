@@ -66,18 +66,19 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Creates the resources on the first run, then only applies changes from infra/web.bicep
-      # Discord login stays off (503) while either secret is missing
+      # Discord login stays off (503) while either Discord secret is missing, Riot linking without RIOT_API_KEY
       - name: Create or update Azure resources
         id: infra
         env:
           DISCORD_APP_ID: ${{ secrets.DISCORD_APP_ID }}
           DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
         run: |
           outputs=$(az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --name website \
             --template-file infra/web.bicep \
-            --parameters discordClientId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" \
+            --parameters discordClientId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" riotApiKey="$RIOT_API_KEY" \
             --query properties.outputs --output json)
           for key in staticSiteName siteUrl apiName apiUrl discordRedirectUri; do
             echo "$key=$(jq -r ".$key.value" <<< "$outputs")" >> "$GITHUB_OUTPUT"

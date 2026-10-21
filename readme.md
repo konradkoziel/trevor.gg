@@ -51,7 +51,9 @@ six items in buy order, a full rune page (keystone, primary and secondary runes 
 skill order for levels 1–18 (impossible orders can't be clicked; the max order, e.g. Q > E > W, is shown).
 Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
 under **Moje buildy**, and **share** a link (`/b/<id>`): anyone can open it read-only, only you can edit or delete it.
-Next: your own stats per champion, `/build` in Trevor.
+Under **Konto** (click your name) you link your League account: enter your Riot ID, set the default profile icon the site
+shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so nobody can claim someone else's account.
+Next: your own stats per champion from the linked account, `/build` in Trevor.
 
 ---
 
@@ -105,8 +107,9 @@ GitHub repository secrets used by the deploy workflow:
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | OIDC login to Azure |
 | `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
 | `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it, with `DISCORD_APP_ID`, to the API). Without it login answers 503 |
+| `RIOT_API_KEY` | The same Riot API key the bot uses, for the website (linking League accounts). Without it linking answers 503 |
 
-The website's API settings (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, storage) are set by
+The website's API settings (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by
 `infra/web.bicep`, not by hand. The redirect URL Discord must allow (Developer Portal → OAuth2 → Redirects) is printed in the
 `Deploy website` run summary.
 

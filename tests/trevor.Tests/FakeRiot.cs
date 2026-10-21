@@ -23,6 +23,9 @@ public sealed class FakeRiot : IRiotApiClient
         return Error is null ? Task.FromResult(Account) : Task.FromException<RiotAccount?>(Error);
     }
 
+    public Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default) =>
+        Task.FromResult<RiotSummoner?>(new RiotSummoner(1, 30));
+
     public Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default) =>
         Task.FromResult(Entries);
 

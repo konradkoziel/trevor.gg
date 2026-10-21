@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Web.Api.Features.Builds;
+using Web.Api.Features.RiotAccount;
 using Web.Api.Infrastructure.Discord;
 using Web.Api.Infrastructure.Sessions;
 using Web.Api.Infrastructure.Storage;
@@ -37,6 +38,10 @@ builder.Services.AddSingleton(sp => new BlobServiceClient(sp.GetRequiredService<
 builder.Services.AddSingleton(sp => new TableServiceClient(sp.GetRequiredService<IConfiguration>()["AzureWebJobsStorage"]));
 builder.Services.AddSingleton<ISigningKeyStore, BlobSigningKeyStore>();
 builder.Services.AddSingleton<ISessionTokens, SessionTokens>();
+
+// Linked Riot accounts (Riot API key: RIOT_API_KEY, optional — without it linking answers 503)
+builder.Services.AddSingleton<IRiotLinkStore, TableRiotLinkStore>();
+builder.Services.AddSingleton(Random.Shared);
 
 // Builds
 builder.Services.AddSingleton<IBuildStore, TableBuildStore>();

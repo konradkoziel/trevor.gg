@@ -536,3 +536,51 @@ h2 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.account-link {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.account-link:hover span {
+  text-decoration: underline;
+}
+
+.panel {
+  max-width: 640px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.panel-row .search {
+  flex: 1 1 200px;
+  margin: 0;
+}
+
+.challenge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.challenge img {
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+}
+
+.challenge > div {
+  flex: 1 1 260px;
+}

@@ -21,6 +21,12 @@ public class DataDragonClient(DataDragonCdn cdn) : IDataDragon
         return version is null ? null : IconUrl(version, IconIdByChampionName.GetValueOrDefault(championName, championName));
     }
 
+    public async Task<string?> ProfileIconUrlAsync(int iconId, CancellationToken ct = default)
+    {
+        var version = await cdn.LatestVersionAsync(ct);
+        return version is null ? null : DataDragonCdn.Url(version, $"img/profileicon/{iconId}.png");
+    }
+
     public Task<IReadOnlyList<Champion>?> ChampionsAsync(CancellationToken ct = default) =>
         cdn.GetAsync<ChampionListDto, IReadOnlyList<Champion>>($"data/{DataDragonCdn.Language}/champion.json", (list, version) =>
             list.Data is not { Count: > 0 } data

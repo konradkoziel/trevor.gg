@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router'
 import { completeLogin } from './auth/session'
 import { AccountMenu } from './features/account/AccountMenu'
 import { CurrentUserProvider } from './features/account/CurrentUserProvider'
+import { AccountPage } from './pages/AccountPage'
 import { BuildPage } from './pages/BuildPage'
 import { HomePage } from './pages/HomePage'
 import { NewBuildPage } from './pages/NewBuildPage'
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/nowy/:championId" element={<NewBuildPage />} />
             <Route path="/b/:id" element={<BuildPage />} />
+            <Route path="/konto" element={<AccountPage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>

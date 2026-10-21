@@ -18,6 +18,7 @@ zużywa po 1 z obu pul. Klucz deweloperski wygasa po 24 h.
 |---|---|---|
 | `account-v1` `GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}` | Riot ID (`Nick#TAG`) → PUUID | ✅ `/rank` |
 | `league-v4` `GET /lol/league/v4/entries/by-puuid/{encryptedPUUID}` | Rangi Solo/Duo i Flex | ✅ `/rank` |
+| `summoner-v4` `GET /lol/summoner/v4/summoners/by-puuid/{encryptedPUUID}` | Ikona profilu: weryfikacja konta na stronie | ✅ strona, `/konto` |
 | `match-v5` `GET /lol/match/v5/matches/by-puuid/{puuid}/ids` | Ostatnie mecze gracza | `/roast` (#2) |
 | `match-v5` `GET /lol/match/v5/matches/{matchId}` | Statystyki meczu (KDA, CS, obrażenia) | `/roast` (#2) |
 | `spectator-v5` `GET /lol/spectator/v5/active-games/by-summoner/{encryptedPUUID}` | Czy gracz właśnie gra (pomimo nazwy przyjmuje PUUID) | pomysł: `/gra <nick>`, LFG |

@@ -14,6 +14,10 @@ param discordClientId string = ''
 @secure()
 param discordClientSecret string = ''
 
+@description('Riot API key, for linking League accounts and stats; empty leaves those off')
+@secure()
+param riotApiKey string = ''
+
 // Storage account and Function App names are global, so they get a suffix that is stable per resource group
 var suffix = uniqueString(resourceGroup().id)
 var storageName = 'trevorweb${suffix}'
@@ -138,6 +142,10 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'DISCORD_REDIRECT_URI'
           value: discordRedirectUri
+        }
+        {
+          name: 'RIOT_API_KEY'
+          value: riotApiKey
         }
         {
           name: 'SITE_URL'
