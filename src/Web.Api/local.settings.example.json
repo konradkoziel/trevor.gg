@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "RIOT_API_KEY": "<RGAPI-... optional>",
+    "RIOT_PLATFORM": "eun1"
+  },
+  "Host": {
+    "CORS": "http://localhost:5173"
+  }
+}

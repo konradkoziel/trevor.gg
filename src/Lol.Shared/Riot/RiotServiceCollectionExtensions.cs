@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Lol.Shared.Riot;
 
@@ -24,6 +25,9 @@ public static class RiotServiceCollectionExtensions
             })
             .Validate(o => RiotRouting.IsKnownPlatform(o.Platform), "RIOT_PLATFORM must be a Riot platform id, e.g. eun1 or euw1")
             .ValidateOnStart();
+
+        // Data Dragon's version cache needs a clock; an app that registered its own keeps it
+        services.TryAddSingleton(TimeProvider.System);
 
         // Callers may be singletons, so these clients can live for the whole app: rotate connections
         // in the handler instead of relying on IHttpClientFactory's handler recycling

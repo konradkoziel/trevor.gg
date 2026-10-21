@@ -44,6 +44,10 @@ Friends in the same game get one shared card, even when Riot lists the match for
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
+### 🌐 Website (work in progress)
+A React site for builds and stats. So far: a searchable champion picker (names and titles in Polish, icons from Data Dragon).
+Next: Discord login, the build creator (items, runes, skill order), your own stats per champion.
+
 ---
 
 ## 🏗️ How it works
@@ -57,11 +61,15 @@ Discord ──HTTP──▶ DiscordCommands (HTTP function: signature check)
                     └─ runs the command (Azure OpenAI / Riot API) → posts the answer back to Discord
 
 MatchTracker (timer, every 5 min) → tracked players (Table Storage) → new matches (Riot API) → card on the matches channel (webhook)
+
+Browser ──▶ Static Web App "trevor-web" (React, src/web)
+        └─fetch─▶ Function App "trevor-web-api-*" (src/Web.Api, CORS: only the site) ──▶ Data Dragon / Riot API
 ```
 
 - **Vertical slices:** each command lives in `Features/<Name>/` and implements `ICommand`; commands are picked up from DI by name.
 - **Infrastructure:** `Infrastructure/Discord` (models, signature verification, API client), `Infrastructure/OpenAi` (`ITrevorAi` — Trevor's persona and prompts in one place), `Infrastructure/Storage` (tracked players in Azure Table Storage).
 - **Shared LoL code:** `src/Lol.Shared` — Riot API typed client with retries on 429/5xx, Data Dragon, models; `AddRiot()` wires it into any app in the repo.
+- **Website:** separate resource group `trevor-web`, created from `infra/web.bicep` by its own workflow; the bot is never redeployed for a website-only change.
 - **Queue-based deferral:** Discord needs an answer within 3 s; slow work goes through the `deferred-commands` queue and is retried if posting to Discord fails.
 
 More detail: [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
@@ -98,6 +106,10 @@ src/trevor/            Function App: Functions/, Core/, Features/, Infrastructur
 src/Lol.Shared/        class library shared by the apps: Riot API client, Data Dragon, models
 tests/trevor.Tests/    xUnit tests of the bot
 tests/Lol.Shared.Tests/ xUnit tests of the shared Riot code
+src/Web.Api/           Function App with the website's API (GET /api/champions)
+tests/Web.Api.Tests/   xUnit tests of the API
+src/web/               website: React + Vite + TypeScript (npm run dev / test / lint / build)
+infra/web.bicep        Azure resources of the website
 deploy/                discord-commands.json (registered with Discord on every deploy)
 docs/                  roadmap, Riot API notes
 ```
@@ -108,7 +120,11 @@ dotnet test -c Release --no-build
 ```
 
 - **Adding a command:** create `src/trevor/Features/<Name>/<Name>Command.cs` implementing `ICommand`, register it in `Program.cs`, add its definition to `deploy/discord-commands.json` and write tests in `tests/trevor.Tests`. A test fails if the JSON and the code drift apart.
-- **Deploy:** open a PR to `main` (CI builds and tests it). Merging deploys to Azure and registers the slash commands automatically.
+- **Deploy:** open a PR to `main` (CI builds and tests the bot, the API and the site, and checks the Bicep). Merging deploys the bot
+  (`Trevor.yml`, registers the slash commands too) and, when website files changed, the website (`web.yml`: creates or updates
+  the Azure resources in `trevor-web`, then deploys the API and the site). The site's URL is in the run's summary.
+- **Website locally:** `cd src/web && npm ci && npm run dev`; with the API running (`func start` in `src/Web.Api`, settings from
+  `local.settings.example.json`) Vite proxies `/api` to it.
 
 ---
 
@@ -116,6 +132,7 @@ dotnet test -c Release --no-build
 
 - **Azure Functions (.NET 10, isolated worker)** — webhook-based backend for Discord Interactions
 - **Azure Storage Queue** — reliable deferred responses for slow commands
+- **React + Vite + TypeScript** on **Azure Static Web Apps** — the website; its API on a Flex Consumption Function App; infrastructure in **Bicep**
 - **Azure Table Storage** — tracked players and the matches already reported
 - **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict, `/roast` and `Rate this`
 - **Riot API** — Account-V1, League-V4, Match-V5; **Data Dragon** for champion icons
