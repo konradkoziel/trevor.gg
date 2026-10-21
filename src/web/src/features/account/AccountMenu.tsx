@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { LoginLink } from './LoginLink'
 import { useCurrentUser } from './useCurrentUser'
 
@@ -9,8 +10,10 @@ export function AccountMenu() {
 
   return (
     <div className="account">
-      <img src={state.user.avatarUrl} alt="" width={32} height={32} />
-      <span>{state.user.name}</span>
+      <Link to="/konto" className="account-link" title="Konto LoL">
+        <img src={state.user.avatarUrl} alt="" width={32} height={32} />
+        <span>{state.user.name}</span>
+      </Link>
       <button type="button" className="button secondary" onClick={logout}>
         Wyloguj
       </button>

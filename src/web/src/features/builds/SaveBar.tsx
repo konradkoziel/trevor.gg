@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { deleteBuild, saveBuild } from '../../api/builds'
-import { ApiRequestError, UnauthorizedError } from '../../api/client'
+import { errorText } from '../../api/errorText'
 import { LoginLink } from '../account/LoginLink'
 import { useCurrentUser } from '../account/useCurrentUser'
 import type { Build } from './build'
@@ -94,8 +94,4 @@ function StatusText({ status }: { status: Status }) {
   }
 }
 
-function describe(error: unknown): string {
-  if (error instanceof UnauthorizedError) return 'Sesja wygasła. Zaloguj się jeszcze raz.'
-  if (error instanceof ApiRequestError) return error.message
-  return 'Nie udało się zapisać. Spróbuj jeszcze raz.'
-}
+const describe = (error: unknown) => errorText(error, 'Nie udało się zapisać. Spróbuj jeszcze raz.')

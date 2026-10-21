@@ -68,7 +68,8 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
 Website API (`src/Web.Api`, template `src/Web.Api/local.settings.example.json`): all set by `infra/web.bicep`, never by hand.
 `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` (from the GitHub secrets `DISCORD_APP_ID` / `DISCORD_CLIENT_SECRET`),
 `DISCORD_REDIRECT_URI` (`https://<api>.azurewebsites.net/api/auth/discord/callback`, must also be in the Developer Portal under
-OAuth2 → Redirects), `SITE_URL`. All optional: without them only login is off (503).
+OAuth2 → Redirects), `SITE_URL`, `RIOT_API_KEY` (from the GitHub secret of the same name; one Riot key shared by both apps, so their
+rate limits add up). All optional: without them only login / Riot account linking are off (503).
 
 ## Discord Interactions — gotchas learned the hard way
 
@@ -110,7 +111,10 @@ OAuth2 → Redirects), `SITE_URL`. All optional: without them only login is off 
   summoner spells), `Auth` → Discord login, `Account` → `GET /api/me`; builds CRUD: `POST /api/builds`, `GET|PUT|DELETE /api/builds/{id}` (GET public,
   PUT/DELETE owner only), `GET /api/me/builds`. `BuildValidator` re-checks every build against the patch and the game's rules
   (`SkillOrderRules` mirrors `src/web/src/features/builds/skillOrder.ts` — change both together). Builds are stored by
-  `Infrastructure/Storage/TableBuildStore` in table `builds` of the API's storage (PartitionKey = build id, the build as JSON); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
+  `Infrastructure/Storage/TableBuildStore` in table `builds` of the API's storage (PartitionKey = build id, the build as JSON);
+  `RiotAccount` → link a League account: `POST /api/me/riot/challenge` (Riot ID → a default profile icon 0-28 to set, 15 min),
+  `POST /api/me/riot/verify` (Summoner-V4 icon check), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id,
+  rows `link` / `challenge`); Riot failures become 503 with a message through `RiotCalls`; `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader), `src/features/<name>/` components;
   rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
   component per route of `react-router` (`/`, `/nowy/:championId`, `/b/:id`); `CurrentUserProvider` shares the logged-in user),
