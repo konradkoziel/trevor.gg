@@ -1,4 +1,4 @@
-using Lol.Shared.Riot;
+﻿using Lol.Shared.Riot;
 using Lol.Shared.Riot.Models;
 
 namespace Web.Api.Tests;
@@ -17,8 +17,25 @@ public sealed class FakeRiot : IRiotApiClient
     public Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default) =>
         Error is null ? Task.FromResult(Account) : Task.FromException<RiotAccount?>(Error);
 
+    public HashSet<string> FailingPuuids { get; } = [];
+    public int FreeRotationCalls { get; private set; }
+
     public Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default) =>
-        Error is null ? Task.FromResult(Summoner) : Task.FromException<RiotSummoner?>(Error);
+        Error is null && !FailingPuuids.Contains(puuid)
+            ? Task.FromResult(Summoner)
+            : Task.FromException<RiotSummoner?>(Error ?? new RiotApiException(System.Net.HttpStatusCode.InternalServerError));
+
+    public IReadOnlyList<int> FreeChampionKeys { get; set; } = [];
+    public Dictionary<string, IReadOnlyList<ChampionMastery>> Masteries { get; } = new();
+
+    public Task<IReadOnlyList<int>> GetFreeChampionKeysAsync(CancellationToken ct = default)
+    {
+        FreeRotationCalls++;
+        return Task.FromResult(FreeChampionKeys);
+    }
+
+    public Task<IReadOnlyList<ChampionMastery>> GetChampionMasteriesAsync(string puuid, CancellationToken ct = default) =>
+        Task.FromResult(Masteries.GetValueOrDefault(puuid) ?? []);
 
     public Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<LeagueEntry>>([]);

@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Web.Api.Features.Bot;
 using Web.Api.Features.Builds;
+using Web.Api.Features.Home;
 using Web.Api.Features.RiotAccount;
 using Web.Api.Features.Stats;
 using Web.Api.Infrastructure.Discord;
@@ -53,6 +54,10 @@ builder.Services.AddSingleton<MatchHistory>();
 // Builds
 builder.Services.AddSingleton<IBuildStore, TableBuildStore>();
 builder.Services.AddSingleton<BuildValidator>();
+
+// Home page: singletons so their caches are shared
+builder.Services.AddSingleton<FreeRotation>();
+builder.Services.AddSingleton<Leaderboard>();
 
 // Endpoints for the bot (/api/bot/...), behind the shared BOT_API_KEY
 builder.Services.AddOptions<BotApiOptions>()
