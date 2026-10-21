@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Champion } from './api/champions'
 import { completeLogin } from './auth/session'
 import { AccountMenu } from './features/account/AccountMenu'
+import { BuildEditor } from './features/builds/BuildEditor'
 import { ChampionPicker } from './features/champions/ChampionPicker'
 
 // Before the first render, so the account menu already sees a token that just arrived
@@ -29,17 +30,15 @@ export default function App() {
             </button>
           </p>
         )}
-        {champion && (
-          <section className="selected-panel">
-            <img src={champion.iconUrl} alt="" width={96} height={96} />
-            <div>
-              <h2>{champion.name}</h2>
-              <p className="muted">{champion.title}</p>
-              <p>Kreator buildów już wkrótce. Na razie zapamiętaj: full damage i modlitwa.</p>
-            </div>
-          </section>
+        {champion ? (
+          // key: a new champion starts a new build
+          <BuildEditor key={champion.id} champion={champion} onChangeChampion={() => setChampion(undefined)} />
+        ) : (
+          <>
+            <h2 className="page-title">Wybierz championa, któremu zrobisz build</h2>
+            <ChampionPicker onSelect={setChampion} />
+          </>
         )}
-        <ChampionPicker selectedId={champion?.id} onSelect={setChampion} />
       </main>
     </>
   )

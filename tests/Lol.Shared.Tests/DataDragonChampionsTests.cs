@@ -39,7 +39,7 @@ public class DataDragonChampionsTests
         """;
 
     private static DataDragonClient Client(RoutingHandler handler, FakeTimeProvider? time = null) =>
-        new(new HttpClient(handler), time ?? new FakeTimeProvider(), NullLogger<DataDragonClient>.Instance);
+        new(new DataDragonCdn(new HttpClient(handler), time ?? new FakeTimeProvider(), NullLogger<DataDragonCdn>.Instance));
 
     [Fact]
     public async Task Champions_AreSortedByName_WithIconsFromTheirId()

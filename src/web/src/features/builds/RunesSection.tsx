@@ -1,0 +1,102 @@
+import type { RuneTree } from '../../api/buildData'
+import { minorRows, selectPrimaryRune, selectPrimaryTree, selectSecondaryRune, selectSecondaryTree, type RunePage } from './runes'
+
+interface Props {
+  trees: RuneTree[]
+  page: RunePage
+  onChange: (page: RunePage) => void
+}
+
+export function RunesSection({ trees, page, onChange }: Props) {
+  const primary = trees.find((t) => t.id === page.primaryTreeId)
+  const secondary = trees.find((t) => t.id === page.secondaryTreeId)
+
+  return (
+    <section className="editor-section">
+      <h3>Runy</h3>
+      <div className="rune-columns">
+        <div>
+          <TreeTabs trees={trees} selectedId={page.primaryTreeId} onSelect={(id) => onChange(selectPrimaryTree(page, id))} />
+          {primary ? (
+            primary.slots.map((row, rowIndex) => (
+              <RuneRow
+                key={rowIndex}
+                runes={row}
+                keystone={rowIndex === 0}
+                isSelected={(id) => page.primary[rowIndex] === id}
+                onSelect={(id) => onChange(selectPrimaryRune(page, rowIndex, id))}
+              />
+            ))
+          ) : (
+            <p className="muted">Wybierz główną ścieżkę.</p>
+          )}
+        </div>
+        <div>
+          <TreeTabs
+            trees={trees.filter((t) => t.id !== page.primaryTreeId)}
+            selectedId={page.secondaryTreeId}
+            onSelect={(id) => onChange(selectSecondaryTree(page, id))}
+          />
+          {secondary ? (
+            minorRows.map((rowIndex) => (
+              <RuneRow
+                key={rowIndex}
+                runes={secondary.slots[rowIndex] ?? []}
+                isSelected={(id) => page.secondary.some((r) => r.runeId === id)}
+                onSelect={(id) => onChange(selectSecondaryRune(page, rowIndex, id))}
+              />
+            ))
+          ) : (
+            <p className="muted">I poboczną. Dwie runy z różnych rzędów.</p>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TreeTabs({ trees, selectedId, onSelect }: { trees: RuneTree[]; selectedId: number | null; onSelect: (id: number) => void }) {
+  return (
+    <div className="tree-tabs">
+      {trees.map((tree) => (
+        <button
+          key={tree.id}
+          type="button"
+          className={tree.id === selectedId ? 'tree-tab selected' : 'tree-tab'}
+          onClick={() => onSelect(tree.id)}
+          title={tree.name}
+        >
+          <img src={tree.iconUrl} alt="" width={28} height={28} />
+          <span>{tree.name}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+interface RuneRowProps {
+  runes: RuneTree['slots'][number]
+  keystone?: boolean
+  isSelected: (runeId: number) => boolean
+  onSelect: (runeId: number) => void
+}
+
+function RuneRow({ runes, keystone = false, isSelected, onSelect }: RuneRowProps) {
+  const size = keystone ? 52 : 36
+  return (
+    <div className="rune-row">
+      {runes.map((rune) => (
+        <button
+          key={rune.id}
+          type="button"
+          className={isSelected(rune.id) ? 'rune selected' : 'rune'}
+          onClick={() => onSelect(rune.id)}
+          title={`${rune.name}\n\n${rune.description}`}
+          aria-pressed={isSelected(rune.id)}
+        >
+          <img src={rune.iconUrl} alt={rune.name} width={size} height={size} />
+        </button>
+      ))}
+    </div>
+  )
+}

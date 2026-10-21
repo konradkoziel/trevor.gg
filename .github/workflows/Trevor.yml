@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
-    # Website-only changes deploy through web.yml and leave the bot alone
+    # Website-only changes deploy through web.yml and leave the bot alone; docs change nothing that runs
     paths-ignore:
+      - '**.md'
+      - 'docs/**'
       - 'src/web/**'
       - 'src/Web.Api/**'
       - 'tests/Web.Api.Tests/**'
