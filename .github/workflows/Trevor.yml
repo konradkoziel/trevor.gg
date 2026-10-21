@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    # Website-only changes deploy through web.yml and leave the bot alone
+    paths-ignore:
+      - 'src/web/**'
+      - 'src/Web.Api/**'
+      - 'tests/Web.Api.Tests/**'
+      - 'infra/**'
+      - '.github/workflows/web.yml'
   workflow_dispatch:
 jobs:
   build-and-deploy:

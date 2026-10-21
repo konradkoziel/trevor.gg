@@ -2,6 +2,8 @@
 
 Discord bot "Trevor" (Trevor Philips persona) for a private friends' server, mostly League of Legends.
 Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure OpenAI + Azure Storage Queue + Riot API.
+The same repo holds the **website** (builds and stats): React + Vite + TypeScript in `src/web`, its API in `src/Web.Api`
+(a separate Function App), Azure resources in `infra/web.bicep`.
 
 ## Language and tone
 
@@ -27,14 +29,24 @@ Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure Ope
 ## Deploy flow — read before pushing
 
 - **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → test → `dotnet publish src/trevor/trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
+- **The website deploys separately** (`.github/workflows/web.yml`, only when `src/web`, `src/Web.Api`, `src/Lol.Shared`, `infra` or the
+  workflow change): tests → `az deployment group create` of `infra/web.bicep` into resource group `trevor-web` (Static Web App
+  `trevor-web` on the Free plan, Flex Consumption Function App `trevor-web-api-*`, its own storage and Application Insights) →
+  API package → `npm run build` with `VITE_API_URL` → Static Web App upload. `Trevor.yml` ignores website-only paths.
+  The deploy identity (`AZURE_CLIENT_ID`) has Contributor on `trevor-web` only. Static Web Apps don't exist in Poland Central,
+  hence `staticSiteLocation = westeurope`. Managed SWA functions lag behind .NET releases, which is why the API is its own Function App.
 - Work on a branch, open a PR to `main`. `.github/workflows/build.yml` builds and runs the tests on every PR.
 - **Local build in cloud sessions:** the dotnet-install script is blocked, but Ubuntu's own package works:
   `apt-get update && apt-get install -y dotnet-sdk-10.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
+  Website: `cd src/web && npm ci && npm run lint && npm test && npm run build` (npm is reachable). Bicep CLI: download
+  `https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64`, then `bicep build infra/web.bicep` / `bicep lint`.
+  Data Dragon (`ddragon.leagueoflegends.com`) is blocked in cloud sessions: screenshot the site with a mocked `/api`.
 - Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `src/trevor/bin/Release/net10.0/functions.metadata` instead.
 - After merge, check the `Deploy Azure Function` run via GitHub Actions; the person you work for tests on Discord (Claude has no Discord access).
 - The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
   stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
-- Infrastructure is not in code. Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were created by hand.
+- The bot's infrastructure is not in code: its Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were
+  created by hand. The website's are in `infra/web.bicep`; change them there, never in the Portal.
 
 ## Configuration (env vars / Azure app settings)
 
@@ -74,13 +86,15 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
 ## Code layout & conventions
 
 - Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `src/Lol.Shared/`
-  (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
+  (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `src/Web.Api/` + `tests/Web.Api.Tests/` (website API: `Features/<Name>/` with one HTTP function each, e.g. `Champions` → `GET /api/champions`),
+  `src/web/` (React site: `src/api/` typed fetch helpers, `src/features/<name>/` components, hooks and pure functions with vitest tests),
+  `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
 - `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `RateThis` (message context menu), `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Tracking` (`TrackCommand`/`UntrackCommand`, `MatchTracker` posting via webhook (no AI), `MatchReport` (MVP and report candidate = best / worst KDA of the tracked players' team, tracked players included) + `MatchReportMessage`, `ITrackedPlayerStore`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`, `MatchRules`).
 - `Infrastructure/Discord/` — models, `DiscordJson`, `IDiscordApiClient`/`DiscordApiClient` (typed HttpClient: followups and webhooks), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/Storage/` — `TableTrackedPlayerStore` (Azure Table Storage, table created on first use). `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions).
-- `src/Lol.Shared/Riot/` (namespace `Lol.Shared.Riot`; available methods and rate limits for our key: `docs/riot-api.md`) — `AddRiot()` registers options and clients for any app, DTOs in `Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
+- `src/Lol.Shared/Riot/` (namespace `Lol.Shared.Riot`; available methods and rate limits for our key: `docs/riot-api.md`) — `AddRiot()` registers options and clients for any app, DTOs in `Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs and the champion list in Polish; latest patch version cached 6 h, the list per patch, per app instance; null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
 - Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see `RiotServiceCollectionExtensions.AddRiot` (`PooledConnectionLifetime` + infinite handler lifetime).
 - **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `deploy/discord-commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
 - **AI in commands:** go through `ITrevorAi`, add the instruction to `TrevorPrompts`, and always keep a canned fallback for when it returns null (tests use `FakeAi`).
