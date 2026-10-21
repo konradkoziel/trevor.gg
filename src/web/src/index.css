@@ -188,3 +188,274 @@ h2 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.page-title {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.editor-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+}
+
+.editor-header img {
+  border-radius: 8px;
+}
+
+.editor-title {
+  flex: 1 1 240px;
+}
+
+.editor-title .search {
+  margin: 8px 0 0;
+}
+
+.editor-section {
+  margin-top: 20px;
+}
+
+.editor-section h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.item-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 12px;
+  list-style: none;
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  min-height: 64px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
+.slot.filled {
+  padding: 6px 0 4px;
+  border-style: solid;
+  border-color: var(--gold);
+}
+
+.slot-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.slot-actions button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.slot-actions button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.item-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.item-filters .search {
+  flex: 1;
+  margin: 0;
+}
+
+.checkbox {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+  max-height: 320px;
+  padding: 0;
+  margin: 12px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.icon-button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.icon-button .gold {
+  color: var(--gold);
+}
+
+.rune-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.tree-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tree-tab {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 8px 4px 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tree-tab.selected {
+  color: var(--text);
+  border-color: var(--gold);
+}
+
+.rune-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rune {
+  padding: 2px;
+  cursor: pointer;
+  filter: grayscale(1) brightness(0.7);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 50%;
+}
+
+.rune img {
+  display: block;
+  border-radius: 50%;
+}
+
+.rune:hover,
+.rune.selected {
+  filter: none;
+}
+
+.rune.selected {
+  border-color: var(--gold);
+}
+
+.skill-grid-scroll {
+  overflow-x: auto;
+}
+
+.skill-grid {
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+
+.skill-grid th {
+  min-width: 28px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.skill-grid th img {
+  display: block;
+  border-radius: 4px;
+}
+
+.skill-cell {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--bg);
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.skill-cell:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.skill-cell.chosen {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.editor-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}

@@ -1,7 +1,7 @@
 import type { Champion } from '../../api/champions'
 
 // Ignores case, accents and punctuation, so "kaisa" finds Kai'Sa
-const normalize = (text: string) =>
+export const normalizeSearch = (text: string) =>
   text
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
@@ -9,7 +9,7 @@ const normalize = (text: string) =>
     .toLowerCase()
 
 export function filterChampions(champions: Champion[], query: string): Champion[] {
-  const needle = normalize(query)
+  const needle = normalizeSearch(query)
   if (!needle) return champions
-  return champions.filter((c) => normalize(c.name).includes(needle))
+  return champions.filter((c) => normalizeSearch(c.name).includes(needle))
 }
