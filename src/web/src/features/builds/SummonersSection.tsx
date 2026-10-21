@@ -3,15 +3,19 @@ import type { SummonerSpell } from '../../api/buildData'
 interface Props {
   spells: SummonerSpell[]
   selected: string[]
+  // Shared build of someone else: only the chosen spells
+  readOnly?: boolean
   onToggle: (spellId: string) => void
 }
 
-export function SummonersSection({ spells, selected, onToggle }: Props) {
+export function SummonersSection({ spells, selected, readOnly = false, onToggle }: Props) {
+  const shown = readOnly ? spells.filter((s) => selected.includes(s.id)) : spells
+
   return (
     <section className="editor-section">
       <h3>Czary przywoływacza</h3>
       <div className="rune-row">
-        {spells.map((spell) => (
+        {shown.map((spell) => (
           <button
             key={spell.id}
             type="button"

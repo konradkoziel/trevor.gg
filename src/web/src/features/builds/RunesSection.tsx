@@ -1,61 +1,91 @@
 import type { RuneTree } from '../../api/buildData'
-import { minorRows, selectPrimaryRune, selectPrimaryTree, selectSecondaryRune, selectSecondaryTree, type RunePage } from './runes'
+import {
+  minorRows,
+  selectPrimaryRune,
+  selectPrimaryTree,
+  selectSecondaryRune,
+  selectSecondaryTree,
+  type RunePage,
+} from './runes'
 
 interface Props {
   trees: RuneTree[]
   page: RunePage
+  // Shared build of someone else: only the chosen trees, no hints
+  readOnly?: boolean
   onChange: (page: RunePage) => void
 }
 
-export function RunesSection({ trees, page, onChange }: Props) {
+export function RunesSection({ trees, page, readOnly = false, onChange }: Props) {
   const primary = trees.find((t) => t.id === page.primaryTreeId)
   const secondary = trees.find((t) => t.id === page.secondaryTreeId)
+  const shown = (candidates: RuneTree[], selectedId: number | null) =>
+    readOnly ? candidates.filter((t) => t.id === selectedId) : candidates
+
+  if (readOnly && !primary && !secondary)
+    return (
+      <section className="editor-section">
+        <h3>Runy</h3>
+        <p className="muted">Bez run. Odważnie.</p>
+      </section>
+    )
 
   return (
     <section className="editor-section">
       <h3>Runy</h3>
       <div className="rune-columns">
         <div>
-          <TreeTabs trees={trees} selectedId={page.primaryTreeId} onSelect={(id) => onChange(selectPrimaryTree(page, id))} />
-          {primary ? (
-            primary.slots.map((row, rowIndex) => (
-              <RuneRow
-                key={rowIndex}
-                runes={row}
-                keystone={rowIndex === 0}
-                isSelected={(id) => page.primary[rowIndex] === id}
-                onSelect={(id) => onChange(selectPrimaryRune(page, rowIndex, id))}
-              />
-            ))
-          ) : (
-            <p className="muted">Wybierz główną ścieżkę.</p>
-          )}
+          <TreeTabs
+            trees={shown(trees, page.primaryTreeId)}
+            selectedId={page.primaryTreeId}
+            onSelect={(id) => onChange(selectPrimaryTree(page, id))}
+          />
+          {primary
+            ? primary.slots.map((row, rowIndex) => (
+                <RuneRow
+                  key={rowIndex}
+                  runes={row}
+                  keystone={rowIndex === 0}
+                  isSelected={(id) => page.primary[rowIndex] === id}
+                  onSelect={(id) => onChange(selectPrimaryRune(page, rowIndex, id))}
+                />
+              ))
+            : !readOnly && <p className="muted">Wybierz główną ścieżkę.</p>}
         </div>
         <div>
           <TreeTabs
-            trees={trees.filter((t) => t.id !== page.primaryTreeId)}
+            trees={shown(
+              trees.filter((t) => t.id !== page.primaryTreeId),
+              page.secondaryTreeId,
+            )}
             selectedId={page.secondaryTreeId}
             onSelect={(id) => onChange(selectSecondaryTree(page, id))}
           />
-          {secondary ? (
-            minorRows.map((rowIndex) => (
-              <RuneRow
-                key={rowIndex}
-                runes={secondary.slots[rowIndex] ?? []}
-                isSelected={(id) => page.secondary.some((r) => r.runeId === id)}
-                onSelect={(id) => onChange(selectSecondaryRune(page, rowIndex, id))}
-              />
-            ))
-          ) : (
-            <p className="muted">I poboczną. Dwie runy z różnych rzędów.</p>
-          )}
+          {secondary
+            ? minorRows.map((rowIndex) => (
+                <RuneRow
+                  key={rowIndex}
+                  runes={secondary.slots[rowIndex] ?? []}
+                  isSelected={(id) => page.secondary.some((r) => r.runeId === id)}
+                  onSelect={(id) => onChange(selectSecondaryRune(page, rowIndex, id))}
+                />
+              ))
+            : !readOnly && <p className="muted">I poboczną. Dwie runy z różnych rzędów.</p>}
         </div>
       </div>
     </section>
   )
 }
 
-function TreeTabs({ trees, selectedId, onSelect }: { trees: RuneTree[]; selectedId: number | null; onSelect: (id: number) => void }) {
+function TreeTabs({
+  trees,
+  selectedId,
+  onSelect,
+}: {
+  trees: RuneTree[]
+  selectedId: number | null
+  onSelect: (id: number) => void
+}) {
   return (
     <div className="tree-tabs">
       {trees.map((tree) => (
