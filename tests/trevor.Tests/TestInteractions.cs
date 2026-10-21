@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.Discord.Models;
 
@@ -18,6 +18,7 @@ public static class TestInteractions
                 {
                   "type": 2, "id": "123", "application_id": "app", "token": "tok",
                   "channel_id": "chan", "guild_id": "guild",
+                  "member": { "user": { "id": "user-1", "username": "ann_123", "global_name": "Ann" } },
                   "data": { "id": "cmd", "name": "{{name}}", "type": 1, "options": {{optionsJson}} }
                 }
                 """);

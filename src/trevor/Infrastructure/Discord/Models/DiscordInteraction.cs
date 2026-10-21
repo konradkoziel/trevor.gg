@@ -9,5 +9,8 @@ public record DiscordInteraction(
     [property: JsonPropertyName("application_id")] string ApplicationId,
     [property: JsonPropertyName("data")] InteractionData? Data,
     [property: JsonPropertyName("channel_id")] string? ChannelId,
-    [property: JsonPropertyName("guild_id")] string? GuildId
+    [property: JsonPropertyName("guild_id")] string? GuildId,
+    // On a server Discord sends the caller as member.user, in a DM as user
+    [property: JsonPropertyName("member")] InteractionMember? Member = null,
+    [property: JsonPropertyName("user")] DiscordUser? User = null
 );

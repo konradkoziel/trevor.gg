@@ -11,6 +11,7 @@ using System.ClientModel;
 using Lol.Shared.Riot;
 using trevor.Core;
 using trevor.Features.Ask;
+using trevor.Features.Lol.Builds;
 using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Rank;
 using trevor.Features.Lol.Roast;
@@ -21,6 +22,7 @@ using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Storage;
+using trevor.Infrastructure.Web;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -53,6 +55,14 @@ builder.Services.AddOptions<OpenAiOptions>()
 
 builder.Services.AddRiot();
 
+builder.Services.AddOptions<WebApiOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        options.Url = config["WEB_API_URL"];
+        options.Key = config["WEB_API_KEY"];
+        options.SiteUrl = config["WEB_SITE_URL"];
+    });
+
 builder.Services.AddOptions<StorageOptions>()
     .Configure<IConfiguration>((options, config) => options.ConnectionString = config["AzureWebJobsStorage"]);
 
@@ -66,6 +76,10 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<ITrevorAi, TrevorAi>();
 builder.Services.AddSingleton<IRiotPlayerRunner, RiotPlayerRunner>();
 builder.Services.AddSingleton<IDiscordSignatureVerifier, DiscordSignatureVerifier>();
+// Captured by singleton commands, so the handler lives for the whole app and rotates its connections itself
+builder.Services.AddHttpClient<IWebApiClient, WebApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10))
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
+    .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
 builder.Services.AddHttpClient<IDiscordApiClient, DiscordApiClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<StorageTables>();
@@ -81,6 +95,7 @@ builder.Services.AddSingleton<ICommand, RoastCommand>();
 builder.Services.AddSingleton<ICommand, RateThisCommand>();
 builder.Services.AddSingleton<ICommand, TrackCommand>();
 builder.Services.AddSingleton<ICommand, UntrackCommand>();
+builder.Services.AddSingleton<ICommand, BuildCommand>();
 builder.Services.AddSingleton<CommandRegistry>();
 builder.Services.AddSingleton<InteractionHandler>();
 

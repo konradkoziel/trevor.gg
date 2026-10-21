@@ -17,7 +17,7 @@ public class RankCommandTests
     ];
 
     private static Task<DiscordResponseData> Run(FakeRiot riot, FakeAi? ai = null) =>
-        new RankCommand(new RiotPlayerRunner(riot), riot, ai ?? new FakeAi()).ExecuteAsync(
+        new RankCommand(new RiotPlayerRunner(riot, new FakeWebApi()), riot, ai ?? new FakeAi()).ExecuteAsync(
             TestInteractions.Command("rank", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""));
 
     private static async Task<DiscordEmbed> RunEmbed(FakeRiot riot, FakeAi? ai = null) =>

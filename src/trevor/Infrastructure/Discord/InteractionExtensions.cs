@@ -19,6 +19,9 @@ public static class InteractionExtensions
         };
     }
 
+    // Discord id of whoever used the command
+    public static string? GetUserId(this DiscordInteraction interaction) => interaction.Member?.User?.Id ?? interaction.User?.Id;
+
     // The message a context-menu command was used on; null for slash commands
     public static DiscordMessage? GetTargetMessage(this DiscordInteraction interaction)
     {

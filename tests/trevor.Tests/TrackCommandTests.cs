@@ -12,13 +12,13 @@ public class TrackCommandTests
     private static async Task<string> Track(FakeTrackedPlayerStore store, FakeRiot? riot = null, string? webhook = "https://discord.test/webhook")
     {
         riot ??= new FakeRiot { MatchIds = ["EUN1_9"] };
-        var command = new TrackCommand(new RiotPlayerRunner(riot), riot, store,
+        var command = new TrackCommand(new RiotPlayerRunner(riot, new FakeWebApi()), riot, store,
             Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }));
         return (await command.ExecuteAsync(Nick("track"))).Content!;
     }
 
     private static async Task<string> Untrack(FakeTrackedPlayerStore store) =>
-        (await new UntrackCommand(new RiotPlayerRunner(new FakeRiot()), store).ExecuteAsync(Nick("untrack"))).Content!;
+        (await new UntrackCommand(new RiotPlayerRunner(new FakeRiot(), new FakeWebApi()), store).ExecuteAsync(Nick("untrack"))).Content!;
 
     private static DiscordInteraction Nick(string command) =>
         TestInteractions.Command(command, """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]""");

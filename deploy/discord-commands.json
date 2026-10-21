@@ -37,9 +37,9 @@
     "options": [
       {
         "name": "nick",
-        "description": "Riot ID z tagiem, np. Nick#EUNE",
+        "description": "Riot ID z tagiem, np. Nick#EUNE. Puste = Twoje konto podpięte na stronie",
         "type": 3,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -50,9 +50,9 @@
     "options": [
       {
         "name": "nick",
-        "description": "Riot ID z tagiem, np. Nick#EUNE",
+        "description": "Riot ID z tagiem, np. Nick#EUNE. Puste = Twoje konto podpięte na stronie",
         "type": 3,
-        "required": true
+        "required": false
       }
     ]
   },
@@ -85,5 +85,18 @@
   {
     "name": "Rate this",
     "type": 3
+  },
+  {
+    "name": "build",
+    "type": 1,
+    "description": "Twój build na championa, zapisany na stronie Trevora",
+    "options": [
+      {
+        "name": "champion",
+        "description": "Champion, np. Yasuo",
+        "type": 3,
+        "required": true
+      }
+    ]
   }
 ]
