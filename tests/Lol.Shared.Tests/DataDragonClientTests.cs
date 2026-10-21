@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
-using trevor.Infrastructure.Riot;
+using Lol.Shared.Riot;
 
-namespace trevor.Tests;
+namespace Lol.Shared.Tests;
 
 public class DataDragonClientTests
 {

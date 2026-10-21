@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace Lol.Shared.Riot;
 
 // https://developer.riotgames.com/docs/lol#routing-values
 public static class RiotRouting

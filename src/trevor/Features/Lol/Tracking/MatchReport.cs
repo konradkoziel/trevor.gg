@@ -1,6 +1,6 @@
-﻿using trevor.Features.Lol.Common;
-using trevor.Infrastructure.Riot;
-using trevor.Infrastructure.Riot.Models;
+﻿using Lol.Shared.Riot.Models;
+using Lol.Shared.Riot;
+using trevor.Features.Lol.Common;
 
 namespace trevor.Features.Lol.Tracking;
 

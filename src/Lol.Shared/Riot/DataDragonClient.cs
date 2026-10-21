@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 
-namespace trevor.Infrastructure.Riot;
+namespace Lol.Shared.Riot;
 
 // https://developer.riotgames.com/docs/lol#data-dragon
 public class DataDragonClient(HttpClient httpClient, TimeProvider time, ILogger<DataDragonClient> logger) : IDataDragon

@@ -1,6 +1,6 @@
-﻿using trevor.Infrastructure.Riot.Models;
+﻿using Lol.Shared.Riot.Models;
 
-namespace trevor.Infrastructure.Riot;
+namespace Lol.Shared.Riot;
 
 // Human-readable names for Riot's ids and enums
 public static class RiotNames

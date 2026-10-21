@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Lol.Shared.Riot;
 using trevor.Infrastructure.Discord;
-using trevor.Infrastructure.Riot;
 
 namespace trevor.Features.Lol.Tracking;
 

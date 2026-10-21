@@ -1,7 +1,7 @@
-﻿using trevor.Infrastructure.Discord;
+﻿using Lol.Shared.Riot.Models;
+using Lol.Shared.Riot;
+using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.Discord.Models;
-using trevor.Infrastructure.Riot;
-using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Features.Lol.Common;
 

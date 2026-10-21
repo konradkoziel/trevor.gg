@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Lol.Shared.Riot.Models;
 using trevor.Features.Lol.Tracking;
 using trevor.Infrastructure.Discord;
-using trevor.Infrastructure.Riot.Models;
 using static trevor.Tests.TrackingTestData;
 
 namespace trevor.Tests;

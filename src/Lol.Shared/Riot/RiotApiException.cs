@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace trevor.Infrastructure.Riot;
+namespace Lol.Shared.Riot;
 
 public class RiotApiException(HttpStatusCode statusCode)
     : Exception($"Riot API returned {(int)statusCode}")

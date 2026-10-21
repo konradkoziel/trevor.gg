@@ -1,10 +1,10 @@
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Options;
-using trevor.Infrastructure.Riot;
-using trevor.Infrastructure.Riot.Models;
+using Lol.Shared.Riot;
+using Lol.Shared.Riot.Models;
 
-namespace trevor.Tests;
+namespace Lol.Shared.Tests;
 
 public class RiotApiClientTests
 {

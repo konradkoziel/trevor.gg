@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace Lol.Shared.Riot;
 
 // Static game assets Data Dragon doesn't host, served by CommunityDragon's mirror of the game client
 public static class CommunityDragon

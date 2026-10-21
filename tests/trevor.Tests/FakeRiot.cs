@@ -1,5 +1,5 @@
-using trevor.Infrastructure.Riot;
-using trevor.Infrastructure.Riot.Models;
+using Lol.Shared.Riot.Models;
+using Lol.Shared.Riot;
 
 namespace trevor.Tests;
 

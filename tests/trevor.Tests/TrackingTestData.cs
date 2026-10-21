@@ -1,4 +1,4 @@
-using trevor.Infrastructure.Riot.Models;
+using Lol.Shared.Riot.Models;
 
 namespace trevor.Tests;
 

@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace Lol.Shared.Riot;
 
 // Env vars RIOT_API_KEY (optional — LoL commands say so when it's missing) and RIOT_PLATFORM
 public class RiotOptions

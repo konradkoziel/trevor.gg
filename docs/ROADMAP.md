@@ -99,9 +99,11 @@ src/trevor/
     Lol/Roast/      RoastCommand, RoastMessage, MatchStats
   Infrastructure/
     Discord/        DiscordApiClient, DiscordSignatureVerifier, Models/
-    Riot/           RiotApiClient, DataDragonClient, RiotRouting, RiotNames, Models/
     OpenAi/         TrevorAi, TrevorPrompts
-tests/trevor.Tests/ xUnit
+src/Lol.Shared/
+  Riot/             RiotApiClient, DataDragonClient, RiotRouting, RiotNames, AddRiot(), Models/
+tests/trevor.Tests/ xUnit (bot)
+tests/Lol.Shared.Tests/ xUnit (Riot)
 deploy/             discord-commands.json
 ```
 
