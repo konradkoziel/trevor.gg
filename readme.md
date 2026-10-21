@@ -46,7 +46,8 @@ Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is
 
 ### 🌐 Website (work in progress)
 A React site for builds and stats. So far: a searchable champion picker (names and titles in Polish, icons from Data Dragon),
-**Log in with Discord** (only the `identify` scope: id, name, avatar — the same Discord id the bot sees) and the **build editor**:
+**Log in with Discord** (the same Discord id the bot sees; with `DISCORD_GUILD_ID` set only members of Trevor's server get in,
+shown with their server nickname and avatar; after the first consent, logging in again skips Discord's consent screen) and the **build editor**:
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
 skill order for levels 1–18 (impossible orders can't be clicked; the max order, e.g. Q > E > W, is shown).
 Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
@@ -111,6 +112,12 @@ GitHub repository secrets used by the deploy workflow:
 | `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
 | `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it, with `DISCORD_APP_ID`, to the API). Without it login answers 503 |
 | `RIOT_API_KEY` | The same Riot API key the bot uses, for the website (linking League accounts). Without it linking answers 503 |
+
+GitHub repository **variable** (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | What it is |
+|---|---|
+| `DISCORD_GUILD_ID` | Id of Trevor's Discord server (Developer Mode → right-click the server → Copy Server ID). Only its members can log in to the website. Without it anyone with Discord can |
 
 The website's API settings (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by
 `infra/web.bicep`, not by hand. The redirect URL Discord must allow (Developer Portal → OAuth2 → Redirects) is printed in the

@@ -11,8 +11,12 @@ describe('parseSessionFragment', () => {
   })
 
   it('reports a failed login', () => {
-    expect(parseSessionFragment('#login-error')).toEqual({ kind: 'error' })
-    expect(parseSessionFragment('#session=')).toEqual({ kind: 'error' })
+    expect(parseSessionFragment('#login-error')).toEqual({ kind: 'error', reason: 'failed' })
+    expect(parseSessionFragment('#session=')).toEqual({ kind: 'error', reason: 'failed' })
+  })
+
+  it('tells someone from outside the server why', () => {
+    expect(parseSessionFragment('#login-error=not-member')).toEqual({ kind: 'error', reason: 'not-member' })
   })
 
   it('ignores any other fragment', () => {

@@ -14,7 +14,7 @@ import { StatsPage } from './pages/StatsPage'
 const login = completeLogin()
 
 export default function App() {
-  const [loginFailed, setLoginFailed] = useState(login.kind === 'error')
+  const [loginError, setLoginError] = useState(login.kind === 'error' ? login.reason : undefined)
 
   return (
     <BrowserRouter>
@@ -32,10 +32,12 @@ export default function App() {
           <AccountMenu />
         </header>
         <main className="main">
-          {loginFailed && (
+          {loginError && (
             <p className="banner error" role="alert">
-              Logowanie się nie udało. Discord albo Ty coś pomieszaliście, spróbuj jeszcze raz.
-              <button type="button" className="link" onClick={() => setLoginFailed(false)}>
+              {loginError === 'not-member'
+                ? 'Ta strona jest tylko dla ludzi z serwera Trevora. Najpierw wbij na serwer, potem wracaj.'
+                : 'Logowanie się nie udało. Discord albo Ty coś pomieszaliście, spróbuj jeszcze raz.'}
+              <button type="button" className="link" onClick={() => setLoginError(undefined)}>
                 Zamknij
               </button>
             </p>
