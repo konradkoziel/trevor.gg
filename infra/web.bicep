@@ -7,10 +7,20 @@ param location string = resourceGroup().location
 @description('Static Web Apps exist only in a few regions; the site itself is served from a global CDN anyway')
 param staticSiteLocation string = 'westeurope'
 
+@description('Discord application id (the bot\'s), for "Log in with Discord"; empty leaves login off')
+param discordClientId string = ''
+
+@description('OAuth2 client secret of that Discord application')
+@secure()
+param discordClientSecret string = ''
+
 // Storage account and Function App names are global, so they get a suffix that is stable per resource group
 var suffix = uniqueString(resourceGroup().id)
 var storageName = 'trevorweb${suffix}'
 var apiName = 'trevor-web-api-${suffix}'
+
+// Flex Consumption apps get <name>.azurewebsites.net; Discord needs this exact URL under OAuth2 → Redirects
+var discordRedirectUri = 'https://${apiName}.azurewebsites.net/api/auth/discord/callback'
 
 // Blob container the Flex Consumption plan deploys the API package into
 var deploymentContainer = 'api-package'
@@ -117,6 +127,22 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: insights.properties.ConnectionString
         }
+        {
+          name: 'DISCORD_CLIENT_ID'
+          value: discordClientId
+        }
+        {
+          name: 'DISCORD_CLIENT_SECRET'
+          value: discordClientSecret
+        }
+        {
+          name: 'DISCORD_REDIRECT_URI'
+          value: discordRedirectUri
+        }
+        {
+          name: 'SITE_URL'
+          value: 'https://${site.properties.defaultHostname}'
+        }
       ]
     }
     functionAppConfig: {
@@ -149,3 +175,4 @@ output staticSiteName string = site.name
 output siteUrl string = 'https://${site.properties.defaultHostname}'
 output apiName string = api.name
 output apiUrl string = 'https://${api.properties.defaultHostName}'
+output discordRedirectUri string = discordRedirectUri
