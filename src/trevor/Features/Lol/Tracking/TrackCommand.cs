@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
+using Lol.Shared.Riot;
 using trevor.Core;
 using trevor.Features.Lol.Common;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.Discord.Models;
-using trevor.Infrastructure.Riot;
 
 namespace trevor.Features.Lol.Tracking;
 

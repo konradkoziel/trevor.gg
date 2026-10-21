@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
-using trevor.Infrastructure.Riot.Models;
+using Lol.Shared.Riot.Models;
 
-namespace trevor.Infrastructure.Riot;
+namespace Lol.Shared.Riot;
 
 // Typed client: the rest of the app sees RiotAccount/LeagueEntry, never Riot's HTTP details.
 // Retries, timeouts and 429 back-off come from the resilience handler registered in Program.cs.

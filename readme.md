@@ -60,7 +60,8 @@ MatchTracker (timer, every 5 min) → tracked players (Table Storage) → new ma
 ```
 
 - **Vertical slices:** each command lives in `Features/<Name>/` and implements `ICommand`; commands are picked up from DI by name.
-- **Infrastructure:** `Infrastructure/Discord` (models, signature verification, API client), `Infrastructure/Riot` (typed client with retries on 429/5xx), `Infrastructure/OpenAi` (`ITrevorAi` — Trevor's persona and prompts in one place), `Infrastructure/Storage` (tracked players in Azure Table Storage).
+- **Infrastructure:** `Infrastructure/Discord` (models, signature verification, API client), `Infrastructure/OpenAi` (`ITrevorAi` — Trevor's persona and prompts in one place), `Infrastructure/Storage` (tracked players in Azure Table Storage).
+- **Shared LoL code:** `src/Lol.Shared` — Riot API typed client with retries on 429/5xx, Data Dragon, models; `AddRiot()` wires it into any app in the repo.
 - **Queue-based deferral:** Discord needs an answer within 3 s; slow work goes through the `deferred-commands` queue and is retried if posting to Discord fails.
 
 More detail: [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
@@ -94,7 +95,9 @@ GitHub repository secrets used by the deploy workflow:
 
 ```
 src/trevor/            Function App: Functions/, Core/, Features/, Infrastructure/, Program.cs, host.json
-tests/trevor.Tests/    xUnit tests
+src/Lol.Shared/        class library shared by the apps: Riot API client, Data Dragon, models
+tests/trevor.Tests/    xUnit tests of the bot
+tests/Lol.Shared.Tests/ xUnit tests of the shared Riot code
 deploy/                discord-commands.json (registered with Discord on every deploy)
 docs/                  roadmap, Riot API notes
 ```

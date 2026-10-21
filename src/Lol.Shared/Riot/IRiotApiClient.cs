@@ -1,6 +1,6 @@
-﻿using trevor.Infrastructure.Riot.Models;
+﻿using Lol.Shared.Riot.Models;
 
-namespace trevor.Infrastructure.Riot;
+namespace Lol.Shared.Riot;
 
 public interface IRiotApiClient
 {

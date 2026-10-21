@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot;
+﻿namespace Lol.Shared.Riot;
 
 // Riot's static asset CDN (champion icons etc.)
 public interface IDataDragon

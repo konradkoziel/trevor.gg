@@ -38,7 +38,7 @@ Azure Functions (.NET 10, isolated worker, ASP.NET Core integration) + Azure Ope
 
 ## Configuration (env vars / Azure app settings)
 
-Bound to options classes in `src/trevor/Program.cs`; required ones are validated **at startup** (`ValidateOnStart`) — a missing value stops the host.
+Bound to options classes in `src/trevor/Program.cs` (the Riot ones in `AddRiot()`, `src/Lol.Shared`); required ones are validated **at startup** (`ValidateOnStart`) — a missing value stops the host.
 
 | Name | Options | Notes |
 |---|---|---|
@@ -73,17 +73,19 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
 
 ## Code layout & conventions
 
-- Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `tests/trevor.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`.
+- Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `src/Lol.Shared/`
+  (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).
 - `Core/` — `ICommand`, `CommandRegistry` (all `ICommand`s from DI, by name), `InteractionHandler` (PING / sync / deferred / unknown / errors → Trevor-style message).
 - `Features/<Name>/` — one folder per feature (vertical slices): `Ask`, `Teams`, `Ping`, `RateThis` (message context menu), `Lol/Rank` (`RankCommand`, `RankMessage`, `PlayerRanks`), `Lol/Roast` (`RoastCommand`, `RoastMessage`, `MatchStats`), `Lol/Tracking` (`TrackCommand`/`UntrackCommand`, `MatchTracker` posting via webhook (no AI), `MatchReport` (MVP and report candidate = best / worst KDA of the tracked players' team, tracked players included) + `MatchReportMessage`, `ITrackedPlayerStore`), `Lol/Common` (`RiotPlayerRunner`, `LolMessages`, `MatchRules`).
-- `Infrastructure/Discord/` — models, `DiscordJson`, `IDiscordApiClient`/`DiscordApiClient` (typed HttpClient: followups and webhooks), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/Storage/` — `TableTrackedPlayerStore` (Azure Table Storage, table created on first use). `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions). `Infrastructure/Riot/` (available methods and rate limits for our key: `docs/riot-api.md`) — DTOs in `Infrastructure/Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
-- Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see the Riot client registration (`PooledConnectionLifetime` + infinite handler lifetime).
+- `Infrastructure/Discord/` — models, `DiscordJson`, `IDiscordApiClient`/`DiscordApiClient` (typed HttpClient: followups and webhooks), `DiscordSignatureVerifier`, `DiscordOptions`. `Infrastructure/Storage/` — `TableTrackedPlayerStore` (Azure Table Storage, table created on first use). `Infrastructure/OpenAi/` — options, `ITrevorAi` (the only way to call the model: persona + instruction, token limit, returns null on failure) and `TrevorPrompts` (persona and per-command instructions).
+- `src/Lol.Shared/Riot/` (namespace `Lol.Shared.Riot`; available methods and rate limits for our key: `docs/riot-api.md`) — `AddRiot()` registers options and clients for any app, DTOs in `Riot/Models/` (`RiotId`, `RiotAccount`, `LeagueEntry`, `RiotMatch*`), `IRiotApiClient` (typed client + standard resilience handler: retries 429/5xx), `IDataDragon` (champion icon URLs; latest patch version cached 6 h per app instance, null when unreachable), `CommunityDragon` (ranked emblem URLs, static), routing (platform `eun1` → regional host `europe` for Account-V1 and Match-V5; SEA platforms → `asia` for Account-V1 but `sea` for Match-V5).
+- Commands are singletons (captured by `CommandRegistry`). A command that needs an HttpClient must get one that survives that: see `RiotServiceCollectionExtensions.AddRiot` (`PooledConnectionLifetime` + infinite handler lifetime).
 - **New command:** class in `Features/<Name>/` implementing `ICommand` → `AddSingleton<ICommand, XCommand>()` in `Program.cs` → add its definition to `deploy/discord-commands.json` (and to `DiscordCommandDefinitionsTests`) → tests in `tests/trevor.Tests` → describe it in `readme.md`.
 - **AI in commands:** go through `ITrevorAi`, add the instruction to `TrevorPrompts`, and always keep a canned fallback for when it returns null (tests use `FakeAi`).
 - **Keep `readme.md` current:** every PR that adds or changes a command, a setting, a secret or the architecture updates `readme.md` in the same PR.
-- Tests: xUnit in `tests/trevor.Tests`, referencing `src/trevor/trevor.csproj`. Build interactions from Discord-shaped JSON with `TestInteractions`.
+- Tests: xUnit in `tests/trevor.Tests` (bot, referencing `src/trevor/trevor.csproj`) and `tests/Lol.Shared.Tests` (Riot and Data Dragon clients). Build interactions from Discord-shaped JSON with `TestInteractions`.
 - Style: file-scoped namespaces, primary constructors, records, `ImplicitUsings` + `Nullable` on, zero build warnings. App source files are **UTF-8 with BOM, LF**.
 
 ## Code quality — required in every change

@@ -1,4 +1,4 @@
-namespace trevor.Tests;
+namespace Lol.Shared.Tests;
 
 public sealed class FakeTimeProvider : TimeProvider
 {

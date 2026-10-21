@@ -1,9 +1,9 @@
+using Lol.Shared.Riot.Models;
+using Lol.Shared.Riot;
 using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Roast;
 using trevor.Infrastructure.Discord.Models;
 using trevor.Infrastructure.OpenAi;
-using trevor.Infrastructure.Riot;
-using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Tests;
 

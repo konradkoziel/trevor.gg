@@ -1,4 +1,4 @@
-using trevor.Infrastructure.Riot;
+using Lol.Shared.Riot;
 
 namespace trevor.Tests;
 

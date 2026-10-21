@@ -10,7 +10,7 @@ zużywa po 1 z obu pul. Klucz deweloperski wygasa po 24 h.
 
 - **Platform** (`eun1`, `euw1`, …): `summoner`, `league`, `champion-mastery`, `spectator`, `lol-status`, `clash`, `lol-challenges`, `champion-v3`.
 - **Regional** (`europe`, `americas`, `asia`, `sea`): `account-v1`, `match-v5` (dla `match-v5` serwery EU → `europe`).
-- W kodzie: `src/trevor/Infrastructure/Riot/RiotRouting.cs` (`RIOT_PLATFORM`, domyślnie `eun1`).
+- W kodzie: `src/Lol.Shared/Riot/RiotRouting.cs` (`RIOT_PLATFORM`, domyślnie `eun1`).
 
 ## Co jest używane i do czego się przyda
 

@@ -1,4 +1,4 @@
-﻿namespace trevor.Infrastructure.Riot.Models;
+﻿namespace Lol.Shared.Riot.Models;
 
 // Riot ID, e.g. "Nick#EUNE" → GameName "Nick", TagLine "EUNE"
 public record RiotId(string GameName, string TagLine)

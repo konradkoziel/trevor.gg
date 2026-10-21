@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 using System.ClientModel;
+using Lol.Shared.Riot;
 using trevor.Core;
 using trevor.Features.Ask;
 using trevor.Features.Lol.Common;
@@ -19,7 +20,6 @@ using trevor.Features.RateThis;
 using trevor.Features.Teams;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.OpenAi;
-using trevor.Infrastructure.Riot;
 using trevor.Infrastructure.Storage;
 
 var builder = FunctionsApplication.CreateBuilder(args);
@@ -51,16 +51,7 @@ builder.Services.AddOptions<OpenAiOptions>()
     .Validate(o => o.IsValid, "OPENAI_URL, OPENAI_KEY and OPENAI_DEPLOYMENT must be set")
     .ValidateOnStart();
 
-builder.Services.AddOptions<RiotOptions>()
-    .Configure<IConfiguration>((options, config) =>
-    {
-        options.ApiKey = config["RIOT_API_KEY"];
-        var platform = config["RIOT_PLATFORM"];
-        if (!string.IsNullOrWhiteSpace(platform))
-            options.Platform = platform.Trim();
-    })
-    .Validate(o => RiotRouting.IsKnownPlatform(o.Platform), "RIOT_PLATFORM must be a Riot platform id, e.g. eun1 or euw1")
-    .ValidateOnStart();
+builder.Services.AddRiot();
 
 builder.Services.AddOptions<StorageOptions>()
     .Configure<IConfiguration>((options, config) => options.ConnectionString = config["AzureWebJobsStorage"]);
@@ -80,16 +71,6 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<StorageTables>();
 builder.Services.AddSingleton<ITrackedPlayerStore, TableTrackedPlayerStore>();
 builder.Services.AddSingleton<IReportedMatchStore, TableReportedMatchStore>();
-
-// Commands are singletons, so these clients live for the whole app: rotate connections
-// in the handler instead of relying on IHttpClientFactory's handler recycling
-builder.Services.AddHttpClient<IDataDragon, DataDragonClient>(client => client.Timeout = TimeSpan.FromSeconds(5))
-    .ConfigurePrimaryHttpMessageHandler(LongLivedHandler)
-    .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
-builder.Services.AddHttpClient<IRiotApiClient, RiotApiClient>()
-    .ConfigurePrimaryHttpMessageHandler(LongLivedHandler)
-    .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
-    .AddStandardResilienceHandler(); // retries 429/5xx with back-off, per-attempt and total timeouts
 
 // Commands: register a new slash command here and add its definition to deploy/discord-commands.json
 builder.Services.AddSingleton<ICommand, PingCommand>();
@@ -111,6 +92,3 @@ builder.Logging.AddApplicationInsights();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 builder.Build().Run();
-
-// Re-resolves DNS every few minutes, which a handler that is never recycled wouldn't do
-static SocketsHttpHandler LongLivedHandler() => new() { PooledConnectionLifetime = TimeSpan.FromMinutes(5) };
