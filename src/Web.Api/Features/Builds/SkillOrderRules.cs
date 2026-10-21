@@ -11,6 +11,21 @@ public static class SkillOrderRules
     // The ultimate unlocks its ranks at these levels
     private static readonly int[] UltimateLevels = [6, 11, 16];
 
+    // "Q", "E", "W": the order the basic abilities reach their max rank, like skillOrder.ts maxOrder
+    public static IReadOnlyList<string> MaxOrder(IReadOnlyList<string?> order)
+    {
+        var ranks = MaxRank.Keys.ToDictionary(k => k, _ => 0);
+        var maxed = new List<string>();
+        foreach (var key in order)
+        {
+            if (key is null or "R" || !ranks.ContainsKey(key))
+                continue;
+            if (++ranks[key] == MaxRank[key])
+                maxed.Add(key);
+        }
+        return maxed;
+    }
+
     public static bool IsValid(IReadOnlyList<string?> order)
     {
         if (order.Count != MaxLevel)

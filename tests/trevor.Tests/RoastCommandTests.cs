@@ -32,7 +32,7 @@ public class RoastCommandTests
 
     private static Task<DiscordResponseData> Run(FakeRiot riot, FakeAi? ai = null, FakeDataDragon? dataDragon = null) =>
         new RoastCommand(
-                new RiotPlayerRunner(riot), riot, dataDragon ?? new FakeDataDragon(),
+                new RiotPlayerRunner(riot, new FakeWebApi()), riot, dataDragon ?? new FakeDataDragon(),
                 ai ?? new FakeAi("Dziewięć śmierci na Yasuo. Klasyk."))
             .ExecuteAsync(TestInteractions.Command("roast", """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]"""));
 

@@ -75,12 +75,14 @@ jobs:
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
           # A repository variable, not a secret: the server id isn't secret, it just stays out of the code
           DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          # Shared with the bot (its WEB_API_KEY app setting); without it /api/bot/... answers 503
+          TREVOR_WEB_KEY: ${{ secrets.TREVOR_WEB_KEY }}
         run: |
           outputs=$(az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --name website \
             --template-file infra/web.bicep \
-            --parameters discordClientId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" riotApiKey="$RIOT_API_KEY" discordGuildId="$DISCORD_GUILD_ID" \
+            --parameters discordClientId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" riotApiKey="$RIOT_API_KEY" discordGuildId="$DISCORD_GUILD_ID" botApiKey="$TREVOR_WEB_KEY" \
             --query properties.outputs --output json)
           for key in staticSiteName siteUrl apiName apiUrl discordRedirectUri; do
             echo "$key=$(jq -r ".$key.value" <<< "$outputs")" >> "$GITHUB_OUTPUT"
