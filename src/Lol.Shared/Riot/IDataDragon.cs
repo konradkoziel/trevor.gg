@@ -8,6 +8,9 @@ public interface IDataDragon
     // Null when Data Dragon can't be reached; callers just show no icon
     Task<string?> ChampionIconUrlAsync(string championName, CancellationToken ct = default);
 
+    // Null when Data Dragon can't be reached
+    Task<string?> ProfileIconUrlAsync(int iconId, CancellationToken ct = default);
+
     // Every champion of the latest patch, sorted by name; null when Data Dragon can't be reached
     Task<IReadOnlyList<Champion>?> ChampionsAsync(CancellationToken ct = default);
 }

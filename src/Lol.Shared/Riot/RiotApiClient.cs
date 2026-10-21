@@ -25,6 +25,19 @@ public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options)
         return await response.Content.ReadFromJsonAsync<RiotAccount>(ct);
     }
 
+    public async Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default)
+    {
+        var url = $"https://{options.Value.Platform.ToLowerInvariant()}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/" +
+                  Uri.EscapeDataString(puuid);
+
+        using var response = await SendAsync(url, ct);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        EnsureSuccess(response);
+        return await response.Content.ReadFromJsonAsync<RiotSummoner>(ct);
+    }
+
     public async Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default)
     {
         var url = $"https://{options.Value.Platform.ToLowerInvariant()}.api.riotgames.com/lol/league/v4/entries/by-puuid/" +

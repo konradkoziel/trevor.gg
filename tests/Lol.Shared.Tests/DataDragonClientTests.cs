@@ -36,6 +36,14 @@ public class DataDragonClientTests
     }
 
     [Fact]
+    public async Task ProfileIconUrl_UsesLatestVersion()
+    {
+        var url = await Client(new VersionsHandler(() => Versions("16.20.1"))).ProfileIconUrlAsync(7);
+
+        Assert.Equal("https://ddragon.leagueoflegends.com/cdn/16.20.1/img/profileicon/7.png", url);
+    }
+
+    [Fact]
     public async Task MatchV5Spelling_IsMappedToDataDragonId()
     {
         var url = await Client(new VersionsHandler(() => Versions("16.20.1"))).ChampionIconUrlAsync("FiddleSticks");

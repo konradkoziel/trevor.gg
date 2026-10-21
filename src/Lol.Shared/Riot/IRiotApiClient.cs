@@ -9,6 +9,9 @@ public interface IRiotApiClient
     // Null when the Riot ID doesn't exist
     Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default);
 
+    // Null when the account has never played League
+    Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default);
+
     Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default);
 
     // Newest first
