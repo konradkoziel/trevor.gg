@@ -25,7 +25,7 @@ public class DataDragonClientTests
     };
 
     private static DataDragonClient Client(VersionsHandler handler, FakeTimeProvider? time = null) =>
-        new(new HttpClient(handler), time ?? new FakeTimeProvider(), NullLogger<DataDragonClient>.Instance);
+        new(new DataDragonCdn(new HttpClient(handler), time ?? new FakeTimeProvider(), NullLogger<DataDragonCdn>.Instance));
 
     [Fact]
     public async Task IconUrl_UsesLatestVersion()
