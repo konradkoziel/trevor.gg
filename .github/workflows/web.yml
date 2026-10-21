@@ -66,15 +66,20 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Creates the resources on the first run, then only applies changes from infra/web.bicep
+      # Discord login stays off (503) while either secret is missing
       - name: Create or update Azure resources
         id: infra
+        env:
+          DISCORD_APP_ID: ${{ secrets.DISCORD_APP_ID }}
+          DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
         run: |
           outputs=$(az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --name website \
             --template-file infra/web.bicep \
+            --parameters discordClientId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" \
             --query properties.outputs --output json)
-          for key in staticSiteName siteUrl apiName apiUrl; do
+          for key in staticSiteName siteUrl apiName apiUrl discordRedirectUri; do
             echo "$key=$(jq -r ".$key.value" <<< "$outputs")" >> "$GITHUB_OUTPUT"
           done
 
@@ -114,3 +119,4 @@ jobs:
         run: |
           echo "Site: ${{ steps.infra.outputs.siteUrl }}" >> "$GITHUB_STEP_SUMMARY"
           echo "API: ${{ steps.infra.outputs.apiUrl }}/api/champions" >> "$GITHUB_STEP_SUMMARY"
+          echo "Discord OAuth2 redirect: ${{ steps.infra.outputs.discordRedirectUri }}" >> "$GITHUB_STEP_SUMMARY"

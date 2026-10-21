@@ -45,8 +45,9 @@ Friends in the same game get one shared card, even when Riot lists the match for
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
 ### 🌐 Website (work in progress)
-A React site for builds and stats. So far: a searchable champion picker (names and titles in Polish, icons from Data Dragon).
-Next: Discord login, the build creator (items, runes, skill order), your own stats per champion.
+A React site for builds and stats. So far: a searchable champion picker (names and titles in Polish, icons from Data Dragon)
+and **Log in with Discord** (only the `identify` scope: id, name, avatar — the same Discord id the bot sees).
+Next: the build creator (items, runes, skill order), your own stats per champion.
 
 ---
 
@@ -64,6 +65,9 @@ MatchTracker (timer, every 5 min) → tracked players (Table Storage) → new ma
 
 Browser ──▶ Static Web App "trevor-web" (React, src/web)
         └─fetch─▶ Function App "trevor-web-api-*" (src/Web.Api, CORS: only the site) ──▶ Data Dragon / Riot API
+
+Login: site ─▶ /api/auth/discord/login ─▶ discord.com (Authorize) ─▶ /api/auth/discord/callback ─▶ site/#session=<token>
+       then every API call sends "Authorization: Bearer <token>" (signed JWT, 7 days)
 ```
 
 - **Vertical slices:** each command lives in `Features/<Name>/` and implements `ICommand`; commands are picked up from DI by name.
@@ -96,6 +100,11 @@ GitHub repository secrets used by the deploy workflow:
 |---|---|
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | OIDC login to Azure |
 | `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
+| `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it, with `DISCORD_APP_ID`, to the API). Without it login answers 503 |
+
+The website's API settings (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, storage) are set by
+`infra/web.bicep`, not by hand. The redirect URL Discord must allow (Developer Portal → OAuth2 → Redirects) is printed in the
+`Deploy website` run summary.
 
 ---
 
