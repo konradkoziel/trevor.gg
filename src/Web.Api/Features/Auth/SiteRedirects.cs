@@ -7,7 +7,12 @@ public static class SiteRedirects
     public const string SessionFragment = "session";
     public const string LoginErrorFragment = "login-error";
 
+    // #login-error=not-member: logged in fine, but not on Trevor's server
+    public const string NotMemberReason = "not-member";
+
     public static string LoggedIn(string siteUrl, string token) => $"{siteUrl.TrimEnd('/')}/#{SessionFragment}={Uri.EscapeDataString(token)}";
 
     public static string LoginFailed(string siteUrl) => $"{siteUrl.TrimEnd('/')}/#{LoginErrorFragment}";
+
+    public static string NotMember(string siteUrl) => $"{siteUrl.TrimEnd('/')}/#{LoginErrorFragment}={NotMemberReason}";
 }

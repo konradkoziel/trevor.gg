@@ -16,7 +16,8 @@ public class DiscordLoginFunction(IDiscordOAuthClient discord, IOptions<DiscordO
         if (!options.Value.IsConfigured)
             return new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
 
-        var state = LoginState.Start(req.HttpContext.Response);
-        return new RedirectResult(discord.AuthorizeUrl(state).AbsoluteUri);
+        // Silent first: someone who already agreed goes straight back; the callback falls back to the consent screen
+        var state = LoginState.Start(req.HttpContext.Response, silent: true);
+        return new RedirectResult(discord.AuthorizeUrl(state, silent: true).AbsoluteUri);
     }
 }

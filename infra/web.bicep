@@ -14,6 +14,9 @@ param discordClientId string = ''
 @secure()
 param discordClientSecret string = ''
 
+@description('Id of Trevor\'s Discord server: only its members may log in; empty lets any Discord user in')
+param discordGuildId string = ''
+
 @description('Riot API key, for linking League accounts and stats; empty leaves those off')
 @secure()
 param riotApiKey string = ''
@@ -142,6 +145,10 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'DISCORD_REDIRECT_URI'
           value: discordRedirectUri
+        }
+        {
+          name: 'DISCORD_GUILD_ID'
+          value: discordGuildId
         }
         {
           name: 'RIOT_API_KEY'

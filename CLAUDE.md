@@ -92,9 +92,13 @@ rate limits add up). All optional: without them only login / Riot account linkin
 
 ## Website login — how it works
 
-- Authorization code flow with Discord, scope `identify` only. `GET /api/auth/discord/login` sets a random `state` in an HttpOnly,
-  Secure, SameSite=Lax cookie (path `/api/auth/discord`) and redirects to Discord; the callback checks it (CSRF), exchanges the
-  code, reads `/users/@me` and redirects to `SITE_URL/#session=<jwt>` (or `#login-error`).
+- Authorization code flow with Discord, scope `identify` (+ `guilds.members.read` when `DISCORD_GUILD_ID` is set).
+  `GET /api/auth/discord/login` sets a random `state` in an HttpOnly, Secure, SameSite=Lax cookie (path `/api/auth/discord`,
+  value `<state>.s|c` = silent or consent attempt) and redirects to Discord with `prompt=none` first. The callback checks the state
+  (CSRF); an `error` after the silent attempt restarts once with the consent screen, after the consent screen it is a cancel.
+  Then it exchanges the code, reads `/users/@me` and, guild-only, `/users/@me/guilds/{id}/member` (404 = not a member →
+  `#login-error=not-member`; the member's server nick and avatar win), and redirects to `SITE_URL/#session=<jwt>` (or `#login-error`).
+  `DISCORD_GUILD_ID` comes from the GitHub **variable** of the same name (not a secret, but kept out of the code).
 - The site (`src/web/src/auth/session.ts`) takes the token from the fragment, removes it from the address bar and keeps it in
   `localStorage`; `api/client.ts` sends it as `Authorization: Bearer`. A 401 clears it. Cookies can't carry the session because
   the site (`*.azurestaticapps.net`) and the API (`*.azurewebsites.net`) are different sites.

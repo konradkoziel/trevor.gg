@@ -19,21 +19,30 @@ public static class LoginState
 
     private const int StateBytes = 32;
 
-    public static string Start(HttpResponse response)
+    // The cookie holds "<state>.<attempt>"; base64url never contains a dot
+    private const char Separator = '.';
+    private const string SilentAttempt = "s";
+    private const string ConsentAttempt = "c";
+
+    public static string Start(HttpResponse response, bool silent)
     {
         var state = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(StateBytes));
-        response.Cookies.Append(CookieName, state, CookieOptions(Lifetime));
+        response.Cookies.Append(CookieName, $"{state}{Separator}{(silent ? SilentAttempt : ConsentAttempt)}", CookieOptions(Lifetime));
         return state;
     }
 
     // Single use: the cookie is cleared whatever the outcome
-    public static bool Finish(HttpRequest request, HttpResponse response, string? returnedState)
+    public static LoginCheck Finish(HttpRequest request, HttpResponse response, string? returnedState)
     {
-        var expected = request.Cookies[CookieName];
+        var cookie = request.Cookies[CookieName];
         response.Cookies.Delete(CookieName, CookieOptions(TimeSpan.Zero));
 
-        return !string.IsNullOrEmpty(expected) && !string.IsNullOrEmpty(returnedState)
-            && CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(expected), Encoding.UTF8.GetBytes(returnedState));
+        var parts = cookie?.Split(Separator);
+        if (parts is not [var expected, var attempt] || string.IsNullOrEmpty(returnedState))
+            return new LoginCheck(false, false);
+
+        var valid = CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(expected), Encoding.UTF8.GetBytes(returnedState));
+        return new LoginCheck(valid, attempt == SilentAttempt);
     }
 
     // Lax: the cookie still comes along on the top-level redirect back from discord.com
