@@ -32,15 +32,19 @@ public class DataDragonClient(DataDragonCdn cdn) : IDataDragon
             list.Data is not { Count: > 0 } data
                 ? null
                 : data.Values
-                    .Select(c => new Champion(c.Id, c.Name, c.Title, IconUrl(version, c.Id)))
+                    .Select(c => new Champion(c.Id, c.Name, c.Title, IconUrl(version, c.Id),
+                        int.TryParse(c.Key, out var key) ? key : 0, c.Blurb ?? "", SplashUrl(c.Id)))
                     .OrderBy(c => c.Name, NameOrder)
                     .ToList(), ct);
+
+    // Splash art isn't versioned; skin 0 is the default one
+    private static string SplashUrl(string championId) => DataDragonCdn.ImageUrl($"champion/splash/{Uri.EscapeDataString(championId)}_0.jpg");
 
     private static string IconUrl(string version, string championId) =>
         DataDragonCdn.Url(version, $"img/champion/{Uri.EscapeDataString(championId)}.png");
 
-    // champion.json: { "data": { "Aatrox": { "id": "Aatrox", "name": "Aatrox", "title": "..." }, ... } }
+    // champion.json: { "data": { "Aatrox": { "id": "Aatrox", "key": "266", "name": "Aatrox", "title": "...", "blurb": "..." }, ... } }
     private sealed record ChampionListDto(Dictionary<string, ChampionDto>? Data);
 
-    private sealed record ChampionDto(string Id, string Name, string Title);
+    private sealed record ChampionDto(string Id, string Key, string Name, string Title, string? Blurb);
 }

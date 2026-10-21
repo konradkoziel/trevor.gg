@@ -1,4 +1,4 @@
-using Lol.Shared.Riot.Models;
+﻿using Lol.Shared.Riot.Models;
 using Lol.Shared.Riot;
 
 namespace trevor.Tests;
@@ -25,6 +25,15 @@ public sealed class FakeRiot : IRiotApiClient
 
     public Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default) =>
         Task.FromResult<RiotSummoner?>(new RiotSummoner(1, 30));
+
+    public IReadOnlyList<int> FreeChampionKeys { get; set; } = [];
+    public Dictionary<string, IReadOnlyList<ChampionMastery>> Masteries { get; } = new();
+
+    public Task<IReadOnlyList<int>> GetFreeChampionKeysAsync(CancellationToken ct = default) =>
+        Task.FromResult(FreeChampionKeys);
+
+    public Task<IReadOnlyList<ChampionMastery>> GetChampionMasteriesAsync(string puuid, CancellationToken ct = default) =>
+        Task.FromResult(Masteries.GetValueOrDefault(puuid) ?? []);
 
     public Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default) =>
         Task.FromResult(Entries);

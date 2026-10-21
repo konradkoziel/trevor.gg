@@ -32,7 +32,7 @@ public class DataDragonChampionsTests
           "type": "champion",
           "data": {
             "Yasuo": { "id": "Yasuo", "key": "157", "name": "Yasuo", "title": "Pokutnik" },
-            "MonkeyKing": { "id": "MonkeyKing", "key": "62", "name": "Wukong", "title": "Małpi Król" },
+            "MonkeyKing": { "id": "MonkeyKing", "key": "62", "name": "Wukong", "title": "Małpi Król", "blurb": "Małpa z kijem." },
             "Ahri": { "id": "Ahri", "key": "103", "name": "Ahri", "title": "Dziewięcioogoniasta Lisica" }
           }
         }
@@ -57,6 +57,9 @@ public class DataDragonChampionsTests
         Assert.Equal("MonkeyKing", wukong.Id);
         Assert.Equal("Małpi Król", wukong.Title);
         Assert.Equal("https://ddragon.leagueoflegends.com/cdn/16.20.1/img/champion/MonkeyKing.png", wukong.IconUrl);
+        Assert.Equal(62, wukong.Key);
+        Assert.Equal("https://ddragon.leagueoflegends.com/cdn/img/champion/splash/MonkeyKing_0.jpg", wukong.SplashUrl);
+        Assert.Equal("Małpa z kijem.", wukong.Blurb);
     }
 
     [Fact]
