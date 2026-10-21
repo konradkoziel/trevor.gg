@@ -6,6 +6,7 @@ import { CurrentUserProvider } from './features/account/CurrentUserProvider'
 import { MainNav } from './features/account/MainNav'
 import { AccountPage } from './pages/AccountPage'
 import { BuildPage } from './pages/BuildPage'
+import { BuildsPage } from './pages/BuildsPage'
 import { HomePage } from './pages/HomePage'
 import { NewBuildPage } from './pages/NewBuildPage'
 import { StatsPage } from './pages/StatsPage'
@@ -44,6 +45,7 @@ export default function App() {
           )}
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/buildy" element={<BuildsPage />} />
             <Route path="/nowy/:championId" element={<NewBuildPage />} />
             <Route path="/b/:id" element={<BuildPage />} />
             <Route path="/konto" element={<AccountPage />} />

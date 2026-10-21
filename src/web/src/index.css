@@ -714,3 +714,163 @@ h2 {
   align-items: flex-end;
   font-variant-numeric: tabular-nums;
 }
+
+.small {
+  font-size: 0.8rem;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--surface), var(--bg));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.quote {
+  flex: 1 1 320px;
+  margin: 0;
+}
+
+.quote blockquote {
+  margin: 0 0 6px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.home-grid {
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.champion-of-day {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 300px;
+  overflow: hidden;
+  background-position: center top;
+  background-size: cover;
+}
+
+.champion-of-day::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(to top, var(--bg) 15%, transparent 80%);
+}
+
+.champion-of-day-text {
+  position: relative;
+}
+
+.champion-of-day-text h2 {
+  font-size: 1.8rem;
+}
+
+.champion-of-day-text p {
+  margin: 4px 0 10px;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.blurb {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.leaderboard {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 10px;
+  list-style: none;
+}
+
+.leaderboard li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.leaderboard img {
+  border-radius: 50%;
+}
+
+.place {
+  width: 24px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.leader-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.leader-points {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.rotation {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.rotation a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 6px;
+  font-size: 0.8rem;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.rotation a:hover {
+  background: var(--surface);
+}
+
+.rotation img {
+  border-radius: 6px;
+}

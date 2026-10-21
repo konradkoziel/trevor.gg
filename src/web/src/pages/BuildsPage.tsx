@@ -4,7 +4,7 @@ import { newBuildPath } from '../features/builds/buildLinks'
 import { MyBuilds } from '../features/builds/MyBuilds'
 import { ChampionPicker } from '../features/champions/ChampionPicker'
 
-export function HomePage() {
+export function BuildsPage() {
   const { state } = useCurrentUser()
   const navigate = useNavigate()
 

@@ -50,7 +50,7 @@ export function BuildEditor({ champion, saved }: Props) {
             />
           )}
         </div>
-        <Link className="button secondary" to="/">
+        <Link className="button secondary" to="/buildy">
           {readOnly ? 'Wróć' : 'Zmień championa'}
         </Link>
       </header>

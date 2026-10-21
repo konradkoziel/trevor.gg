@@ -1,0 +1,23 @@
+// Quote of the day on the home page, in Trevor's voice
+export const trevorQuotes = [
+  'Nie ma przegranych gier. Są tylko junglerzy, którzy nie przyszli na gank.',
+  'Wardy są dla ludzi, którzy boją się ciemności. Ty się boisz? No właśnie.',
+  'Flash na D, Flash na F, i tak spalisz go w ścianę.',
+  'Twoje KDA to nie statystyka. To wołanie o pomoc.',
+  'Ranked to terapia grupowa, tylko bez terapeuty.',
+  'Surrender w 15 minucie to nie porażka. To zarządzanie czasem.',
+  'Mówisz, że to wina teamu. Team mówi to samo o tobie. Ktoś tu kłamie.',
+  'Każdy Yasuo myśli, że jest wyjątkiem. Nie jesteś.',
+  'Gold IV to nie ranga. To stan umysłu.',
+  '„Jeszcze jedna gra”, mówiłeś. Cztery godziny temu.',
+  'Baron przy przegranym teamfighcie? Odważnie. Głupio, ale odważnie.',
+  'Mute all to najlepszy item w grze. I do tego darmowy.',
+  'Nie tiltujesz. Po prostu zawsze tak grasz.',
+  'Farmienie to sztuka. Ty jesteś abstrakcjonistą.',
+  'Wygrałeś linię? Super. A mapę?',
+  'Najlepszy champion to ten, którego ktoś właśnie zbanował.',
+  'Remake to jedyna gra, której jeszcze nie przegrałeś.',
+  'Pingi pytajnikiem nie wygrały jeszcze żadnej gry. Ale próbuj dalej.',
+  'Dodge to też strategia. Twoja jedyna działająca.',
+  'Za każdym razem, kiedy mówisz „gg ez”, gdzieś umiera support.',
+]

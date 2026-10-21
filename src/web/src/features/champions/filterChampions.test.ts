@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Champion } from '../../api/champions'
 import { filterChampions } from './filterChampions'
 
-const champion = (name: string): Champion => ({ id: name, name, title: '', iconUrl: '' })
+const champion = (name: string): Champion => ({ id: name, name, title: '', iconUrl: '', key: 0, blurb: '', splashUrl: '' })
 const champions = [champion('Ahri'), champion("Kai'Sa"), champion('Yasuo'), champion('Yone')]
 
 describe('filterChampions', () => {

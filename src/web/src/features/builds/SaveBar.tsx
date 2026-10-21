@@ -53,7 +53,7 @@ export function SaveBar({ build, buildId }: Props) {
     if (!buildId || !window.confirm(`Usunąć build „${build.name}”? Tego się nie da cofnąć.`)) return
     try {
       await deleteBuild(buildId)
-      navigate('/')
+      navigate('/buildy')
     } catch (error) {
       setStatus({ kind: 'error', message: describe(error) })
     }
