@@ -64,6 +64,11 @@ Bound to options classes in `src/trevor/Program.cs` (the Riot ones in `AddRiot()
 
 Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local.settings.json` (gitignored).
 
+Website API (`src/Web.Api`, template `src/Web.Api/local.settings.example.json`): all set by `infra/web.bicep`, never by hand.
+`DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` (from the GitHub secrets `DISCORD_APP_ID` / `DISCORD_CLIENT_SECRET`),
+`DISCORD_REDIRECT_URI` (`https://<api>.azurewebsites.net/api/auth/discord/callback`, must also be in the Developer Portal under
+OAuth2 → Redirects), `SITE_URL`. All optional: without them only login is off (503).
+
 ## Discord Interactions — gotchas learned the hard way
 
 - Bot runs on **HTTP interactions only** (no Gateway/WebSocket). It can't read messages, react to events or join voice. Anything like that needs a separate always-on process.
@@ -83,10 +88,24 @@ Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local
   and the `ICommand`s / option names drift apart.
 - Never log request bodies or Discord URLs — they contain interaction tokens / webhook secrets.
 
+## Website login — how it works
+
+- Authorization code flow with Discord, scope `identify` only. `GET /api/auth/discord/login` sets a random `state` in an HttpOnly,
+  Secure, SameSite=Lax cookie (path `/api/auth/discord`) and redirects to Discord; the callback checks it (CSRF), exchanges the
+  code, reads `/users/@me` and redirects to `SITE_URL/#session=<jwt>` (or `#login-error`).
+- The site (`src/web/src/auth/session.ts`) takes the token from the fragment, removes it from the address bar and keeps it in
+  `localStorage`; `api/client.ts` sends it as `Authorization: Bearer`. A 401 clears it. Cookies can't carry the session because
+  the site (`*.azurestaticapps.net`) and the API (`*.azurewebsites.net`) are different sites.
+- Tokens: HS256 JWT, 7 days (`SessionTokens`). The signing key is generated on first use into the API's own storage
+  (container `sessions`, blob `signing-key`); deleting it logs everybody out. Read the user in a function with
+  `ISessionTokens.ReadAsync(req)`; null → 401.
+- Never log the code, the tokens or Discord's token response.
+
 ## Code layout & conventions
 
 - Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `src/Lol.Shared/`
-  (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `src/Web.Api/` + `tests/Web.Api.Tests/` (website API: `Features/<Name>/` with one HTTP function each, e.g. `Champions` → `GET /api/champions`),
+  (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `src/Web.Api/` + `tests/Web.Api.Tests/` (website API: `Features/<Name>/` with one HTTP function each, e.g. `Champions` → `GET /api/champions`,
+  `Auth` → Discord login, `Account` → `GET /api/me`; `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers, `src/features/<name>/` components, hooks and pure functions with vitest tests),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
