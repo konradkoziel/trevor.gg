@@ -17,6 +17,10 @@ param discordClientSecret string = ''
 @description('Id of Trevor\'s Discord server: only its members may log in; empty lets any Discord user in')
 param discordGuildId string = ''
 
+@description('Key the bot sends to /api/bot/... (the same value is the bot\'s WEB_API_KEY); empty turns those endpoints off')
+@secure()
+param botApiKey string = ''
+
 @description('Riot API key, for linking League accounts and stats; empty leaves those off')
 @secure()
 param riotApiKey string = ''
@@ -149,6 +153,10 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'DISCORD_GUILD_ID'
           value: discordGuildId
+        }
+        {
+          name: 'BOT_API_KEY'
+          value: botApiKey
         }
         {
           name: 'RIOT_API_KEY'

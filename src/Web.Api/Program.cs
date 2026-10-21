@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Web.Api.Features.Bot;
 using Web.Api.Features.Builds;
 using Web.Api.Features.RiotAccount;
 using Web.Api.Features.Stats;
@@ -52,5 +53,13 @@ builder.Services.AddSingleton<MatchHistory>();
 // Builds
 builder.Services.AddSingleton<IBuildStore, TableBuildStore>();
 builder.Services.AddSingleton<BuildValidator>();
+
+// Endpoints for the bot (/api/bot/...), behind the shared BOT_API_KEY
+builder.Services.AddOptions<BotApiOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        options.Key = config["BOT_API_KEY"] ?? string.Empty;
+        options.SiteUrl = config["SITE_URL"] ?? string.Empty;
+    });
 
 builder.Build().Run();
