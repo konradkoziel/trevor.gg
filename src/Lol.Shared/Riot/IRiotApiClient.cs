@@ -17,6 +17,12 @@ public interface IRiotApiClient
     // Newest first
     Task<IReadOnlyList<string>> GetRecentMatchIdsAsync(string puuid, int count, CancellationToken ct = default);
 
+    // Numeric keys (Champion.Key) of this week's free champions on the configured platform
+    Task<IReadOnlyList<int>> GetFreeChampionKeysAsync(CancellationToken ct = default);
+
+    // Every champion the player has points on, most points first
+    Task<IReadOnlyList<ChampionMastery>> GetChampionMasteriesAsync(string puuid, CancellationToken ct = default);
+
     // Null when the match doesn't exist
     Task<RiotMatch?> GetMatchAsync(string matchId, CancellationToken ct = default);
 }

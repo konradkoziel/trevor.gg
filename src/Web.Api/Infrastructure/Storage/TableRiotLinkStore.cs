@@ -20,6 +20,15 @@ public class TableRiotLinkStore(TableServiceClient tables) : IRiotLinkStore
         return e is null ? null : new RiotLink(discordId, e.Puuid, e.RiotId, e.At);
     }
 
+    public async Task<IReadOnlyList<RiotLink>> ListLinksAsync(CancellationToken ct = default)
+    {
+        var table = await TableAsync(ct);
+        var links = new List<RiotLink>();
+        await foreach (var e in table.QueryAsync<RiotLinkEntity>(e => e.RowKey == LinkRow, cancellationToken: ct))
+            links.Add(new RiotLink(e.PartitionKey, e.Puuid, e.RiotId, e.At));
+        return links;
+    }
+
     public async Task<RiotLinkChallenge?> GetChallengeAsync(string discordId, CancellationToken ct = default)
     {
         var e = await GetAsync(discordId, ChallengeRow, ct);

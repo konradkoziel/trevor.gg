@@ -4,6 +4,9 @@ public interface IRiotLinkStore
 {
     Task<RiotLink?> GetLinkAsync(string discordId, CancellationToken ct = default);
 
+    // Every verified link, for the leaderboard
+    Task<IReadOnlyList<RiotLink>> ListLinksAsync(CancellationToken ct = default);
+
     Task<RiotLinkChallenge?> GetChallengeAsync(string discordId, CancellationToken ct = default);
 
     // Replaces an earlier challenge of the same user

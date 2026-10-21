@@ -59,6 +59,25 @@ public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options)
         return await response.Content.ReadFromJsonAsync<List<string>>(ct) ?? [];
     }
 
+    public async Task<IReadOnlyList<int>> GetFreeChampionKeysAsync(CancellationToken ct = default)
+    {
+        var url = $"https://{options.Value.Platform.ToLowerInvariant()}.api.riotgames.com/lol/platform/v3/champion-rotations";
+
+        using var response = await SendAsync(url, ct);
+        EnsureSuccess(response);
+        return (await response.Content.ReadFromJsonAsync<ChampionRotationDto>(ct))?.FreeChampionIds ?? [];
+    }
+
+    public async Task<IReadOnlyList<ChampionMastery>> GetChampionMasteriesAsync(string puuid, CancellationToken ct = default)
+    {
+        var url = $"https://{options.Value.Platform.ToLowerInvariant()}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" +
+                  Uri.EscapeDataString(puuid);
+
+        using var response = await SendAsync(url, ct);
+        EnsureSuccess(response);
+        return await response.Content.ReadFromJsonAsync<List<ChampionMastery>>(ct) ?? [];
+    }
+
     public async Task<RiotMatch?> GetMatchAsync(string matchId, CancellationToken ct = default)
     {
         var region = RiotRouting.MatchRegion(options.Value.Platform);
@@ -81,6 +100,9 @@ public class RiotApiClient(HttpClient httpClient, IOptions<RiotOptions> options)
         request.Headers.Add("X-Riot-Token", options.Value.ApiKey);
         return httpClient.SendAsync(request, ct);
     }
+
+    // Champion-V3 ChampionInfo (only the field we use)
+    private sealed record ChampionRotationDto(List<int>? FreeChampionIds);
 
     private static void EnsureSuccess(HttpResponseMessage response)
     {

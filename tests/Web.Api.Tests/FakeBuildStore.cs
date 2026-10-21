@@ -12,6 +12,9 @@ public sealed class FakeBuildStore : IBuildStore
     public Task<IReadOnlyList<StoredBuild>> ListByOwnerAsync(string ownerId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<StoredBuild>>(Builds.Values.Where(b => b.OwnerId == ownerId).OrderByDescending(b => b.UpdatedAt).ToList());
 
+    public Task<IReadOnlyList<StoredBuild>> ListRecentAsync(int count, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<StoredBuild>>(Builds.Values.OrderByDescending(b => b.UpdatedAt).Take(count).ToList());
+
     public Task SaveAsync(StoredBuild build, CancellationToken ct = default)
     {
         Builds[build.Id] = build;

@@ -14,7 +14,7 @@ export function NewBuildPage() {
   if (!champion)
     return (
       <p className="error">
-        Nie ma takiego championa. <Link to="/">Wybierz z listy</Link>.
+        Nie ma takiego championa. <Link to="/buildy">Wybierz z listy</Link>.
       </p>
     )
 

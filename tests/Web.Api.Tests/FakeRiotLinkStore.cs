@@ -9,6 +9,9 @@ public sealed class FakeRiotLinkStore : IRiotLinkStore
 
     public Task<RiotLink?> GetLinkAsync(string discordId, CancellationToken ct = default) => Task.FromResult(Links.GetValueOrDefault(discordId));
 
+    public Task<IReadOnlyList<RiotLink>> ListLinksAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<RiotLink>>(Links.Values.ToList());
+
     public Task<RiotLinkChallenge?> GetChallengeAsync(string discordId, CancellationToken ct = default) =>
         Task.FromResult(Challenges.GetValueOrDefault(discordId));
 

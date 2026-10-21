@@ -48,6 +48,27 @@ public class RiotApiClientTests
     }
 
     [Fact]
+    public async Task GetFreeChampionKeys_ReadsTheRotation()
+    {
+        var handler = new StubHandler(_ => Json("""{"freeChampionIds":[157,103],"freeChampionIdsForNewPlayers":[1],"maxNewPlayerLevel":10}"""));
+
+        Assert.Equal([157, 103], await Client(handler).GetFreeChampionKeysAsync());
+        Assert.Equal("https://eun1.api.riotgames.com/lol/platform/v3/champion-rotations", Assert.Single(handler.Requests).RequestUri!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task GetChampionMasteries_ReadsPoints()
+    {
+        var handler = new StubHandler(_ => Json("""[{"puuid":"p1","championId":157,"championLevel":42,"championPoints":512000,"lastPlayTime":1}]"""));
+
+        var mastery = Assert.Single(await Client(handler).GetChampionMasteriesAsync("p1"));
+
+        Assert.Equal(new ChampionMastery(157, 42, 512000), mastery);
+        Assert.Equal("https://eun1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/p1",
+            handler.Requests[0].RequestUri!.AbsoluteUri);
+    }
+
+    [Fact]
     public async Task GetSummoner_UsesPlatformHost_AndReadsTheIcon()
     {
         var handler = new StubHandler(_ => Json("""{"puuid":"p1","profileIconId":4,"revisionDate":1,"summonerLevel":312}"""));

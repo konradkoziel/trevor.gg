@@ -33,6 +33,16 @@ public class TableBuildStore(TableServiceClient tables) : IBuildStore
         return builds.OrderByDescending(b => b.UpdatedAt).ToList();
     }
 
+    // A full scan: fine for one server's builds (MaxBuildsPerUser each)
+    public async Task<IReadOnlyList<StoredBuild>> ListRecentAsync(int count, CancellationToken ct = default)
+    {
+        var table = await TableAsync(ct);
+        var builds = new List<StoredBuild>();
+        await foreach (var e in table.QueryAsync<BuildEntity>(cancellationToken: ct))
+            builds.Add(ToBuild(e));
+        return builds.OrderByDescending(b => b.UpdatedAt).Take(count).ToList();
+    }
+
     public async Task SaveAsync(StoredBuild build, CancellationToken ct = default)
     {
         var table = await TableAsync(ct);
