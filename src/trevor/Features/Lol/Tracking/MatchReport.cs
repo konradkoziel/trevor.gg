@@ -4,8 +4,10 @@ using trevor.Infrastructure.Riot.Models;
 
 namespace trevor.Features.Lol.Tracking;
 
-// A finished match from the tracked players' side, plus the worst player of their team as the report candidate
-public record MatchReport(string Queue, long DurationSeconds, IReadOnlyList<MatchReportPlayer> Players, MatchReportPlayer Feeder)
+// A finished match from the tracked players' side: who of them played, plus the best (MVP) and the worst
+// (report candidate) player of their team — tracked players included
+public record MatchReport(
+    string Queue, long DurationSeconds, IReadOnlyList<MatchReportPlayer> Players, MatchReportPlayer Mvp, MatchReportPlayer Feeder)
 {
     public bool IsRemake => MatchRules.IsRemake(DurationSeconds);
 
@@ -21,32 +23,38 @@ public record MatchReport(string Queue, long DurationSeconds, IReadOnlyList<Matc
             .Where(p => names.ContainsKey(p.Puuid))
             .Select(p => MatchReportPlayer.From(p, names[p.Puuid], isTracked: true))
             .ToList();
-        if (ours.Count == 0 || info.Participants.Count == 0)
+        if (ours.Count == 0)
             return null;
 
-        var feeder = ReportCandidates(info.Participants, names.Keys.ToHashSet())
-            .OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).First();
-        var feederName = names.GetValueOrDefault(feeder.Puuid) ?? RiotNames.RiotId(feeder) ?? feeder.ChampionName;
+        var candidates = TheirTeam(info.Participants, names.Keys.ToHashSet());
+        var mvp = candidates
+            .OrderByDescending(KdaRatio).ThenByDescending(p => p.Kills + p.Assists).ThenByDescending(p => p.TotalDamageDealtToChampions)
+            .First();
+        var feeder = candidates
+            .OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).ThenBy(p => p.TotalDamageDealtToChampions)
+            .First();
 
         return new MatchReport(
             RiotNames.Queue(info.QueueId, info.GameMode),
             info.GameDuration,
             ours,
-            MatchReportPlayer.From(feeder, feederName, names.ContainsKey(feeder.Puuid)));
+            Describe(mvp, names),
+            Describe(feeder, names));
     }
 
-    // Randoms on the tracked players' team; the tracked players themselves when they were a full premade;
-    // the whole match when tracked players were on both teams (a custom game among friends)
-    private static IEnumerable<RiotMatchParticipant> ReportCandidates(IReadOnlyList<RiotMatchParticipant> participants, HashSet<string> tracked)
+    // The tracked players' team; the whole match when tracked players were on both teams (a custom game among friends)
+    private static IReadOnlyList<RiotMatchParticipant> TheirTeam(IReadOnlyList<RiotMatchParticipant> participants, HashSet<string> tracked)
     {
         var teams = participants.Where(p => tracked.Contains(p.Puuid)).Select(p => p.TeamId).Distinct().ToList();
-        if (teams.Count != 1)
-            return participants;
-
-        var team = participants.Where(p => p.TeamId == teams[0]).ToList();
-        var randoms = team.Where(p => !tracked.Contains(p.Puuid)).ToList();
-        return randoms.Count > 0 ? randoms : team;
+        return teams.Count == 1 ? participants.Where(p => p.TeamId == teams[0]).ToList() : participants;
     }
+
+    // Tracked players by their stored Riot ID, everyone else by the Riot ID in the match, or the champion
+    private static MatchReportPlayer Describe(RiotMatchParticipant p, Dictionary<string, string> trackedNames) =>
+        MatchReportPlayer.From(
+            p,
+            trackedNames.GetValueOrDefault(p.Puuid) ?? RiotNames.RiotId(p) ?? p.ChampionName,
+            trackedNames.ContainsKey(p.Puuid));
 
     // Deaths count as at least one, so a deathless game ranks by kills + assists
     private static double KdaRatio(RiotMatchParticipant p) => (double)(p.Kills + p.Assists) / Math.Max(p.Deaths, 1);

@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using trevor.Features.Lol.Tracking;
 using trevor.Infrastructure.Discord;
-using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot.Models;
 using static trevor.Tests.TrackingTestData;
 
@@ -19,9 +18,9 @@ public class MatchTrackerTests
         new() { MatchIds = [matchId], MatchesById = new Dictionary<string, RiotMatch> { [matchId] = match } };
 
     private static Task<int> Run(
-        FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, FakeAi? ai = null, string? webhook = Webhook,
-        FakeReportedMatchStore? reported = null) =>
-        new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, new FakeDataDragon(), ai ?? new FakeAi("Komentarz."), discord,
+        FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, string? webhook = Webhook,
+        FakeReportedMatchStore? reported = null, FakeDataDragon? dataDragon = null) =>
+        new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, dataDragon ?? new FakeDataDragon(), discord,
                 Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }), NullLogger<MatchTracker>.Instance)
             .PostNewMatchesAsync();
 
@@ -137,17 +136,17 @@ public class MatchTrackerTests
     }
 
     [Fact]
-    public async Task AiGetsTheReport_AndFallsBackWhenUnavailable()
+    public async Task Card_ShowsMvpAndFeeder_WithMvpIcon()
     {
-        var ai = new FakeAi(reply: null);
         var discord = new FakeDiscordApi();
+        var dataDragon = new FakeDataDragon();
 
-        await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, ai);
+        await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, dataDragon: dataDragon);
 
-        Assert.Equal(TrevorPrompts.MatchSummary, ai.LastInstruction);
-        Assert.Contains("Kandydat do reportu (najgorsze KDA w ich drużynie): Random#EUNE", ai.LastInput);
-        var verdict = Assert.Single(discord.Webhooks).Message.Embeds![0].Fields![^1].Value;
-        Assert.Equal("*Przegrana. Nikt nie jest zaskoczony.*", verdict);
+        var embed = Assert.Single(discord.Webhooks).Message.Embeds![0];
+        Assert.Equal(["Ann#EUNE", "🏆 MVP", "🚨 Do reportu"], embed.Fields!.Select(f => f.Name));
+        Assert.Equal("Thresh", dataDragon.RequestedChampion);
+        Assert.NotNull(embed.Thumbnail);
     }
 
     [Fact]
