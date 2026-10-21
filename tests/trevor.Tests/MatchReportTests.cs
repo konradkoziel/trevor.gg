@@ -21,13 +21,50 @@ public class MatchReportTests
     }
 
     [Fact]
-    public void Feeder_IsTheWorstRandomOnTheirTeam_ByRiotId()
+    public void Feeder_IsTheWorstOfTheirTeam_ByRiotId()
     {
         var feeder = MatchReport.For(Match(), [Ann])!.Feeder;
 
         Assert.Equal("Random#EUNE", feeder.Name);
         Assert.Equal((0, 10, 2), (feeder.Kills, feeder.Deaths, feeder.Assists));
         Assert.False(feeder.IsTracked);
+    }
+
+    [Fact]
+    public void TrackedPlayer_CanBeTheFeeder()
+    {
+        var match = Match();
+        var annFeeds = match with
+        {
+            Info = match.Info with
+            {
+                Participants = [.. match.Info.Participants.Select(p => p.Puuid == "puuid-1" ? p with { Kills = 0, Deaths = 15, Assists = 1 } : p)]
+            }
+        };
+
+        var feeder = MatchReport.For(annFeeds, [Ann, Bob])!.Feeder;
+
+        Assert.Equal("Ann#EUNE", feeder.Name);
+        Assert.True(feeder.IsTracked);
+    }
+
+    [Fact]
+    public void Mvp_IsTheBestOfTheirTeam_TrackedPlayersIncluded()
+    {
+        var mvp = MatchReport.For(Match(), [Ann, Bob])!.Mvp;
+
+        Assert.Equal("Bob#EUNE", mvp.Name);
+        Assert.Equal(("Thresh", 7, 2, 10), (mvp.Champion, mvp.Kills, mvp.Deaths, mvp.Assists));
+    }
+
+    [Fact]
+    public void Mvp_IgnoresTheEnemyTeam()
+    {
+        // enemy-2 went 15/2/4, better than anyone on Ann's team; Bob is untracked here and has no Riot ID in the data
+        var mvp = MatchReport.For(Match(), [Ann])!.Mvp;
+
+        Assert.Equal(("Thresh", 7, 2, 10), (mvp.Name, mvp.Kills, mvp.Deaths, mvp.Assists));
+        Assert.False(mvp.IsTracked);
     }
 
     [Fact]
@@ -45,9 +82,12 @@ public class MatchReportTests
     }
 
     [Fact]
-    public void TrackedPlayersOnBothTeams_BlameTheWorstOfTheMatch()
+    public void TrackedPlayersOnBothTeams_PickFromTheWholeMatch()
     {
-        Assert.Equal("Nick#EUNE", MatchReport.For(Match(bobOnEnemyTeam: true), [Ann, Bob])!.Feeder.Name);
+        var report = MatchReport.For(Match(bobOnEnemyTeam: true), [Ann, Bob])!;
+
+        Assert.Equal("Nick#EUNE", report.Feeder.Name);
+        Assert.Equal((15, 2, 4), (report.Mvp.Kills, report.Mvp.Deaths, report.Mvp.Assists));
     }
 
     [Fact]
@@ -78,20 +118,20 @@ public class MatchReportTests
     }
 
     [Fact]
-    public void Message_ShowsPlayersFeederAndComment()
+    public void Message_ShowsPlayersMvpAndFeeder_WithoutVerdict()
     {
         var report = MatchReport.For(Match(), [Ann, Bob])!;
 
-        var embed = Assert.Single(MatchReportMessage.Format(report, "Typowe.", "https://icons.test/Amumu.png").Embeds!);
+        var embed = Assert.Single(MatchReportMessage.Format(report, "https://icons.test/Thresh.png").Embeds!);
 
         Assert.Equal("❌ Przegrana · Ranked Solo/Duo · 30 min", embed.Title);
         var fields = embed.Fields!;
-        Assert.Equal(["Ann#EUNE", "Bob#EUNE", "🚨 Do reportu", "Werdykt Trevora"], fields.Select(f => f.Name));
+        Assert.Equal(["Ann#EUNE", "Bob#EUNE", "🏆 MVP", "🚨 Do reportu"], fields.Select(f => f.Name));
         Assert.Equal("Yasuo (Mid)\n**2/9/3**", fields[0].Value);
         Assert.True(fields[0].Inline);
-        Assert.Equal("**Random#EUNE** — Amumu (Jungle) · 0/10/2", fields[2].Value);
-        Assert.Equal("*Typowe.*", fields[3].Value);
-        Assert.Equal("https://icons.test/Amumu.png", embed.Thumbnail!.Url);
+        Assert.Equal("**Bob#EUNE** — Thresh (Support) · 7/2/10", fields[2].Value);
+        Assert.Equal("**Random#EUNE** — Amumu (Jungle) · 0/10/2", fields[3].Value);
+        Assert.Equal("https://icons.test/Thresh.png", embed.Thumbnail!.Url);
     }
 
     [Fact]
@@ -103,7 +143,7 @@ public class MatchReportTests
             Ann, Bob, new("ally-1", "Gracz1#EUNE", null), new("ally-2", "Gracz2#EUNE", null), new("ally-3", "Gracz3#EUNE", null)
         ];
 
-        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(match, premade)!, "x", null).Embeds!);
+        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(match, premade)!, null).Embeds!);
 
         Assert.EndsWith("swój, wstyd podwójny", Assert.Single(embed.Fields!, f => f.Name == "🚨 Do reportu").Value);
         Assert.Null(embed.Thumbnail);

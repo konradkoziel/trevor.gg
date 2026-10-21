@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using trevor.Infrastructure.Discord;
-using trevor.Infrastructure.OpenAi;
 using trevor.Infrastructure.Riot;
 
 namespace trevor.Features.Lol.Tracking;
@@ -12,13 +11,10 @@ public class MatchTracker(
     IReportedMatchStore reported,
     IRiotApiClient riot,
     IDataDragon dataDragon,
-    ITrevorAi ai,
     IDiscordApiClient discord,
     IOptions<DiscordOptions> options,
     ILogger<MatchTracker> logger)
 {
-    private const int CommentMaxTokens = 100;
-
     // Returns how many reports were posted
     public async Task<int> PostNewMatchesAsync(CancellationToken ct = default)
     {
@@ -101,15 +97,11 @@ public class MatchTracker(
         var report = match is null ? null : MatchReport.For(match, tracked);
         if (report is { IsRemake: false })
         {
-            var icon = await dataDragon.ChampionIconUrlAsync(report.Feeder.Champion, ct);
-            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, await CommentAsync(report, ct), icon), ct);
+            var icon = await dataDragon.ChampionIconUrlAsync(report.Mvp.Champion, ct);
+            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, icon), ct);
         }
 
         await reported.AddAsync(matchId, ct);
         return report is { IsRemake: false };
     }
-
-    private async Task<string> CommentAsync(MatchReport report, CancellationToken ct) =>
-        await ai.ReplyAsync(TrevorPrompts.MatchSummary, MatchReportMessage.AiInput(report), CommentMaxTokens, ct)
-        ?? MatchReportMessage.FallbackComment(report);
 }
