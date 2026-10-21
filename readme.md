@@ -51,7 +51,10 @@ Friends in the same game get one shared card, even when Riot lists the match for
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
 ### 🌐 Website (work in progress)
-A React site for builds and stats. So far: a searchable champion picker (names and titles in Polish, icons from Data Dragon),
+A React site for builds and stats. The **home page** has Trevor's quote of the day, the champion of the day (splash art, lore,
+"make a build"), this week's free rotation and, for logged-in users, the *Ranking zmarnowanego czasu* (linked players by
+mastery points and account level; Riot publishes no hours played) and the team's newest builds. Builds live under `/buildy`:
+a searchable champion picker (names and titles in Polish, icons from Data Dragon),
 **Log in with Discord** (the same Discord id the bot sees; with `DISCORD_GUILD_ID` set only members of Trevor's server get in,
 shown with their server nickname and avatar; after the first consent, logging in again skips Discord's consent screen) and the **build editor**:
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
@@ -92,7 +95,7 @@ Login: site ─▶ /api/auth/discord/login ─▶ discord.com (Authorize) ─▶
 - **Website:** separate resource group `trevor-web`, created from `infra/web.bicep` by its own workflow; the bot is never redeployed for a website-only change.
 - **Queue-based deferral:** Discord needs an answer within 3 s; slow work goes through the `deferred-commands` queue and is retried if posting to Discord fails.
 
-More detail: [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
+More detail: [`docs/setup.md`](docs/setup.md) (optional settings still to add by hand), [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
 
 ---
 

@@ -117,7 +117,9 @@ rate limits add up). All optional: without them only login / Riot account linkin
   PUT/DELETE owner only), `GET /api/me/builds`. `BuildValidator` re-checks every build against the patch and the game's rules
   (`SkillOrderRules` mirrors `src/web/src/features/builds/skillOrder.ts` — change both together). Builds are stored by
   `Infrastructure/Storage/TableBuildStore` in table `builds` of the API's storage (PartitionKey = build id, the build as JSON);
-  `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
+  `Home` → `GET /api/rotation` (public, `FreeRotation` caches 1 h), `GET /api/leaderboard` (logged in; `Leaderboard` sums
+  Champion-Mastery-V4 points per linked player, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
+  not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
   matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `BOT_API_KEY`;
   `RiotAccount` → link a League account: `POST /api/me/riot/challenge` (Riot ID → a default profile icon 0-28 to set, 15 min),
   `POST /api/me/riot/verify` (Summoner-V4 icon check), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id,
@@ -127,7 +129,8 @@ rate limits add up). All optional: without them only login / Riot account linkin
   no remakes); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader), `src/features/<name>/` components;
   rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
-  component per route of `react-router` (`/`, `/nowy/:championId`, `/b/:id`); `CurrentUserProvider` shares the logged-in user),
+  component per route of `react-router` (`/` home, `/buildy`, `/nowy/:championId`, `/b/:id`, `/konto`, `/statystyki`); daily picks
+  (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; `CurrentUserProvider` shares the logged-in user),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).
