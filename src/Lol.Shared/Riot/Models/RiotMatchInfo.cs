@@ -5,4 +5,5 @@ public record RiotMatchInfo(
     long GameDuration, // seconds
     int QueueId,
     string GameMode,
-    IReadOnlyList<RiotMatchParticipant> Participants);
+    IReadOnlyList<RiotMatchParticipant> Participants,
+    long GameEndTimestamp = 0); // Unix ms; 0 when Riot leaves it out
