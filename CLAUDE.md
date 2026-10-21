@@ -107,9 +107,13 @@ OAuth2 → Redirects), `SITE_URL`. All optional: without them only login is off 
 - Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `src/Lol.Shared/`
   (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `src/Web.Api/` + `tests/Web.Api.Tests/` (website API: `Features/<Name>/` with one HTTP function each, e.g. `Champions` → `GET /api/champions`,
   `Champions` also `GET /api/champions/{id}/abilities` (only ids from the champion list), `Builds` → `GET /api/build-data` (items, rune trees,
-  summoner spells), `Auth` → Discord login, `Account` → `GET /api/me`; `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
+  summoner spells), `Auth` → Discord login, `Account` → `GET /api/me`; builds CRUD: `POST /api/builds`, `GET|PUT|DELETE /api/builds/{id}` (GET public,
+  PUT/DELETE owner only), `GET /api/me/builds`. `BuildValidator` re-checks every build against the patch and the game's rules
+  (`SkillOrderRules` mirrors `src/web/src/features/builds/skillOrder.ts` — change both together). Builds are stored by
+  `Infrastructure/Storage/TableBuildStore` in table `builds` of the API's storage (PartitionKey = build id, the build as JSON); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader), `src/features/<name>/` components;
-  rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`),
+  rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
+  component per route of `react-router` (`/`, `/nowy/:championId`, `/b/:id`); `CurrentUserProvider` shares the logged-in user),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).

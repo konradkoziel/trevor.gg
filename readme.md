@@ -49,7 +49,9 @@ A React site for builds and stats. So far: a searchable champion picker (names a
 **Log in with Discord** (only the `identify` scope: id, name, avatar — the same Discord id the bot sees) and the **build editor**:
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
 skill order for levels 1–18 (impossible orders can't be clicked; the max order, e.g. Q > E > W, is shown).
-Next: saving builds, sharing them by link, your own stats per champion.
+Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
+under **Moje buildy**, and **share** a link (`/b/<id>`): anyone can open it read-only, only you can edit or delete it.
+Next: your own stats per champion, `/build` in Trevor.
 
 ---
 
@@ -117,7 +119,7 @@ src/trevor/            Function App: Functions/, Core/, Features/, Infrastructur
 src/Lol.Shared/        class library shared by the apps: Riot API client, Data Dragon, models
 tests/trevor.Tests/    xUnit tests of the bot
 tests/Lol.Shared.Tests/ xUnit tests of the shared Riot code
-src/Web.Api/           Function App with the website's API (champions, build data, abilities, Discord login, /me)
+src/Web.Api/           Function App with the website's API (champions, build data, abilities, Discord login, /me, builds)
 tests/Web.Api.Tests/   xUnit tests of the API
 src/web/               website: React + Vite + TypeScript (npm run dev / test / lint / build)
 infra/web.bicep        Azure resources of the website
