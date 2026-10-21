@@ -14,6 +14,10 @@ public static class DiscordAvatars
     // Snowflake ids keep their creation time above bit 22; the default avatar is chosen from that part
     private const int SnowflakeTimestampShift = 22;
 
+    // The avatar a member set for one server only
+    public static string GuildUrl(string guildId, string userId, string avatarHash) =>
+        $"{CdnUrl}/guilds/{guildId}/users/{userId}/avatars/{avatarHash}.png?size={Size}";
+
     public static string Url(string userId, string? avatarHash)
     {
         if (!string.IsNullOrEmpty(avatarHash))

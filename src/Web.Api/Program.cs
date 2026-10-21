@@ -31,6 +31,7 @@ builder.Services.AddOptions<DiscordOAuthOptions>()
         options.ClientSecret = config["DISCORD_CLIENT_SECRET"] ?? string.Empty;
         options.RedirectUri = config["DISCORD_REDIRECT_URI"] ?? string.Empty;
         options.SiteUrl = config["SITE_URL"] ?? string.Empty;
+        options.GuildId = config["DISCORD_GUILD_ID"];
     });
 builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 

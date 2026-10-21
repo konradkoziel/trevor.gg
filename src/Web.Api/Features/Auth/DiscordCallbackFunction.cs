@@ -24,19 +24,32 @@ public class DiscordCallbackFunction(
         if (!settings.IsConfigured)
             return new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
 
-        if (!LoginState.Finish(req, req.HttpContext.Response, req.Query["state"]))
+        var check = LoginState.Finish(req, req.HttpContext.Response, req.Query["state"]);
+        if (!check.Valid)
         {
             logger.LogWarning("Discord login rejected: state missing or different");
             return new RedirectResult(SiteRedirects.LoginFailed(settings.SiteUrl));
         }
 
-        // Missing when the user clicked "Cancel" on Discord
-        var code = req.Query["code"].ToString();
-        var user = string.IsNullOrEmpty(code) ? null : await discord.GetUserAsync(code, ct);
-        if (user is null)
-            return new RedirectResult(SiteRedirects.LoginFailed(settings.SiteUrl));
+        // An error after the silent attempt means "consent needed" (first login, new scope): ask once, properly.
+        // After the consent screen it means the user clicked "Cancel".
+        if (!string.IsNullOrEmpty(req.Query["error"]))
+            return check.WasSilent ? AskForConsent(req) : new RedirectResult(SiteRedirects.LoginFailed(settings.SiteUrl));
 
-        var token = await sessions.IssueAsync(new SessionUser(user.Id, user.DisplayName, DiscordAvatars.Url(user.Id, user.Avatar)), ct);
-        return new RedirectResult(SiteRedirects.LoggedIn(settings.SiteUrl, token));
+        var code = req.Query["code"].ToString();
+        var identity = string.IsNullOrEmpty(code) ? null : await discord.GetIdentityAsync(code, ct);
+        if (identity is null)
+            return new RedirectResult(SiteRedirects.LoginFailed(settings.SiteUrl));
+        if (settings.IsGuildOnly && identity.Member is null)
+            return new RedirectResult(SiteRedirects.NotMember(settings.SiteUrl));
+
+        var user = new SessionUser(identity.User.Id, identity.DisplayName, identity.AvatarUrl(settings.GuildId));
+        return new RedirectResult(SiteRedirects.LoggedIn(settings.SiteUrl, await sessions.IssueAsync(user, ct)));
+    }
+
+    private RedirectResult AskForConsent(HttpRequest req)
+    {
+        var state = LoginState.Start(req.HttpContext.Response, silent: false);
+        return new RedirectResult(discord.AuthorizeUrl(state, silent: false).AbsoluteUri);
     }
 }

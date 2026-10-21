@@ -20,6 +20,15 @@ public static class TestAuth
         SiteUrl = SiteUrl,
     });
 
+    public const string GuildId = "4242";
+
+    public static IOptions<DiscordOAuthOptions> GuildOnly()
+    {
+        var options = Configured();
+        options.Value.GuildId = GuildId;
+        return options;
+    }
+
     public static IOptions<DiscordOAuthOptions> NotConfigured() => Options.Create(new DiscordOAuthOptions());
 
     public static SessionTokens Tokens(FakeTimeProvider? time = null, byte keyFill = 7) =>
