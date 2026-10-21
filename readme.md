@@ -20,15 +20,21 @@ Connects directly to **Azure OpenAI**.
 Trevor reads your question, consults the neural gods, and answers briefly and precisely.
 He’s helpful by contract, but not necessarily polite.
 
-### `/rank nick: Nick#EUNE`
+### `/rank nick: Nick#EUNE` (or just `/rank`)
 Pulls Solo/Duo and Flex rank (tier, LP, wins/losses, winrate) from the **Riot API** and shows it as a Discord **embed**:
 the ranked emblem of your main queue (Solo/Duo, else Flex), a bar in the tier's colour, and both queues in columns.
 Trevor reads your LP and writes a fresh AI verdict on it every time.
 
-### `/roast nick: Nick#EUNE`
+### `/roast nick: Nick#EUNE` (or just `/roast`)
 Fetches the player's **last match** and shows it as a Discord **embed**: champion icon, a green/red bar for win/loss,
 and KDA, CS/min, damage share, kill participation, vision and gold in columns — topped off with Trevor's AI roast.
 Played well? He'll still find something.
+
+Without a nick, `/rank` and `/roast` use the League account you linked on the website.
+
+### `/build champion: Yasuo`
+Your newest build for that champion from the website, as an embed: items in buy order, runes, summoner spells, the skill max
+order and a link to the build on the site. Typing is forgiving: `yasuo`, `Kai'Sa`, `kaisa`, `wukong` all work.
 
 ### Right-click a message → Apps → `Rate this`
 A message context-menu command: Trevor quotes the message and judges it (meaning, cringe level, spelling, maybe a 1–10 score).
@@ -103,6 +109,7 @@ Azure Function App settings (locally: copy `src/trevor/local.settings.example.js
 | `DISCORD_URL_MATCHES` | no | Webhook of the channel for tracked players' match cards; without it tracking posts nothing |
 | `AzureWebJobsStorage` | yes (Functions host) | Storage account **connection string**: queue, timers and the `trackedplayers` / `reportedmatches` tables |
 | `DISCORD_SKIP_SIGNATURE` | local only | `true` disables Discord signature checks for local testing |
+| `WEB_API_URL`, `WEB_API_KEY`, `WEB_SITE_URL` | no | The website's API address, the shared key (= GitHub secret `TREVOR_WEB_KEY`) and the site address. Without them `/rank` and `/roast` need a nick and `/build` says the site isn't connected |
 
 GitHub repository secrets used by the deploy workflow:
 
@@ -110,6 +117,7 @@ GitHub repository secrets used by the deploy workflow:
 |---|---|
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | OIDC login to Azure |
 | `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
+| `TREVOR_WEB_KEY` | Any long random string, shared by the website API (`BOT_API_KEY`, set by `web.yml`) and the bot (`WEB_API_KEY`, set by hand on the Function App Trevor). Without it the bot works without the site |
 | `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it, with `DISCORD_APP_ID`, to the API). Without it login answers 503 |
 | `RIOT_API_KEY` | The same Riot API key the bot uses, for the website (linking League accounts). Without it linking answers 503 |
 
