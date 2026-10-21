@@ -1,12 +1,15 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using Lol.Shared.Riot;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Web.Api.Features.Builds;
 using Web.Api.Infrastructure.Discord;
 using Web.Api.Infrastructure.Sessions;
+using Web.Api.Infrastructure.Storage;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -29,9 +32,14 @@ builder.Services.AddOptions<DiscordOAuthOptions>()
     });
 builder.Services.AddHttpClient<IDiscordOAuthClient, DiscordOAuthClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
 
-// Sessions: the signing key lives in the API's own storage account (AzureWebJobsStorage)
+// The API's own storage account (AzureWebJobsStorage): session signing key (blob) and builds (table)
 builder.Services.AddSingleton(sp => new BlobServiceClient(sp.GetRequiredService<IConfiguration>()["AzureWebJobsStorage"]));
+builder.Services.AddSingleton(sp => new TableServiceClient(sp.GetRequiredService<IConfiguration>()["AzureWebJobsStorage"]));
 builder.Services.AddSingleton<ISigningKeyStore, BlobSigningKeyStore>();
 builder.Services.AddSingleton<ISessionTokens, SessionTokens>();
+
+// Builds
+builder.Services.AddSingleton<IBuildStore, TableBuildStore>();
+builder.Services.AddSingleton<BuildValidator>();
 
 builder.Build().Run();
