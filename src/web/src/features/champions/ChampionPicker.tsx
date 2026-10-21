@@ -5,11 +5,10 @@ import { useApi } from '../../api/useApi'
 import { filterChampions } from './filterChampions'
 
 interface Props {
-  selectedId?: string
   onSelect: (champion: Champion) => void
 }
 
-export function ChampionPicker({ selectedId, onSelect }: Props) {
+export function ChampionPicker({ onSelect }: Props) {
   const state = useApi(fetchChampions)
   const [query, setQuery] = useState('')
 
@@ -37,7 +36,7 @@ export function ChampionPicker({ selectedId, onSelect }: Props) {
             <li key={c.id}>
               <button
                 type="button"
-                className={c.id === selectedId ? 'champion selected' : 'champion'}
+                className="champion"
                 onClick={() => onSelect(c)}
                 title={`${c.name}, ${c.title}`}
               >

@@ -1,4 +1,4 @@
-import { getJson } from './client'
+import { cachedOnce, getJson } from './client'
 
 // Mirrors Lol.Shared.Riot.Models.Champion
 export interface Champion {
@@ -8,4 +8,4 @@ export interface Champion {
   iconUrl: string
 }
 
-export const fetchChampions = (signal?: AbortSignal) => getJson<Champion[]>('champions', signal)
+export const fetchChampions = cachedOnce(() => getJson<Champion[]>('champions'))

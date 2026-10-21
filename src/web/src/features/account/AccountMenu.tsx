@@ -1,17 +1,11 @@
-import { loginUrl } from '../../auth/session'
+import { LoginLink } from './LoginLink'
 import { useCurrentUser } from './useCurrentUser'
 
 export function AccountMenu() {
   const { state, logout } = useCurrentUser()
 
   if (state.status === 'loading') return <span className="muted">…</span>
-
-  if (state.status === 'anonymous')
-    return (
-      <a className="button discord" href={loginUrl}>
-        Zaloguj przez Discorda
-      </a>
-    )
+  if (state.status === 'anonymous') return <LoginLink />
 
   return (
     <div className="account">

@@ -1,4 +1,4 @@
-import { getJson } from './client'
+import { cachedOnce, getJson } from './client'
 
 // Mirror Lol.Shared.Riot.Models (Item, Rune, RuneTree, SummonerSpell, ChampionAbility) and Web.Api BuildData
 export interface Item {
@@ -48,7 +48,7 @@ export interface ChampionAbility {
   iconUrl: string
 }
 
-export const fetchBuildData = (signal?: AbortSignal) => getJson<BuildData>('build-data', signal)
+export const fetchBuildData = cachedOnce(() => getJson<BuildData>('build-data'))
 
 export const fetchAbilities = (championId: string, signal?: AbortSignal) =>
   getJson<ChampionAbility[]>(`champions/${encodeURIComponent(championId)}/abilities`, signal)

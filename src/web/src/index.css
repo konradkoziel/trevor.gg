@@ -6,6 +6,7 @@
   --muted: #a09b8c;
   --gold: #c8aa6e;
   --error: #e84057;
+  --success: #3fb950;
   --discord: #5865f2;
   --discord-hover: #4752c4;
 
@@ -458,4 +459,80 @@ h2 {
 .button:disabled {
   cursor: default;
   opacity: 0.5;
+}
+
+.home-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-section + .home-section {
+  margin-top: 28px;
+}
+
+.editor-body {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+/* Read-only view: show the choices at full strength, only the clicking is off */
+.editor-body:disabled .rune.selected,
+.editor-body:disabled .skill-cell.chosen {
+  opacity: 1;
+}
+
+.editor-body:disabled .rune,
+.editor-body:disabled .skill-cell {
+  cursor: default;
+}
+
+.build-name {
+  margin: 6px 0 0;
+}
+
+.button.danger {
+  color: var(--error);
+  background: transparent;
+  border-color: var(--error);
+}
+
+.success {
+  color: var(--success);
+}
+
+.my-builds {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.my-build {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.my-build:hover {
+  border-color: var(--gold);
+}
+
+.my-build img {
+  border-radius: 6px;
+}
+
+.my-build-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
