@@ -3,10 +3,12 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router'
 import { completeLogin } from './auth/session'
 import { AccountMenu } from './features/account/AccountMenu'
 import { CurrentUserProvider } from './features/account/CurrentUserProvider'
+import { MainNav } from './features/account/MainNav'
 import { AccountPage } from './pages/AccountPage'
 import { BuildPage } from './pages/BuildPage'
 import { HomePage } from './pages/HomePage'
 import { NewBuildPage } from './pages/NewBuildPage'
+import { StatsPage } from './pages/StatsPage'
 
 // Before the first render, so the account menu already sees a token that just arrived
 const login = completeLogin()
@@ -26,6 +28,7 @@ export default function App() {
             </h1>
             <p className="muted">Buildy i statystyki, które Trevor i tak skrytykuje.</p>
           </div>
+          <MainNav />
           <AccountMenu />
         </header>
         <main className="main">
@@ -42,6 +45,7 @@ export default function App() {
             <Route path="/nowy/:championId" element={<NewBuildPage />} />
             <Route path="/b/:id" element={<BuildPage />} />
             <Route path="/konto" element={<AccountPage />} />
+            <Route path="/statystyki" element={<StatsPage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>

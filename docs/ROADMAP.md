@@ -24,7 +24,7 @@ Skala: wartość dla serwera / nakład (S/M/L) / ryzyko.
 | 8 | **Zaplanowane wiadomości konfigurowane komendą** (`/przypomnij`, tygodniowe podsumowanie) | średnia | M | Zastępuje hardkodowany timer |
 | 9 | **`/champ`** — losowy champion + rola + build „dla jaj” | niska–średnia | S | Statyczne dane z Data Dragon, zero kosztów |
 | 10 | Automatyczna rejestracja slash-komend z CI | średnia (dla Ciebie) | S | Definicje komend w kodzie = jedno źródło prawdy |
-| 11 | **Strona www**: kreator buildów, statystyki, logowanie przez Discorda, panel trackingu | wysoka | L | React w `src/web`, API jako osobna Function App, zasoby w `infra/web.bicep`. Zrobione: szkielet, logowanie przez Discorda, kreator buildów z zapisem i linkami. Dalej: statystyki, `/build` w Trevorze |
+| 11 | **Strona www**: kreator buildów, statystyki, logowanie przez Discorda, panel trackingu | wysoka | L | React w `src/web`, API jako osobna Function App, zasoby w `infra/web.bicep`. Zrobione: szkielet, logowanie przez Discorda, kreator buildów z zapisem i linkami, podpięcie konta LoL, statystyki z ostatnich gier. Dalej: `/build` w Trevorze |
 | ✗ | Muzyka / voice / reagowanie na wiadomości | — | L | Wymaga Gateway — poza modelem serverless |
 | ✗ | Generowanie obrazków/memów | niska | M | Koszt per wywołanie, łatwo przepalić budżet |
 

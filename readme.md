@@ -53,7 +53,10 @@ Logged in, you **save** builds (up to 50, checked again by the API against the c
 under **Moje buildy**, and **share** a link (`/b/<id>`): anyone can open it read-only, only you can edit or delete it.
 Under **Konto** (click your name) you link your League account: enter your Riot ID, set the default profile icon the site
 shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so nobody can claim someone else's account.
-Next: your own stats per champion from the linked account, `/build` in Trevor.
+With a linked account, **Statystyki** shows your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
+KDA, CS/min, damage/min; Summoner's Rift only, no remakes) and the recent games. Each match is fetched from Riot once and kept;
+a reload within 2 minutes doesn't ask Riot again.
+Next: `/build` in Trevor.
 
 ---
 

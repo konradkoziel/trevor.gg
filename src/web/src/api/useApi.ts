@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export type ApiState<T> = { status: 'loading' } | { status: 'error' } | { status: 'ready'; data: T }
+export type ApiState<T> = { status: 'loading' } | { status: 'error'; error: unknown } | { status: 'ready'; data: T }
 
 type Loader<T, A> = (signal: AbortSignal, arg: A) => Promise<T>
 
@@ -13,8 +13,8 @@ export function useApi<T, A extends string | null = null>(load: Loader<T, A>, ar
     const controller = new AbortController()
     load(controller.signal, arg)
       .then((data) => setResult({ arg, state: { status: 'ready', data } }))
-      .catch(() => {
-        if (!controller.signal.aborted) setResult({ arg, state: { status: 'error' } })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) setResult({ arg, state: { status: 'error', error } })
       })
     return () => controller.abort()
   }, [load, arg])
