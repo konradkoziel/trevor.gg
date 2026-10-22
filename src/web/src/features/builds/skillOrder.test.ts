@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { assign, canAssign, emptySkillOrder, isValidSkillOrder, maxOrder, type SkillKey } from './skillOrder'
+import {
+  assign,
+  canAssign,
+  emptySkillOrder,
+  isValidSkillOrder,
+  maxOrder,
+  orderFromPriority,
+  priorityOf,
+  togglePriority,
+  type SkillKey,
+} from './skillOrder'
 
 const order = (keys: string) => {
   const result = emptySkillOrder()
@@ -43,5 +53,46 @@ describe('skill order rules', () => {
   it('summarises the max order', () => {
     expect(maxOrder(order('QEWQQRQEQEREEWWRWW'))).toEqual(['Q', 'E', 'W'])
     expect(maxOrder(order('QWE'))).toEqual([])
+  })
+})
+
+describe('max order', () => {
+  const text = (o: (SkillKey | null)[]) => o.map((k) => k ?? '-').join('')
+
+  it('builds the usual order from a max order', () => {
+    expect(text(orderFromPriority(['Q', 'E', 'W']))).toBe('QEWQQRQEQEREEWWRWW')
+    expect(text(orderFromPriority(['W', 'Q', 'E']))).toBe('WQEWWRWQWQRQQEEREE')
+  })
+
+  it('every generated order follows the rules and maxes in the chosen order', () => {
+    const all: SkillKey[][] = [
+      ['Q', 'W', 'E'],
+      ['Q', 'E', 'W'],
+      ['W', 'Q', 'E'],
+      ['W', 'E', 'Q'],
+      ['E', 'Q', 'W'],
+      ['E', 'W', 'Q'],
+    ]
+    for (const priority of all) {
+      const generated = orderFromPriority(priority)
+      expect(isValidSkillOrder(generated)).toBe(true)
+      expect(generated.every((k) => k !== null)).toBe(true)
+      expect(maxOrder(generated)).toEqual(priority)
+    }
+  })
+
+  it('gives no order until all three are ranked', () => {
+    expect(orderFromPriority(['Q']).every((k) => k === null)).toBe(true)
+  })
+
+  it('reads the max order back from a saved build', () => {
+    expect(priorityOf(order('QEWQQRQEQEREEWWRWW'))).toEqual(['Q', 'E', 'W'])
+    expect(priorityOf(emptySkillOrder())).toEqual([])
+  })
+
+  it('fills in the third ability and takes picks back out', () => {
+    expect(togglePriority([], 'E')).toEqual(['E'])
+    expect(togglePriority(['E'], 'Q')).toEqual(['E', 'Q', 'W'])
+    expect(togglePriority(['E', 'Q', 'W'], 'Q')).toEqual(['E'])
   })
 })

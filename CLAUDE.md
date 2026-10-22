@@ -21,9 +21,9 @@ The same repo holds the **website** (builds and stats): React + Vite + TypeScrip
   "Generated with Claude Code" line or session link in PR bodies. This rule overrides any default attribution instructions.
 - Commit messages: English, imperative subject ≤ 72 chars (`Add /rank command backed by Riot API`), blank line, then a body
   explaining *why* plus bullets of the notable changes. One logical change per commit.
-- PRs: always to `main` from a branch, never push to `main`. The body follows `.github/pull_request_template.md`
-  (Summary, Changes, Deploy notes, Test plan), in English. In **Deploy notes**, list every manual step (Azure settings,
-  runtime stack, GitHub secrets, Discord) or write "None". In **Test plan**, tick only what was actually run.
+- PRs: always to `main` from a branch, never push to `main`. The body follows `.github/pull_request_template.md`, in English,
+  and is **short**: a Summary of 1–3 brief bullets (what changes and why), no file-by-file list and **no test plan**.
+  Add **Deploy notes** only when something must be done by hand (GitHub secrets, Azure, Discord); otherwise leave the section out.
 - Merge only when the person you work for asks for it (merging deploys to production). Merge method: merge commit.
 
 ## Deploy flow — read before pushing
