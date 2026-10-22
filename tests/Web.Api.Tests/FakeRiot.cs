@@ -37,8 +37,10 @@ public sealed class FakeRiot : IRiotApiClient
     public Task<IReadOnlyList<ChampionMastery>> GetChampionMasteriesAsync(string puuid, CancellationToken ct = default) =>
         Task.FromResult(Masteries.GetValueOrDefault(puuid) ?? []);
 
+    public Dictionary<string, IReadOnlyList<LeagueEntry>> Entries { get; } = new();
+
     public Task<IReadOnlyList<LeagueEntry>> GetLeagueEntriesAsync(string puuid, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<LeagueEntry>>([]);
+        Task.FromResult(Entries.GetValueOrDefault(puuid) ?? []);
 
     public Task<IReadOnlyList<string>> GetRecentMatchIdsAsync(string puuid, int count, CancellationToken ct = default)
     {

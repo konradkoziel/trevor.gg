@@ -1,11 +1,12 @@
 ﻿using Lol.Shared.Riot;
 using Lol.Shared.Riot.Models;
 using Microsoft.Extensions.Logging;
+using Web.Api.Features.Ranks;
 using Web.Api.Features.RiotAccount;
 
 namespace Web.Api.Features.Home;
 
-// Every linked player by total mastery points. Two Riot calls per player, so the list is rebuilt
+// Every linked player by total mastery points. Three Riot calls per player, so the list is rebuilt
 // at most every few hours per app instance; a player Riot fails on is left out of that round
 public class Leaderboard(IRiotLinkStore links, IRiotApiClient riot, IDataDragon dataDragon, TimeProvider time, ILogger<Leaderboard> logger)
 {
@@ -41,11 +42,12 @@ public class Leaderboard(IRiotLinkStore links, IRiotApiClient riot, IDataDragon 
     {
         var summoner = await riot.GetSummonerAsync(link.Puuid, ct);
         var masteries = await riot.GetChampionMasteriesAsync(link.Puuid, ct);
+        var rank = RankedStandings.From(await riot.GetLeagueEntriesAsync(link.Puuid, ct)).FirstOrDefault();
         var top = masteries.MaxBy(m => m.ChampionPoints);
         var topChampion = top is null ? null : championsByKey.GetValueOrDefault(top.ChampionId);
         var icon = summoner is null ? null : await dataDragon.ProfileIconUrlAsync(summoner.ProfileIconId, ct);
 
         return new LeaderboardEntry(link.RiotId, icon, summoner?.SummonerLevel ?? 0, masteries.Sum(m => m.ChampionPoints),
-            topChampion?.Name, topChampion?.IconUrl, top?.ChampionPoints ?? 0);
+            topChampion?.Name, topChampion?.IconUrl, top?.ChampionPoints ?? 0, rank);
     }
 }

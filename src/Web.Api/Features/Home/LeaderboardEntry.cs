@@ -1,4 +1,6 @@
-﻿namespace Web.Api.Features.Home;
+﻿using Web.Api.Features.Ranks;
+
+namespace Web.Api.Features.Home;
 
 // One player of "Ranking zmarnowanego czasu". Riot publishes no hours played, so mastery points and account level stand in
 public record LeaderboardEntry(
@@ -8,4 +10,6 @@ public record LeaderboardEntry(
     long MasteryPoints,
     string? TopChampionName,
     string? TopChampionIconUrl,
-    long TopChampionPoints);
+    long TopChampionPoints,
+    // Solo/Duo, else Flex; null when unranked
+    RankedStanding? Rank = null);

@@ -1159,3 +1159,64 @@ img {
     transition: none !important;
   }
 }
+
+/* ---------- Ranks ---------- */
+
+.rank-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.rank-row .rank-badge {
+  padding: 8px 16px 8px 8px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.rank-badge {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.rank-badge img {
+  object-fit: contain;
+  /* the emblems have a lot of empty space around the crest */
+  transform: scale(1.35);
+}
+
+.rank-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rank-badge.unranked {
+  color: var(--muted);
+}
+
+.leader-name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+}
+
+.leader-name .rank-badge {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.tier-iron strong { color: #a19d94; }
+.tier-bronze strong { color: #c4814d; }
+.tier-silver strong { color: #b3c3cf; }
+.tier-gold strong { color: #e1b552; }
+.tier-platinum strong { color: #5fc4bd; }
+.tier-emerald strong { color: #2fc77a; }
+.tier-diamond strong { color: #7d8ff0; }
+.tier-master strong { color: #b86cf0; }
+.tier-grandmaster strong { color: #ec5c5c; }
+.tier-challenger strong { color: #f4d27a; }

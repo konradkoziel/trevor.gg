@@ -69,6 +69,7 @@ public class HomeTests
         var riot = new FakeRiot { Summoner = new RiotSummoner(7, 300) };
         riot.Masteries["p1"] = [new ChampionMastery(157, 30, 400_000), new ChampionMastery(103, 10, 50_000)];
         riot.Masteries["p2"] = [new ChampionMastery(86, 50, 900_000)];
+        riot.Entries["p1"] = [new LeagueEntry(LeagueEntry.FlexQueue, "SILVER", "I", 12, 10, 10)];
 
         var entries = await Board(riot).EntriesAsync();
 
@@ -79,6 +80,8 @@ public class HomeTests
         Assert.Equal(400_000, ann.TopChampionPoints);
         Assert.Equal(300, ann.Level);
         Assert.Equal("https://icons.test/profile/7.png", ann.ProfileIconUrl);
+        Assert.Equal("Silver I", ann.Rank!.Label);
+        Assert.Null(entries[0].Rank);
     }
 
     [Fact]

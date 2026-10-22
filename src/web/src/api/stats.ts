@@ -1,4 +1,5 @@
 import { getJson } from './client'
+import type { RankedStanding } from './ranks'
 
 // Mirror Web.Api.Features.Stats (PlayerStats, ChampionStats, RecentMatch)
 export interface ChampionStats {
@@ -32,6 +33,7 @@ export interface PlayerStats {
   kda: number
   champions: ChampionStats[]
   recent: RecentMatch[]
+  ranks: RankedStanding[] | null
 }
 
 export const fetchMyStats = (signal: AbortSignal) => getJson<PlayerStats>('me/stats', signal)

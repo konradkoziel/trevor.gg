@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { fetchLeaderboard } from '../../api/home'
 import { useApi } from '../../api/useApi'
+import { RankBadge } from '../ranks/RankBadge'
 import { formatWhole } from '../stats/format'
 
 export function ShameLeaderboard() {
@@ -23,7 +24,10 @@ export function ShameLeaderboard() {
               <span className="place">{i + 1}.</span>
               {e.profileIconUrl && <img src={e.profileIconUrl} alt="" width={36} height={36} />}
               <div className="leader-main">
-                <strong>{e.riotId}</strong>
+                <span className="leader-name">
+                  <strong>{e.riotId}</strong>
+                  <RankBadge rank={e.rank} compact />
+                </span>
                 <span className="muted">
                   poziom {e.level}
                   {e.topChampionName && ` · main: ${e.topChampionName}`}
