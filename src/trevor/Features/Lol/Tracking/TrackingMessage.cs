@@ -4,7 +4,7 @@
 public static class TrackingMessage
 {
     public const string NoChannel =
-        "\nTylko że nie mam kanału na mecze (`DISCORD_URL_MATCHES`). Dopóki ktoś go nie ustawi, nic nie wrzucę.";
+        "\nTylko że nie mam kanału na mecze (`DISCORD_MATCHES_WEBHOOK`). Dopóki ktoś go nie ustawi, nic nie wrzucę.";
 
     public static string Tracking(string name, bool hasChannel) =>
         $"Od teraz każdy mecz **{name}** ląduje na kanale z meczami. Nie ma ucieczki.{(hasChannel ? string.Empty : NoChannel)}";

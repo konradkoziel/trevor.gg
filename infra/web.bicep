@@ -8,7 +8,7 @@ param location string = resourceGroup().location
 param staticSiteLocation string = 'westeurope'
 
 @description('Discord application id (the bot\'s), for "Log in with Discord"; empty leaves login off')
-param discordClientId string = ''
+param discordAppId string = ''
 
 @description('OAuth2 client secret of that Discord application')
 @secure()
@@ -17,9 +17,9 @@ param discordClientSecret string = ''
 @description('Id of Trevor\'s Discord server: only its members may log in; empty lets any Discord user in')
 param discordGuildId string = ''
 
-@description('Key the bot sends to /api/bot/... (the same value is the bot\'s WEB_API_KEY); empty turns those endpoints off')
+@description('Key the bot sends to /api/bot/... (the bot gets the same secret); empty turns those endpoints off')
 @secure()
-param botApiKey string = ''
+param trevorWebKey string = ''
 
 @description('Riot API key, for linking League accounts and stats; empty leaves those off')
 @secure()
@@ -139,8 +139,8 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
           value: insights.properties.ConnectionString
         }
         {
-          name: 'DISCORD_CLIENT_ID'
-          value: discordClientId
+          name: 'DISCORD_APP_ID'
+          value: discordAppId
         }
         {
           name: 'DISCORD_CLIENT_SECRET'
@@ -155,8 +155,8 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
           value: discordGuildId
         }
         {
-          name: 'BOT_API_KEY'
-          value: botApiKey
+          name: 'TREVOR_WEB_KEY'
+          value: trevorWebKey
         }
         {
           name: 'RIOT_API_KEY'

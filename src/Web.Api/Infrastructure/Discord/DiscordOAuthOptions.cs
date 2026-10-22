@@ -1,6 +1,6 @@
 ﻿namespace Web.Api.Infrastructure.Discord;
 
-// "Login with Discord". App settings: DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI, SITE_URL, DISCORD_GUILD_ID
+// "Login with Discord". App settings: DISCORD_APP_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI, SITE_URL, DISCORD_GUILD_ID
 public class DiscordOAuthOptions
 {
     // The bot's Discord application id

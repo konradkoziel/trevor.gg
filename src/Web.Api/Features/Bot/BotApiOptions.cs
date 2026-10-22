@@ -1,6 +1,6 @@
 ﻿namespace Web.Api.Features.Bot;
 
-// The bot's access to this API. App settings: BOT_API_KEY (shared with the bot's WEB_API_KEY), SITE_URL
+// The bot's access to this API. App settings: TREVOR_WEB_KEY (the bot has the same one), SITE_URL
 public class BotApiOptions
 {
     public string Key { get; set; } = string.Empty;

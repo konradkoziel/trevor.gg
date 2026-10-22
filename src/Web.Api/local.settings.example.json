@@ -5,7 +5,7 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "RIOT_API_KEY": "<RGAPI-... optional>",
     "RIOT_PLATFORM": "eun1",
-    "DISCORD_CLIENT_ID": "<Discord application id, optional: without it login answers 503>",
+    "DISCORD_APP_ID": "<Discord application id, optional: without it login answers 503>",
     "DISCORD_CLIENT_SECRET": "<OAuth2 client secret>",
     "DISCORD_REDIRECT_URI": "http://localhost:7071/api/auth/discord/callback",
     "SITE_URL": "http://localhost:5173"

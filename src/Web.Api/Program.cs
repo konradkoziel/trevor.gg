@@ -31,7 +31,7 @@ builder.Services.AddRiot();
 builder.Services.AddOptions<DiscordOAuthOptions>()
     .Configure<IConfiguration>((options, config) =>
     {
-        options.ClientId = config["DISCORD_CLIENT_ID"] ?? string.Empty;
+        options.ClientId = config["DISCORD_APP_ID"] ?? string.Empty;
         options.ClientSecret = config["DISCORD_CLIENT_SECRET"] ?? string.Empty;
         options.RedirectUri = config["DISCORD_REDIRECT_URI"] ?? string.Empty;
         options.SiteUrl = config["SITE_URL"] ?? string.Empty;
@@ -65,11 +65,11 @@ builder.Services.AddSingleton<Leaderboard>();
 // Player profiles (/gracz/...) of linked friends
 builder.Services.AddSingleton<PlayerProfiles>();
 
-// Endpoints for the bot (/api/bot/...), behind the shared BOT_API_KEY
+// Endpoints for the bot (/api/bot/...), behind the shared TREVOR_WEB_KEY
 builder.Services.AddOptions<BotApiOptions>()
     .Configure<IConfiguration>((options, config) =>
     {
-        options.Key = config["BOT_API_KEY"] ?? string.Empty;
+        options.Key = config["TREVOR_WEB_KEY"] ?? string.Empty;
         options.SiteUrl = config["SITE_URL"] ?? string.Empty;
     });
 
