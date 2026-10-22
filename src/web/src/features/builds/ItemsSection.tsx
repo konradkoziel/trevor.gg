@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Item } from '../../api/buildData'
 import { maxItems } from './build'
 import { filterItems } from './filterItems'
+import { Tooltip } from '../tooltip/Tooltip'
 
 interface Props {
   items: Item[]
@@ -30,7 +31,9 @@ export function ItemsSection({ items, selected, readOnly = false, onAdd, onRemov
             <li key={index} className={item ? 'slot filled' : 'slot'}>
               {item ? (
                 <>
-                  <img src={item.iconUrl} alt={item.name} title={item.name} width={48} height={48} />
+                  <Tooltip title={item.name} detail={`${item.totalGold} g`} text={item.description}>
+                    <img src={item.iconUrl} alt={item.name} width={48} height={48} tabIndex={0} />
+                  </Tooltip>
                   {!readOnly && (
                     <div className="slot-actions">
                       <button
@@ -84,17 +87,13 @@ export function ItemsSection({ items, selected, readOnly = false, onAdd, onRemov
           <ul className="icon-grid">
             {shown.map((item) => (
               <li key={item.id}>
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={() => onAdd(item.id)}
-                  disabled={full}
-                  title={`${item.name} (${item.totalGold} g)\n\n${item.description}`}
-                >
-                  <img src={item.iconUrl} alt="" loading="lazy" width={40} height={40} />
-                  <span>{item.name}</span>
-                  <span className="gold">{item.totalGold} g</span>
-                </button>
+                <Tooltip title={item.name} detail={`${item.totalGold} g`} text={item.description}>
+                  <button type="button" className="icon-button" onClick={() => onAdd(item.id)} disabled={full}>
+                    <img src={item.iconUrl} alt="" loading="lazy" width={40} height={40} />
+                    <span>{item.name}</span>
+                    <span className="gold">{item.totalGold} g</span>
+                  </button>
+                </Tooltip>
               </li>
             ))}
           </ul>

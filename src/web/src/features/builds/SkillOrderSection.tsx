@@ -1,6 +1,7 @@
 import { fetchAbilities } from '../../api/buildData'
 import { useApi } from '../../api/useApi'
 import { assign, canAssign, maxLevel, maxOrder, skillKeys, type SkillOrder } from './skillOrder'
+import { Tooltip } from '../tooltip/Tooltip'
 
 interface Props {
   championId: string
@@ -18,9 +19,7 @@ export function SkillOrderSection({ championId, order, onChange }: Props) {
 
   return (
     <section className="editor-section">
-      <h3>
-        Kolejność skilli {maxed.length > 0 && <span className="muted">({maxed.join(' > ')})</span>}
-      </h3>
+      <h3>Kolejność skilli {maxed.length > 0 && <span className="muted">({maxed.join(' > ')})</span>}</h3>
       <div className="skill-grid-scroll">
         <table className="skill-grid">
           <thead>
@@ -36,8 +35,14 @@ export function SkillOrderSection({ championId, order, onChange }: Props) {
               const ability = abilities.status === 'ready' ? abilities.data.find((a) => a.key === key) : undefined
               return (
                 <tr key={key}>
-                  <th title={ability ? `${ability.name}\n\n${ability.description}` : key}>
-                    {ability ? <img src={ability.iconUrl} alt={key} width={28} height={28} /> : key}
+                  <th>
+                    {ability ? (
+                      <Tooltip title={`${key} · ${ability.name}`} text={ability.description}>
+                        <img src={ability.iconUrl} alt={key} width={28} height={28} tabIndex={0} />
+                      </Tooltip>
+                    ) : (
+                      key
+                    )}
                   </th>
                   {levels.map((level) => {
                     const chosen = order[level - 1] === key

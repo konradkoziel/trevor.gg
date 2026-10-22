@@ -7,6 +7,7 @@ import {
   selectSecondaryTree,
   type RunePage,
 } from './runes'
+import { Tooltip } from '../tooltip/Tooltip'
 
 interface Props {
   trees: RuneTree[]
@@ -94,7 +95,6 @@ function TreeTabs({
           type="button"
           className={tree.id === selectedId ? 'tree-tab selected' : 'tree-tab'}
           onClick={() => onSelect(tree.id)}
-          title={tree.name}
         >
           <img src={tree.iconUrl} alt="" width={28} height={28} />
           <span>{tree.name}</span>
@@ -116,16 +116,16 @@ function RuneRow({ runes, keystone = false, isSelected, onSelect }: RuneRowProps
   return (
     <div className="rune-row">
       {runes.map((rune) => (
-        <button
-          key={rune.id}
-          type="button"
-          className={isSelected(rune.id) ? 'rune selected' : 'rune'}
-          onClick={() => onSelect(rune.id)}
-          title={`${rune.name}\n\n${rune.description}`}
-          aria-pressed={isSelected(rune.id)}
-        >
-          <img src={rune.iconUrl} alt={rune.name} width={size} height={size} />
-        </button>
+        <Tooltip key={rune.id} title={rune.name} text={rune.description}>
+          <button
+            type="button"
+            className={isSelected(rune.id) ? 'rune selected' : 'rune'}
+            onClick={() => onSelect(rune.id)}
+            aria-pressed={isSelected(rune.id)}
+          >
+            <img src={rune.iconUrl} alt={rune.name} width={size} height={size} />
+          </button>
+        </Tooltip>
       ))}
     </div>
   )
