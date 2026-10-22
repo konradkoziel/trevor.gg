@@ -5,8 +5,13 @@ import { useCurrentUser } from './useCurrentUser'
 export function AccountMenu() {
   const { state, logout } = useCurrentUser()
 
-  if (state.status === 'loading') return <span className="muted">…</span>
-  if (state.status === 'anonymous') return <LoginLink />
+  if (state.status === 'loading') return <span className="account muted">…</span>
+  if (state.status === 'anonymous')
+    return (
+      <div className="account">
+        <LoginLink />
+      </div>
+    )
 
   return (
     <div className="account">

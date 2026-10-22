@@ -20,7 +20,7 @@ export function ChampionOfTheDay() {
         <h2>{champion.name}</h2>
         <p className="muted">{champion.title}</p>
         {champion.blurb && <p className="blurb">{champion.blurb}</p>}
-        <Link className="button discord" to={newBuildPath(champion.id)}>
+        <Link className="button gold" to={newBuildPath(champion.id)}>
           Zrób mu build
         </Link>
       </div>
