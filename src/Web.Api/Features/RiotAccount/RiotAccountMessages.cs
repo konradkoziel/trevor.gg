@@ -10,4 +10,7 @@ public static class RiotAccountMessages
     public const string WrongIcon = "Ikona się nie zgadza. Zmień ją w kliencie i odczekaj chwilę, Riot czasem się spóźnia.";
     public const string RiotUnavailable = "Riot nie odpowiada. Spróbuj za chwilę.";
     public const string RiotNotConfigured = "Na serwerze brakuje klucza Riot API.";
+
+    // 401/403 from Riot: the key is there but no longer valid, most often an expired 24 h development key
+    public const string RiotKeyRejected = "Riot odrzucił klucz API. Pewnie wygasł (deweloperskie żyją 24 h), ktoś musi wgrać nowy.";
 }

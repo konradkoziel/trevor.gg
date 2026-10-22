@@ -6,7 +6,7 @@ using Web.Api.Infrastructure.Http;
 
 namespace Web.Api.Features.RiotAccount;
 
-// Riot down, rate limited or without a key → 503 with a message, instead of a 500
+// Riot down, rate limited, without a key or with a rejected one → 503 with a message, instead of a 500
 public static class RiotCalls
 {
     public static async Task<IActionResult> RunAsync(IRiotApiClient riot, Func<Task<IActionResult>> call)
@@ -20,7 +20,7 @@ public static class RiotCalls
         catch (Exception ex) when (ex is RiotApiException or HttpRequestException)
         {
             return Unavailable(ex is RiotApiException { StatusCode: HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized }
-                ? RiotAccountMessages.RiotNotConfigured
+                ? RiotAccountMessages.RiotKeyRejected
                 : RiotAccountMessages.RiotUnavailable);
         }
     }
