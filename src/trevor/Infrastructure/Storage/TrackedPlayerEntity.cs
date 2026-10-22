@@ -13,4 +13,5 @@ public class TrackedPlayerEntity : ITableEntity
 
     public string RiotId { get; set; } = string.Empty;
     public string? LastMatchId { get; set; }
+    public bool FromWebsite { get; set; }
 }

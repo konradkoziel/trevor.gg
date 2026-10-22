@@ -58,7 +58,7 @@ public class TableRiotLinkStore(TableServiceClient tables) : IRiotLinkStore
     private static RiotLink? ToLink(RiotLinkEntity e) => e.RowKey switch
     {
         LegacyLinkRow => new RiotLink(e.PartitionKey, e.Puuid, e.RiotId, e.At, IsMain: true),
-        _ when e.RowKey.StartsWith(AccountRowPrefix, StringComparison.Ordinal) => new RiotLink(e.PartitionKey, e.Puuid, e.RiotId, e.At, e.IsMain),
+        _ when e.RowKey.StartsWith(AccountRowPrefix, StringComparison.Ordinal) => new RiotLink(e.PartitionKey, e.Puuid, e.RiotId, e.At, e.IsMain, e.Tracked),
         _ => null,
     };
 
@@ -70,6 +70,7 @@ public class TableRiotLinkStore(TableServiceClient tables) : IRiotLinkStore
         RiotId = link.RiotId,
         At = link.LinkedAt,
         IsMain = link.IsMain,
+        Tracked = link.Tracked,
     };
 
     private static async Task MoveLegacyRowAsync(TableClient table, string discordId, CancellationToken ct)

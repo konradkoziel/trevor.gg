@@ -204,6 +204,35 @@ public class RiotAccountFunctionsTests
         Assert.Equal(["b"], _store.Accounts.Where(a => a.IsMain).Select(a => a.Puuid));
     }
 
+    private async Task<IActionResult> SetTracked(string method, string accountId)
+    {
+        var req = await Request(Ann);
+        req.Method = method;
+        return await new TrackRiotAccountFunction(_tokens, _store).Run(req, accountId, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Tracking_SwitchesOnAndOff_AndShowsInTheView()
+    {
+        _store.Add(new RiotLink("1", "a", "A#EUNE", Now, IsMain: true));
+
+        Assert.True(ViewOf(await SetTracked("PUT", "a")).Accounts.Single().Tracked);
+        Assert.True(_store.Accounts.Single().Tracked);
+
+        Assert.False(ViewOf(await SetTracked("DELETE", "a")).Accounts.Single().Tracked);
+        Assert.False(_store.Accounts.Single().Tracked);
+        Assert.True(_store.Accounts.Single().IsMain);
+    }
+
+    [Fact]
+    public async Task Tracking_SomeoneElsesAccount_Is404()
+    {
+        _store.Add(new RiotLink("2", "p", "Bob#EUNE", Now));
+
+        Assert.IsType<NotFoundResult>(await SetTracked("PUT", "p"));
+        Assert.False(_store.Accounts.Single().Tracked);
+    }
+
     [Fact]
     public async Task SetMain_UnknownAccount_Is404() =>
         Assert.IsType<NotFoundResult>(await new SetMainRiotAccountFunction(_tokens, _store).Run(await Request(Ann), "x", CancellationToken.None));

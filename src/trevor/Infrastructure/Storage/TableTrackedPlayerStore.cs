@@ -18,7 +18,7 @@ public class TableTrackedPlayerStore(StorageTables tables) : ITrackedPlayerStore
         var table = await tables.GetAsync(TableName, ct);
         var players = new List<TrackedPlayer>();
         await foreach (var e in table.QueryAsync<TrackedPlayerEntity>(e => e.PartitionKey == Partition, cancellationToken: ct))
-            players.Add(new TrackedPlayer(e.RowKey, e.RiotId, e.LastMatchId));
+            players.Add(new TrackedPlayer(e.RowKey, e.RiotId, e.LastMatchId, e.FromWebsite));
         return players;
     }
 
@@ -30,7 +30,8 @@ public class TableTrackedPlayerStore(StorageTables tables) : ITrackedPlayerStore
             PartitionKey = Partition,
             RowKey = player.Puuid,
             RiotId = player.RiotId,
-            LastMatchId = player.LastMatchId
+            LastMatchId = player.LastMatchId,
+            FromWebsite = player.FromWebsite
         };
         await table.UpsertEntityAsync(entity, TableUpdateMode.Replace, ct);
     }

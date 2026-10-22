@@ -101,6 +101,7 @@ builder.Services.AddSingleton<InteractionHandler>();
 
 // Transient, so its typed Discord client isn't captured for the app's lifetime
 builder.Services.AddTransient<MatchTracker>();
+builder.Services.AddTransient<TrackedPlayerSync>();
 
 builder.Logging.AddConsole();
 builder.Logging.AddApplicationInsights();

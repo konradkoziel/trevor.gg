@@ -19,4 +19,7 @@ public class RiotLinkEntity : ITableEntity
     public DateTimeOffset At { get; set; }
 
     public bool IsMain { get; set; }
+
+    // Games reported on Trevor's matches channel
+    public bool Tracked { get; set; }
 }

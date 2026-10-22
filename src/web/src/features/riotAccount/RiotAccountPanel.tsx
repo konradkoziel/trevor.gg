@@ -4,12 +4,14 @@ import {
   fetchRiotAccounts,
   linkRiotAccount,
   setMainRiotAccount,
+  setRiotAccountTracked,
   unlinkRiotAccount,
   type RiotAccountsView,
 } from '../../api/riotAccount'
 import { useApi } from '../../api/useApi'
 
-// The user's League accounts: add one by Riot ID, pick the main one (used by /rank, /roast and Statystyki), unlink.
+// The user's League accounts: add one by Riot ID, pick the main one (used by /rank, /roast and Statystyki), switch
+// match reports on Discord on or off, unlink.
 // Only Trevor's server can log in, so there is no ownership check
 export function RiotAccountPanel() {
   const loaded = useApi(fetchRiotAccounts)
@@ -52,6 +54,18 @@ export function RiotAccountPanel() {
           {view.accounts.map((a) => (
             <li key={a.id}>
               <strong>{a.riotId}</strong>
+              <label className="checkbox" title="Trevor wrzuca każdy Twój mecz na kanał z meczami">
+                <input
+                  type="checkbox"
+                  checked={a.tracked}
+                  disabled={busy}
+                  onChange={(e) => {
+                    const tracked = e.target.checked
+                    run(() => setRiotAccountTracked(a.id, tracked), 'Nie udało się zmienić raportów.')
+                  }}
+                />
+                Raporty na Discordzie
+              </label>
               {a.isMain ? (
                 <span className="account-main">główne</span>
               ) : (

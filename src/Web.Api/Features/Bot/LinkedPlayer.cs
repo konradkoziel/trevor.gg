@@ -1,4 +1,4 @@
 ﻿namespace Web.Api.Features.Bot;
 
-// GET /api/bot/players/{discordId}: the League account a Discord user linked on the site
+// A League account linked on the site: GET /api/bot/players/{discordId} (the main one) and GET /api/bot/tracked
 public record LinkedPlayer(string RiotId, string Puuid);

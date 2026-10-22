@@ -16,5 +16,8 @@ public static class TrackingMessage
 
     public static string Untracked(string name) => $"Przestaję śledzić **{name}**. Kolejne porażki zostaną prywatne.";
 
+    public static string TrackedOnWebsite(string name) =>
+        $"**{name}** ma raporty włączone na stronie, w zakładce Konto. Tam je wyłącz, bo inaczej za pięć minut wrócę jak bumerang.";
+
     public static string NotTracked(string name) => $"Nie śledzę **{name}**. Nikt by nie chciał.";
 }
