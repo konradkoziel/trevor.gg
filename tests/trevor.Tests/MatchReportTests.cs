@@ -68,6 +68,15 @@ public class MatchReportTests
     }
 
     [Fact]
+    public void Arena_PicksFromTheirPairOnly()
+    {
+        var report = MatchReport.For(ArenaMatch(), [Ann])!;
+
+        Assert.Equal("Yasuo", report.Mvp.Champion);
+        Assert.Equal("Partner#EUNE", report.Feeder.Name);
+    }
+
+    [Fact]
     public void FullPremade_BlamesTheWorstFriend()
     {
         TrackedPlayer[] premade =

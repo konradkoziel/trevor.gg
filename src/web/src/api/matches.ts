@@ -25,7 +25,10 @@ export interface MatchPlayer {
 }
 
 export interface MatchTeam {
+  // 100 blue, 200 red, or the pair's number in Arena
   teamId: number
+  // The pair's final place in Arena, null in other modes
+  placement: number | null
   win: boolean
   kills: number
   deaths: number

@@ -2,9 +2,8 @@ import { fetchMatch, type MatchDetail, type MatchIcon, type MatchPlayer, type Ma
 import { useApi } from '../../api/useApi'
 import { Tooltip } from '../tooltip/Tooltip'
 import { formatDecimal, formatThousands, kdaRatio } from './format'
+import { teamSubtitle, teamTitle } from './teamLabels'
 
-// Riot's id of the blue side
-const BlueTeam = 100
 const SecondsPerMinute = 60
 
 interface Props {
@@ -23,7 +22,7 @@ export function MatchDetails({ matchId, riotId }: Props) {
   return <MatchTeams match={match.data} riotId={riotId} />
 }
 
-// Both teams with everyone's score, damage, gold and final build
+// Every team (both sides, or all Arena pairs) with everyone's score, damage, gold and final build
 export function MatchTeams({ match, riotId }: { match: MatchDetail; riotId?: string }) {
   const players = match.teams.flatMap((t) => t.players)
   const topDamage = Math.max(...players.map((p) => p.damage), 1)
@@ -49,8 +48,8 @@ function TeamTable({ team, riotId, topDamage, minutes }: TeamProps) {
   return (
     <section className={team.win ? 'match-team win' : 'match-team loss'}>
       <header className="match-team-header">
-        <strong>{team.win ? 'Wygrana' : 'Przegrana'}</strong>
-        <span className="muted">{team.teamId === BlueTeam ? 'Niebieska drużyna' : 'Czerwona drużyna'}</span>
+        <strong>{teamTitle(team)}</strong>
+        <span className="muted">{teamSubtitle(team)}</span>
         <span className="match-team-totals">
           {team.kills} / {team.deaths} / {team.assists} · {formatThousands(team.gold)} golda
         </span>

@@ -57,6 +57,16 @@ public class RoastCommandTests
     }
 
     [Fact]
+    public void Arena_ComparesWithThePairOnly()
+    {
+        var s = MatchStats.For(TrackingTestData.ArenaMatch(), "puuid-1")!;
+
+        Assert.Equal("Arena", s.Queue);
+        Assert.Equal(0.5, s.DamageShare, 3);
+        Assert.Equal(9 / 10.0, s.KillParticipation, 3);
+    }
+
+    [Fact]
     public void Stats_AreNull_WhenPlayerIsNotInMatch()
     {
         Assert.Null(MatchStats.For(Match(), "someone-else"));

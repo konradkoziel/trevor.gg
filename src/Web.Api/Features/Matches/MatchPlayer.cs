@@ -1,6 +1,6 @@
 ﻿namespace Web.Api.Features.Matches;
 
-// One of the ten players of a match, with the build they ended the game with
+// One player of a match, with the build they ended the game with
 public record MatchPlayer(
     string? RiotId,
     string ChampionName,
