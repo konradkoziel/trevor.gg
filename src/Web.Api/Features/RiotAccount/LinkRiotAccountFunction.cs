@@ -9,8 +9,8 @@ using Web.Api.Infrastructure.Sessions;
 
 namespace Web.Api.Features.RiotAccount;
 
-// POST /api/me/riot: link a League account by Riot ID. No proof of ownership: only members of Trevor's server log in,
-// and an account already linked by someone else is refused, so nobody quietly takes a friend's stats
+// POST /api/me/riot: link one more League account by Riot ID (the first one becomes the main one). No proof of ownership:
+// only members of Trevor's server log in, and an account already linked by someone else is refused
 public class LinkRiotAccountFunction(ISessionTokens sessions, IRiotApiClient riot, IRiotLinkStore store, TimeProvider time)
 {
     [Function("LinkRiotAccount")]
@@ -36,9 +36,18 @@ public class LinkRiotAccountFunction(ISessionTokens sessions, IRiotApiClient rio
             if (await IsLinkedByAnotherAsync(account.Puuid, user.DiscordId, ct))
                 return new ConflictObjectResult(new ApiError(RiotAccountMessages.AlreadyLinked));
 
+            var mine = await store.ListAccountsAsync(user.DiscordId, ct);
+            var existing = mine.FirstOrDefault(a => a.Puuid == account.Puuid);
+            if (existing is null && mine.Count >= RiotLinks.MaxAccounts)
+                return new BadRequestObjectResult(new ApiError(RiotAccountMessages.TooManyAccounts));
+
+            // Linking the same account again only refreshes its Riot ID (after a name change)
             var name = RiotNames.RiotId(account) ?? riotId.ToString();
-            await store.SaveLinkAsync(new RiotLink(user.DiscordId, account.Puuid, name, time.GetUtcNow()), ct);
-            return new OkObjectResult(new RiotAccountView(name));
+            var link = existing is null
+                ? new RiotLink(user.DiscordId, account.Puuid, name, time.GetUtcNow(), IsMain: mine.Count == 0)
+                : existing with { RiotId = name };
+            await store.SaveLinkAsync(link, ct);
+            return new OkObjectResult(RiotAccountsView.Of([.. mine.Where(a => a.Puuid != link.Puuid), link]));
         });
     }
 

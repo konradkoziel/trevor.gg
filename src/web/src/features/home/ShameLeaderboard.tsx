@@ -31,6 +31,7 @@ export function ShameLeaderboard() {
                 </span>
                 <span className="muted">
                   poziom {e.level}
+                  {e.accountCount > 1 && ` · ${e.accountCount} ${e.accountCount >= 5 ? 'kont' : 'konta'}`}
                   {e.topChampionName && ` · main: ${e.topChampionName}`}
                 </span>
               </div>

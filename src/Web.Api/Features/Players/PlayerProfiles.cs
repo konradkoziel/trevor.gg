@@ -23,9 +23,13 @@ public class PlayerProfiles(IRiotLinkStore links, IRiotApiClient riot, IDataDrag
         var summoner = await riot.GetSummonerAsync(link.Puuid, ct);
         var icon = summoner is null ? null : await dataDragon.ProfileIconUrlAsync(summoner.ProfileIconId, ct);
         var playerBuilds = await builds.ListByOwnerAsync(link.DiscordId, ct);
+        var others = RiotLinks.Ordered(await links.ListAccountsAsync(link.DiscordId, ct))
+            .Where(a => a.Puuid != link.Puuid)
+            .Select(a => a.RiotId)
+            .ToList();
 
         return new PlayerProfile(link.RiotId, icon, summoner?.SummonerLevel ?? 0, await TopChampionsAsync(link, ct),
-            await stats.ForAsync(link, ct), playerBuilds.Select(BuildSummary.Of).ToList());
+            await stats.ForAsync(link, ct), playerBuilds.Select(BuildSummary.Of).ToList(), others);
     }
 
     private async Task<IReadOnlyList<MasteryChampion>> TopChampionsAsync(RiotLink link, CancellationToken ct)

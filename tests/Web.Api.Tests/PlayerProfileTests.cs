@@ -40,7 +40,7 @@ public class PlayerProfileTests
     [Fact]
     public async Task LinkedPlayer_GetsRankMasteriesStatsAndBuilds()
     {
-        _links.Links["1"] = new RiotLink("1", Puuid, "Ann#EUNE", Start);
+        _links.Add(new RiotLink("1", Puuid, "Ann#EUNE", Start));
         var riot = new FakeRiot { Summoner = new RiotSummoner(7, 321), MatchIds = ["EUN1_1"] };
         riot.Matches["EUN1_1"] = RiotMatchOf("Yasuo", true);
         riot.Masteries[Puuid] = [new ChampionMastery(103, 10, 50_000), new ChampionMastery(157, 30, 400_000), new ChampionMastery(999, 5, 900_000)];
@@ -62,7 +62,7 @@ public class PlayerProfileTests
     [Fact]
     public async Task TopChampions_AreCapped()
     {
-        _links.Links["1"] = new RiotLink("1", Puuid, "Ann#EUNE", Start);
+        _links.Add(new RiotLink("1", Puuid, "Ann#EUNE", Start));
         var riot = new FakeRiot();
         riot.Masteries[Puuid] = [.. Enumerable.Range(0, PlayerProfiles.TopChampionCount + 2).Select(i => new ChampionMastery(157, 1, i))];
 
@@ -82,7 +82,7 @@ public class PlayerProfileTests
     [Fact]
     public async Task RiotDown_Is503()
     {
-        _links.Links["1"] = new RiotLink("1", Puuid, "Ann#EUNE", Start);
+        _links.Add(new RiotLink("1", Puuid, "Ann#EUNE", Start));
 
         var result = await Run(new FakeRiot { Error = new RiotApiException(HttpStatusCode.TooManyRequests) }, "Ann", "EUNE");
 
@@ -91,4 +91,17 @@ public class PlayerProfileTests
 
     [Fact]
     public async Task NeedsLogin() => Assert.IsType<UnauthorizedResult>(await Run(new FakeRiot(), "Ann", "EUNE", loggedIn: false));
+
+    [Fact]
+    public async Task Profile_ListsTheSamePersonsOtherAccounts()
+    {
+        _links.Add(new RiotLink("1", Puuid, "Ann#EUNE", Start, IsMain: true));
+        _links.Add(new RiotLink("1", "smurf", "AnnSmurf#EUNE", Start.AddDays(1)));
+        _links.Add(new RiotLink("2", "bob", "Bob#EUNE", Start));
+
+        var profile = Assert.IsType<PlayerProfile>(Assert.IsType<OkObjectResult>(await Run(new FakeRiot(), "AnnSmurf", "EUNE")).Value);
+
+        Assert.Equal("AnnSmurf#EUNE", profile.RiotId);
+        Assert.Equal(["Ann#EUNE"], profile.OtherAccounts);
+    }
 }

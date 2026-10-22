@@ -19,6 +19,8 @@ export interface PlayerProfile {
   topChampions: MasteryChampion[]
   stats: PlayerStats
   builds: BuildSummary[]
+  // The same person's other linked accounts, main first
+  otherAccounts: string[] | null
 }
 
 // Takes the route's name and tag joined as "Name#TAG", so useApi has one string to watch

@@ -17,7 +17,6 @@ public class GetRiotAccountFunction(ISessionTokens sessions, IRiotLinkStore stor
         if (user is null)
             return new UnauthorizedResult();
 
-        var link = await store.GetLinkAsync(user.DiscordId, ct);
-        return new OkObjectResult(new RiotAccountView(link?.RiotId));
+        return new OkObjectResult(RiotAccountsView.Of(await store.ListAccountsAsync(user.DiscordId, ct)));
     }
 }

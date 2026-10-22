@@ -12,6 +12,8 @@ export interface LeaderboardEntry {
   topChampionIconUrl: string | null
   topChampionPoints: number
   rank: RankedStanding | null
+  // How many linked accounts the mastery points add up
+  accountCount: number
 }
 
 export interface RecentBuild {

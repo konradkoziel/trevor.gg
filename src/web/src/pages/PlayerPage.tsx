@@ -1,10 +1,11 @@
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { errorText } from '../api/errorText'
 import { fetchPlayerProfile } from '../api/players'
 import { useApi } from '../api/useApi'
 import { LoginLink } from '../features/account/LoginLink'
 import { useCurrentUser } from '../features/account/useCurrentUser'
 import { BuildList } from '../features/builds/BuildList'
+import { playerPath } from '../features/players/playerLinks'
 import { TopChampions } from '../features/players/TopChampions'
 import { PlayerStatsView } from '../features/stats/PlayerStatsView'
 
@@ -42,6 +43,17 @@ function Profile({ riotId }: { riotId: string }) {
       <div>
         <h2 className="page-title">{p.riotId}</h2>
         <span className="muted">poziom {p.level}</span>
+        {p.otherAccounts && p.otherAccounts.length > 0 && (
+          <span className="other-accounts muted">
+            Inne konta:{' '}
+            {p.otherAccounts.map((id, i) => (
+              <span key={id}>
+                {i > 0 && ', '}
+                <PlayerLink riotId={id} />
+              </span>
+            ))}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -65,4 +77,9 @@ function Profile({ riotId }: { riotId: string }) {
       </section>
     </>
   )
+}
+
+function PlayerLink({ riotId }: { riotId: string }) {
+  const path = playerPath(riotId)
+  return path ? <Link to={path}>{riotId}</Link> : <>{riotId}</>
 }

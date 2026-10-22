@@ -38,4 +38,6 @@ export interface PlayerStats {
   ranks: RankedStanding[] | null
 }
 
-export const fetchMyStats = (signal: AbortSignal) => getJson<PlayerStats>('me/stats', signal)
+// account: one of the user's accounts by id; null = the main one
+export const fetchMyStats = (signal: AbortSignal, account: string | null) =>
+  getJson<PlayerStats>(account ? `me/stats?account=${encodeURIComponent(account)}` : 'me/stats', signal)

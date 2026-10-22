@@ -31,7 +31,7 @@ public class MyStatsFunctionTests
     [Fact]
     public async Task LinkedAccount_GetsItsStats()
     {
-        _links.Links["1"] = new RiotLink("1", Puuid, "Player#EUNE", Start);
+        _links.Add(new RiotLink("1", Puuid, "Player#EUNE", Start));
         var riot = new FakeRiot { MatchIds = ["EUN1_1"] };
         riot.Matches["EUN1_1"] = RiotMatchOf("Yasuo", true);
         riot.Entries[Puuid] = [new Lol.Shared.Riot.Models.LeagueEntry(Lol.Shared.Riot.Models.LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61)];
@@ -55,7 +55,7 @@ public class MyStatsFunctionTests
     [Fact]
     public async Task RiotDown_Is503()
     {
-        _links.Links["1"] = new RiotLink("1", Puuid, "Player#EUNE", Start);
+        _links.Add(new RiotLink("1", Puuid, "Player#EUNE", Start));
 
         var result = await Run(new FakeRiot { Error = new RiotApiException(HttpStatusCode.TooManyRequests) }, Ann);
 
@@ -64,4 +64,21 @@ public class MyStatsFunctionTests
 
     [Fact]
     public async Task NeedsLogin() => Assert.IsType<UnauthorizedResult>(await Run(new FakeRiot()));
+
+    [Fact]
+    public async Task AccountParameter_PicksAnotherOfTheUsersAccounts()
+    {
+        _links.Add(new RiotLink("1", "main-puuid", "Main#EUNE", Start, IsMain: true));
+        _links.Add(new RiotLink("1", Puuid, "Smurf#EUNE", Start));
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Authorization = $"Bearer {await _tokens.IssueAsync(Ann)}";
+        context.Request.QueryString = QueryString.Create("account", Puuid);
+        var riot = new FakeRiot();
+        var history = new MatchHistory(riot, new FakeMatchHistoryStore(), new FakeTimeProvider(Start), TestStats.Options());
+
+        var result = await new MyStatsFunction(_tokens, _links, riot, new StatsReport(riot, history, new FakeDataDragon(TestBuilds.Champions)))
+            .Run(context.Request, CancellationToken.None);
+
+        Assert.Equal("Smurf#EUNE", Assert.IsType<PlayerStats>(Assert.IsType<OkObjectResult>(result).Value).RiotId);
+    }
 }

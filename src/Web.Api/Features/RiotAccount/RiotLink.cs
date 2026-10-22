@@ -1,4 +1,4 @@
 ﻿namespace Web.Api.Features.RiotAccount;
 
-// A Discord user's League account
-public record RiotLink(string DiscordId, string Puuid, string RiotId, DateTimeOffset LinkedAt);
+// One of a Discord user's League accounts; the main one is what /rank, /roast and "Statystyki" use by default
+public record RiotLink(string DiscordId, string Puuid, string RiotId, DateTimeOffset LinkedAt, bool IsMain = false);

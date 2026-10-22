@@ -1,4 +1,4 @@
 ﻿namespace Web.Api.Features.RiotAccount;
 
-// GET /api/me/riot: the linked account, or null
-public record RiotAccountView(string? LinkedRiotId);
+// One linked account on the "Konto" page; Id is the PUUID, used by the remove and make-main calls
+public record RiotAccountView(string Id, string RiotId, bool IsMain);
