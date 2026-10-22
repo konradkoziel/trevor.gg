@@ -75,7 +75,7 @@ export function RiotAccountPanel() {
               Masz czas do {timeFormat.format(new Date(view.challenge.expiresAt))}. Potem możesz wrócić do starej ikony.
             </p>
             <div className="panel-row">
-              <button type="button" className="button discord" onClick={verify} disabled={busy}>
+              <button type="button" className="button gold" onClick={verify} disabled={busy}>
                 Sprawdź
               </button>
               <button type="button" className="button secondary" onClick={restart} disabled={busy}>
@@ -95,7 +95,7 @@ export function RiotAccountPanel() {
             onChange={(e) => setRiotId(e.target.value)}
             required
           />
-          <button type="submit" className="button discord" disabled={busy || !riotId.trim()}>
+          <button type="submit" className="button gold" disabled={busy || !riotId.trim()}>
             Dalej
           </button>
         </form>

@@ -34,7 +34,7 @@ function Stats() {
       <section className="panel">
         <p className="error">{errorText(stats.error, 'Nie udało się pobrać statystyk.')}</p>
         {notLinked && (
-          <Link className="button discord" to="/konto">
+          <Link className="button gold" to="/konto">
             Podepnij konto
           </Link>
         )}

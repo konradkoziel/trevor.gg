@@ -14,9 +14,13 @@ export function HomePage() {
   return (
     <>
       <section className="hero">
-        <TrevorQuote />
+        <div className="hero-text">
+          <span className="eyebrow">Dla ekipy z serwera Trevora</span>
+          <h1 className="hero-title">Buildy i statystyki, które Trevor i tak skrytykuje.</h1>
+          <TrevorQuote />
+        </div>
         <div className="hero-actions">
-          <Link className="button discord" to="/buildy">
+          <Link className="button gold" to="/buildy">
             Buildy
           </Link>
           {loggedIn ? (

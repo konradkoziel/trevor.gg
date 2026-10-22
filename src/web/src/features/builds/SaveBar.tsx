@@ -61,7 +61,7 @@ export function SaveBar({ build, buildId }: Props) {
 
   return (
     <footer className="editor-footer">
-      <button type="button" className="button discord" onClick={save} disabled={status.kind === 'saving'}>
+      <button type="button" className="button gold" onClick={save} disabled={status.kind === 'saving'}>
         {buildId ? 'Zapisz zmiany' : 'Zapisz build'}
       </button>
       {buildId && (

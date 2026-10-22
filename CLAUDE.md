@@ -130,7 +130,10 @@ rate limits add up). All optional: without them only login / Riot account linkin
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader), `src/features/<name>/` components;
   rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
   component per route of `react-router` (`/` home, `/buildy`, `/nowy/:championId`, `/b/:id`, `/konto`, `/statystyki`); daily picks
-  (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; `CurrentUserProvider` shares the logged-in user),
+  (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; styles in one `src/index.css` with colour
+  and font tokens on `:root` (Cinzel for headings only, it has no lowercase; Inter for text; both self-hosted via `@fontsource`),
+  `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's
+  required legal boilerplate, keep it; `CurrentUserProvider` shares the logged-in user),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
 - `Functions/` — entry points only: `DiscordInteractionsFunction` (HTTP, signature check, returns `InteractionOutput` = HTTP result + optional queue message), `DeferredCommandFunction` (queue), `MatchTrackerFunction` (timer, every 5 min → `MatchTracker`).
