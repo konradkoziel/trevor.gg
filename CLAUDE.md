@@ -124,9 +124,8 @@ rate limits add up). All optional: without them only login / Riot account linkin
   Champion-Mastery-V4 points per linked player plus the Solo/Duo rank, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
   not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
   matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `TREVOR_WEB_KEY`;
-  `RiotAccount` → link a League account: `POST /api/me/riot/challenge` (Riot ID → a default profile icon 0-28 to set, 15 min),
-  `POST /api/me/riot/verify` (Summoner-V4 icon check), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id,
-  rows `link` / `challenge`); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
+  `RiotAccount` → link a League account: `POST /api/me/riot` (Riot ID, no ownership check: login is guild-only and an account
+  linked by someone else is a 409), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id, row `link`); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
   `MatchHistory` (singleton: last 20 match ids, only unknown matches fetched, at most one Riot refresh per player per 2 min)
   over table `playedmatches` (PartitionKey = PUUID, RowKey = match id), numbers from `StatsCalculator` (Summoner's Rift queues,
   no remakes) plus the ranks, put together by `StatsReport` (also used by the profiles); `Players` → `GET /api/players/{name}/{tag}` (logged in; only linked players, Riot ID ignoring case: `PlayerProfiles` adds icon, level, top 5 masteries and the player's builds); `Ranks/RankedStandings` (League-V4 entries → Solo/Duo then Flex, with label and emblem, for every page); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),

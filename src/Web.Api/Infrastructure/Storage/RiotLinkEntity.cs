@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 
 namespace Web.Api.Infrastructure.Storage;
 
-// Row of the riotlinks table: PartitionKey = Discord id, RowKey = "link" (verified) or "challenge" (pending)
+// Row of the riotlinks table: PartitionKey = Discord id, RowKey = "link"
 public class RiotLinkEntity : ITableEntity
 {
     public string PartitionKey { get; set; } = string.Empty;
@@ -13,8 +13,7 @@ public class RiotLinkEntity : ITableEntity
 
     public string Puuid { get; set; } = string.Empty;
     public string RiotId { get; set; } = string.Empty;
-    public int IconId { get; set; }
 
-    // VerifiedAt for a link, ExpiresAt for a challenge
+    // When the account was linked
     public DateTimeOffset At { get; set; }
 }

@@ -47,7 +47,6 @@ builder.Services.AddSingleton<ISessionTokens, SessionTokens>();
 
 // Linked Riot accounts (Riot API key: RIOT_API_KEY, optional — without it linking answers 503)
 builder.Services.AddSingleton<IRiotLinkStore, TableRiotLinkStore>();
-builder.Services.AddSingleton(Random.Shared);
 
 // Stats of the linked account; MatchHistory is a singleton so its refresh throttle is shared
 builder.Services.AddSingleton<IMatchHistoryStore, TableMatchHistoryStore>();
