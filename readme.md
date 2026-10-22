@@ -53,7 +53,7 @@ Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is
 ### 🌐 Website (work in progress)
 A React site for builds and stats. The **home page** has Trevor's quote of the day, the champion of the day (splash art, lore,
 "make a build"), this week's free rotation and, for logged-in users, the *Ranking zmarnowanego czasu* (linked players by
-mastery points and account level; Riot publishes no hours played) and the team's newest builds. Builds live under `/buildy`:
+mastery points and account level, with their Solo/Duo rank; Riot publishes no hours played) and the team's newest builds. Builds live under `/buildy`:
 a searchable champion picker (names and titles in Polish, icons from Data Dragon),
 **Log in with Discord** (the same Discord id the bot sees; with `DISCORD_GUILD_ID` set only members of Trevor's server get in,
 shown with their server nickname and avatar; after the first consent, logging in again skips Discord's consent screen) and the **build editor**:
@@ -63,7 +63,7 @@ Logged in, you **save** builds (up to 50, checked again by the API against the c
 under **Moje buildy**, and **share** a link (`/b/<id>`): anyone can open it read-only, only you can edit or delete it.
 Under **Konto** (click your name) you link your League account: enter your Riot ID, set the default profile icon the site
 shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so nobody can claim someone else's account.
-With a linked account, **Statystyki** shows your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
+With a linked account, **Statystyki** shows your Solo/Duo and Flex rank (emblem, LP, wins/losses) and your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
 KDA, CS/min, damage/min; Summoner's Rift only, no remakes) and the recent games. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
 Next: `/build` in Trevor.

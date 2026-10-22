@@ -7,6 +7,7 @@ import { LoginLink } from '../features/account/LoginLink'
 import { useCurrentUser } from '../features/account/useCurrentUser'
 import { ChampionTable } from '../features/stats/ChampionTable'
 import { formatDecimal, formatPercent, winRateTone } from '../features/stats/format'
+import { RankBadge } from '../features/ranks/RankBadge'
 import { RecentMatches } from '../features/stats/RecentMatches'
 
 export function StatsPage() {
@@ -47,6 +48,13 @@ function Stats() {
     <>
       <section className="stats-summary">
         <h2 className="page-title">{s.riotId}</h2>
+        <div className="rank-row">
+          {s.ranks && s.ranks.length > 0 ? (
+            s.ranks.map((r) => <RankBadge key={r.queue} rank={r} />)
+          ) : (
+            <RankBadge rank={null} />
+          )}
+        </div>
         <div className="summary-tiles">
           <div className="tile">
             <span className="tile-value">{s.games}</span>

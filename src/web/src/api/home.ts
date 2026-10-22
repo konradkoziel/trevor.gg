@@ -1,5 +1,6 @@
 import type { Champion } from './champions'
 import { cachedOnce, getJson } from './client'
+import type { RankedStanding } from './ranks'
 
 // Mirror Web.Api.Features.Home.LeaderboardEntry and Web.Api.Features.Builds.RecentBuild
 export interface LeaderboardEntry {
@@ -10,6 +11,7 @@ export interface LeaderboardEntry {
   topChampionName: string | null
   topChampionIconUrl: string | null
   topChampionPoints: number
+  rank: RankedStanding | null
 }
 
 export interface RecentBuild {
