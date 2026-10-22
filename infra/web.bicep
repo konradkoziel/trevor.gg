@@ -25,6 +25,11 @@ param trevorWebKey string = ''
 @secure()
 param riotApiKey string = ''
 
+@description('How many recent games the stats show and storage keeps per player (GitHub variable MATCH_HISTORY_GAMES); older ones are deleted')
+@minValue(1)
+@maxValue(100)
+param matchHistoryGames int = 20
+
 // Storage account and Function App names are global, so they get a suffix that is stable per resource group
 var suffix = uniqueString(resourceGroup().id)
 var storageName = 'trevorweb${suffix}'
@@ -161,6 +166,10 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         {
           name: 'RIOT_API_KEY'
           value: riotApiKey
+        }
+        {
+          name: 'MATCH_HISTORY_GAMES'
+          value: string(matchHistoryGames)
         }
         {
           name: 'SITE_URL'

@@ -23,7 +23,7 @@ public class MyStatsFunctionTests
         var context = new DefaultHttpContext();
         if (user is not null)
             context.Request.Headers.Authorization = $"Bearer {await _tokens.IssueAsync(user)}";
-        var history = new MatchHistory(riot, new FakeMatchHistoryStore(), new FakeTimeProvider(Start));
+        var history = new MatchHistory(riot, new FakeMatchHistoryStore(), new FakeTimeProvider(Start), TestStats.Options());
         return await new MyStatsFunction(_tokens, _links, riot, new StatsReport(riot, history, new FakeDataDragon(TestBuilds.Champions)))
             .Run(context.Request, CancellationToken.None);
     }

@@ -141,6 +141,7 @@ GitHub repository **variable** (Settings → Secrets and variables → Actions �
 
 | Variable | What it is |
 |---|---|
+| `MATCH_HISTORY_GAMES` | How many recent games the stats show and storage keeps per player (1–100, default 20); older ones are deleted |
 | `DISCORD_GUILD_ID` | Id of Trevor's Discord server (Developer Mode → right-click the server → Copy Server ID). Only its members can log in to the website. Without it anyone with Discord can |
 
 The website's API settings (`DISCORD_APP_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by

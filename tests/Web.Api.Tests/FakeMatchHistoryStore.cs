@@ -16,4 +16,10 @@ public sealed class FakeMatchHistoryStore : IMatchHistoryStore
         list.AddRange(matches);
         return Task.CompletedTask;
     }
+
+    public Task DeleteAsync(string puuid, IReadOnlyList<string> matchIds, CancellationToken ct = default)
+    {
+        ByPuuid.GetValueOrDefault(puuid)?.RemoveAll(m => matchIds.Contains(m.MatchId));
+        return Task.CompletedTask;
+    }
 }

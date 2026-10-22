@@ -19,6 +19,7 @@ wartości trafiają do Azure dopiero przy wdrożeniu.
 | `DISCORD_APP_ID` | ✔ | ✔ | nie | Developer Portal → *Application ID*. Rejestracja komend bota i logowanie na stronie |
 | `DISCORD_BOT_TOKEN` | ✔ | | nie | Developer Portal → Bot → *Token*. Rejestracja komend po wdrożeniu |
 | `DISCORD_CLIENT_SECRET` | | ✔ | nie | Developer Portal → OAuth2 → *Client Secret*. Logowanie na stronie |
+| `MATCH_HISTORY_GAMES` (**Variable**) | | ✔ | nie | Ile ostatnich gier na gracza pokazują statystyki i trzyma baza (1–100, domyślnie 20). Starsze są usuwane |
 | `DISCORD_GUILD_ID` (**Variable**) | | ✔ | nie | ID serwera (tryb dewelopera → prawy klik na serwer → Kopiuj ID). Na stronę wchodzą tylko ludzie z serwera |
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | ✔ | ✔ | tak | Logowanie wdrożeń do Azure (OIDC) |
 

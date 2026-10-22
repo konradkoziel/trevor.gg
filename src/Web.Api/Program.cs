@@ -52,6 +52,14 @@ builder.Services.AddSingleton<IRiotLinkStore, TableRiotLinkStore>();
 // Stats of the linked account; MatchHistory is a singleton so its refresh throttle is shared
 builder.Services.AddSingleton<IMatchHistoryStore, TableMatchHistoryStore>();
 builder.Services.AddSingleton<MatchHistory>();
+builder.Services.AddOptions<MatchHistoryOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        if (int.TryParse(config["MATCH_HISTORY_GAMES"], out var games))
+            options.Games = games;
+    })
+    .Validate(o => o.IsValid, $"MATCH_HISTORY_GAMES must be between 1 and {MatchHistoryOptions.MaxGames}")
+    .ValidateOnStart();
 builder.Services.AddSingleton<StatsReport>();
 
 // Builds
