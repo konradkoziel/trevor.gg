@@ -1100,27 +1100,42 @@ img {
 }
 
 .spell-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  grid-template-columns: repeat(3, 52px);
   gap: 6px;
-  padding: 10px;
-  margin: 12px 0 0;
+  padding: 8px;
+  margin: 0;
   list-style: none;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border: 1px solid var(--gold-dark);
   border-radius: var(--radius-small);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 55%);
+}
+
+/* The bubble's arrow, pointing at its slot */
+.spell-picker::before {
+  position: absolute;
+  top: -6px;
+  left: 24px;
+  width: 10px;
+  height: 10px;
+  content: '';
+  background: var(--surface-2);
+  border-top: 1px solid var(--gold-dark);
+  border-left: 1px solid var(--gold-dark);
+  transform: rotate(45deg);
 }
 
 .spell-option {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  width: 100%;
-  padding: 6px 2px;
-  font: inherit;
-  font-size: 0.72rem;
-  color: var(--text);
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
   cursor: pointer;
   background: transparent;
   border: 1px solid transparent;
@@ -1133,7 +1148,7 @@ img {
 }
 
 .spell-option:hover {
-  background: var(--surface-2);
+  background: var(--bg-raised);
   border-color: var(--border-strong);
 }
 
