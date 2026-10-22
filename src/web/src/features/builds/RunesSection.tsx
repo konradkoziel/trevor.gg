@@ -95,9 +95,12 @@ function TreeTabs({
           type="button"
           className={tree.id === selectedId ? 'tree-tab selected' : 'tree-tab'}
           onClick={() => onSelect(tree.id)}
+          title={tree.name}
+          aria-label={tree.name}
         >
           <img src={tree.iconUrl} alt="" width={28} height={28} />
-          <span>{tree.name}</span>
+          {/* Only the chosen tree is named, so five trees fit one row */}
+          {tree.id === selectedId && <span>{tree.name}</span>}
         </button>
       ))}
     </div>
