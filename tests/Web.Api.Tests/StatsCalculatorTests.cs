@@ -52,6 +52,14 @@ public class StatsCalculatorTests
     }
 
     [Fact]
+    public void RecentGames_CarryTheirLength()
+    {
+        var stats = StatsCalculator.Calculate("Player#EUNE", [Played(1, "Yasuo", true, 5, 2, 5, seconds: 1860)], Icons);
+
+        Assert.Equal(1860, Assert.Single(stats.Recent).DurationSeconds);
+    }
+
+    [Fact]
     public void DeathlessGames_CountAsOneDeath()
     {
         var stats = StatsCalculator.Calculate("Player#EUNE", [Played(1, "Yasuo", true, 5, 0, 5)], Icons);

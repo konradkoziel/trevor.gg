@@ -27,7 +27,7 @@ export function ShameLeaderboard() {
               <div className="leader-main">
                 <span className="leader-name">
                   <PlayerName riotId={e.riotId} />
-                  <RankBadge rank={e.rank} compact />
+                  <RankBadge rank={e.rank} />
                 </span>
                 <span className="muted">
                   poziom {e.level}

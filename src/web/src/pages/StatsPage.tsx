@@ -40,5 +40,5 @@ function Stats() {
     )
   }
 
-  return <PlayerStatsView stats={stats.data} header={<h2 className="page-title">{stats.data.riotId}</h2>} />
+  return <PlayerStatsView stats={stats.data} title={<h2 className="page-title">{stats.data.riotId}</h2>} />
 }

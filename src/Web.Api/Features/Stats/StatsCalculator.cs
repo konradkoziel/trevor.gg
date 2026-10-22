@@ -24,7 +24,7 @@ public static class StatsCalculator
         var recent = matches
             .Where(m => !MatchRules.IsRemake(m.DurationSeconds))
             .Select(m => new RecentMatch(m.ChampionName, iconUrls.GetValueOrDefault(m.ChampionName), m.Win, m.Kills, m.Deaths,
-                m.Assists, PerMinute(m.CreepScore, m.DurationSeconds), RiotNames.Queue(m.QueueId, ""), m.PlayedAt))
+                m.Assists, PerMinute(m.CreepScore, m.DurationSeconds), RiotNames.Queue(m.QueueId, ""), m.PlayedAt, m.DurationSeconds))
             .ToList();
 
         var wins = counted.Count(m => m.Win);

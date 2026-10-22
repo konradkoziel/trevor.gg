@@ -23,6 +23,7 @@ export interface RecentMatch {
   csPerMinute: number
   queue: string
   playedAt: string
+  durationSeconds: number
 }
 
 export interface PlayerStats {
