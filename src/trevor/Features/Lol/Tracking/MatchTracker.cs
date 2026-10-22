@@ -21,7 +21,7 @@ public class MatchTracker(
         var webhookUrl = options.Value.MatchesWebhookUrl;
         if (string.IsNullOrWhiteSpace(webhookUrl) || !riot.IsConfigured)
         {
-            logger.LogInformation("Match tracking off: DISCORD_URL_MATCHES or RIOT_API_KEY missing");
+            logger.LogInformation("Match tracking off: DISCORD_MATCHES_WEBHOOK or RIOT_API_KEY missing");
             return 0;
         }
 

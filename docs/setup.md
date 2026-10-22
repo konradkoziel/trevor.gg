@@ -1,20 +1,41 @@
-# Ustawienia do zrobienia ręcznie
+# Ustawienia
 
-Wszystko poniżej jest **opcjonalne**: bez tego bot i strona działają, tylko dana funkcja mówi, czego jej brakuje.
-Sekretów nie ma w kodzie, bo repo jest publiczne. Po dodaniu czegokolwiek w GitHubie trzeba wdrożyć stronę
-(Actions → **Deploy website** → *Run workflow*), bo dopiero wtedy wartości trafiają do Azure.
+Każde ustawienie ma **jedną nazwę wszędzie**: sekret w GitHubie o tej nazwie, a wdrożenia same wpisują go do Azure
+(`Deploy bot` do Function App Trevor, `Deploy website` do API strony). Niczego nie wpisujesz ręcznie w Azure.
 
-| # | Gdzie | Nazwa | Wartość | Co włącza | Bez tego |
-|---|---|---|---|---|---|
-| 1 | GitHub → Settings → Secrets and variables → Actions → **Secrets** | `RIOT_API_KEY` | Ten sam klucz Riot co w ustawieniach Function App Trevor | Podpinanie konta LoL, statystyki, ranking i rotacja na stronie | Te sekcje piszą, że brakuje klucza Riot albo się chowają |
-| 2 | GitHub → … → **Variables** | `DISCORD_GUILD_ID` | ID serwera (Discord: tryb dewelopera → prawy klik na serwer → Kopiuj ID serwera) | Na stronę wchodzą tylko ludzie z serwera, z nickiem i avatarem z serwera | Zalogować się może każdy z kontem Discord |
-| 3 | GitHub → … → **Secrets** | `TREVOR_WEB_KEY` | Dowolny długi losowy ciąg (generator haseł) | Hasło, którym Trevor przedstawia się API strony | `/build` i `/rank` / `/roast` bez nicku nie działają |
-| 4 | Azure → Function App **Trevor** → Settings → Environment variables | `WEB_API_URL` | `https://<nazwa API strony>.azurewebsites.net` (podsumowanie przebiegu *Deploy website*, linia „API”) | Jak 3 | Jak 3 |
-| | | `WEB_API_KEY` | Ta sama wartość co `TREVOR_WEB_KEY` | | |
-| | | `WEB_SITE_URL` | Adres strony (podsumowanie *Deploy website*, linia „Site”) | | |
+Gdzie: GitHub → Settings → Secrets and variables → Actions → **Secrets** (albo **Variables**, gdzie tak napisane).
+Po zmianie sekretu uruchom wdrożenie, którego dotyczy (Actions → *Deploy bot* / *Deploy website* → *Run workflow*):
+wartości trafiają do Azure dopiero przy wdrożeniu.
 
-Po dodaniu lub zmianie `RIOT_API_KEY` uruchom ręcznie *Deploy website* (Actions → Deploy website → Run workflow): strona bierze klucz przy wdrożeniu.
-Komunikat „Riot odrzucił klucz API” znaczy, że klucz jest, ale nieważny: deweloperski wygasa po 24 h. Wgraj nowy w obu miejscach (ten sekret i Function App Trevor) albo poproś Riot o Personal API Key.
+| Nazwa | Bot | Strona | Wymagane | Wartość |
+|---|---|---|---|---|
+| `DISCORD_PUBLIC_KEY` | ✔ | | tak | Discord Developer Portal → aplikacja → General Information → *Public Key* |
+| `OPENAI_URL` | ✔ | | tak | Adres zasobu Azure OpenAI (`https://<nazwa>.openai.azure.com/`) |
+| `OPENAI_KEY` | ✔ | | tak | Klucz zasobu Azure OpenAI (Keys and Endpoint) |
+| `OPENAI_DEPLOYMENT` | ✔ | | tak | Nazwa wdrożenia modelu w Azure OpenAI |
+| `DISCORD_MATCHES_WEBHOOK` | ✔ | | nie | Webhook kanału na raporty meczów (kanał → Integracje → Webhooki). Bez niego `/track` nic nie wrzuca |
+| `RIOT_API_KEY` | ✔ | ✔ | nie | Klucz z developer.riotgames.com. Deweloperski wygasa po 24 h, lepiej Personal API Key |
+| `TREVOR_WEB_KEY` | ✔ | ✔ | nie | Dowolny długi losowy ciąg. Bez niego `/build` i `/rank` / `/roast` bez nicku nie działają |
+| `DISCORD_APP_ID` | ✔ | ✔ | nie | Developer Portal → *Application ID*. Rejestracja komend bota i logowanie na stronie |
+| `DISCORD_BOT_TOKEN` | ✔ | | nie | Developer Portal → Bot → *Token*. Rejestracja komend po wdrożeniu |
+| `DISCORD_CLIENT_SECRET` | | ✔ | nie | Developer Portal → OAuth2 → *Client Secret*. Logowanie na stronie |
+| `DISCORD_GUILD_ID` (**Variable**) | | ✔ | nie | ID serwera (tryb dewelopera → prawy klik na serwer → Kopiuj ID). Na stronę wchodzą tylko ludzie z serwera |
+| `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | ✔ | ✔ | tak | Logowanie wdrożeń do Azure (OIDC) |
 
-Kolejność dla `/build`: najpierw 3, potem wdrożenie strony, potem 4.
-Punkt 4 jest ręczny celowo: wdrożenie strony nie zmienia produkcyjnych ustawień bota.
+Adresy strony i API (`WEB_API_URL`, `WEB_SITE_URL`) bot dostaje sam z ostatniego wdrożenia strony.
+`Deploy bot` zatrzymuje się na starcie, jeśli brakuje któregoś wymaganego sekretu: wtedy nic nie jest wdrażane.
+
+Komunikat „Riot odrzucił klucz API” znaczy, że klucz jest, ale nieważny (najczęściej wygasł). Podmień `RIOT_API_KEY`
+i uruchom oba wdrożenia.
+
+## Przeniesienie ze starych nazw (jednorazowo)
+
+Dotąd część ustawień bota była wpisana ręcznie w Azure → Function App Trevor → Environment variables. Skopiuj je do sekretów:
+
+| Stara nazwa w Azure | Nowy sekret w GitHubie |
+|---|---|
+| `DISCORD_API_KEY` | `DISCORD_PUBLIC_KEY` |
+| `DISCORD_URL_MATCHES` | `DISCORD_MATCHES_WEBHOOK` |
+| `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | te same nazwy |
+
+`Deploy bot` usuwa stare nazwy z Azure sam, po wdrożeniu kodu, który czyta nowe (także `WEB_API_KEY`).

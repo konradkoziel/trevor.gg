@@ -47,17 +47,19 @@ The same repo holds the **website** (builds and stats): React + Vite + TypeScrip
 - The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
   stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
 - The bot's infrastructure is not in code: its Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were
-  created by hand. The website's are in `infra/web.bicep`; change them there, never in the Portal.
+  created by hand, but its app settings are not: `bot.yml` writes them from GitHub secrets of the same names before each deploy
+  (empty secrets are skipped, `AzureWebJobsStorage` is left alone). The website's resources are in `infra/web.bicep`; change them there, never in the Portal.
 
 ## Configuration (env vars / Azure app settings)
 
+**One name per setting:** the GitHub secret, the bot's app setting and the API's app setting share it (`docs/setup.md` lists them).
 Bound to options classes in `src/trevor/Program.cs` (the Riot ones in `AddRiot()`, `src/Lol.Shared`); required ones are validated **at startup** (`ValidateOnStart`) — a missing value stops the host.
 
 | Name | Options | Notes |
 |---|---|---|
-| `DISCORD_API_KEY` | `DiscordOptions.PublicKey` | Discord application **public key** (64 hex chars), despite the name. Required |
-| `DISCORD_URL_MATCHES` | `DiscordOptions.MatchesWebhookUrl` | Webhook for the match-reports channel (`MatchTracker`). Optional: without it nothing is posted |
-| `WEB_API_URL`, `WEB_API_KEY`, `WEB_SITE_URL` | `WebApiOptions` | The website API for `/build` and nick-less `/rank` / `/roast`: its URL (`https://trevor-web-api-*.azurewebsites.net`), the shared key (= GitHub secret `TREVOR_WEB_KEY`, the API's `BOT_API_KEY`) and the site URL. Optional. Set **by hand** on the Function App: the website's workflow must not change the bot's production settings |
+| `DISCORD_PUBLIC_KEY` | `DiscordOptions.PublicKey` | Discord application **public key** (64 hex chars). Required (`bot.yml` stops before deploying without it) |
+| `DISCORD_MATCHES_WEBHOOK` | `DiscordOptions.MatchesWebhookUrl` | Webhook for the match-reports channel (`MatchTracker`). Optional: without it nothing is posted |
+| `WEB_API_URL`, `TREVOR_WEB_KEY`, `WEB_SITE_URL` | `WebApiOptions` | The website API for `/build` and nick-less `/rank` / `/roast`: its URL and the site URL (`bot.yml` reads both from the website's last deployment) and the key shared with the API. Optional. Only `bot.yml` writes the bot's settings; `web.yml` never touches the bot |
 | `DISCORD_SKIP_SIGNATURE=true` | `DiscordOptions.SkipSignatureValidation` | **Disables signature verification.** Local only, never in Azure |
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | `OpenAiOptions` | Azure OpenAI. Required |
 | `RIOT_API_KEY` | `RiotOptions.ApiKey` | Riot API key. **Optional** — without it `/rank` answers that the key is missing. Dev keys expire every 24 h; use a Personal API Key |
@@ -67,7 +69,7 @@ Bound to options classes in `src/trevor/Program.cs` (the Riot ones in `AddRiot()
 Template: `src/trevor/local.settings.example.json` → copy to `src/trevor/local.settings.json` (gitignored).
 
 Website API (`src/Web.Api`, template `src/Web.Api/local.settings.example.json`): all set by `infra/web.bicep`, never by hand.
-`DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` (from the GitHub secrets `DISCORD_APP_ID` / `DISCORD_CLIENT_SECRET`),
+`DISCORD_APP_ID` / `DISCORD_CLIENT_SECRET` / `TREVOR_WEB_KEY` (from the GitHub secrets of the same names),
 `DISCORD_REDIRECT_URI` (`https://<api>.azurewebsites.net/api/auth/discord/callback`, must also be in the Developer Portal under
 OAuth2 → Redirects), `SITE_URL`, `RIOT_API_KEY` (from the GitHub secret of the same name; one Riot key shared by both apps, so their
 rate limits add up). All optional: without them only login / Riot account linking are off (503).
@@ -121,10 +123,9 @@ rate limits add up). All optional: without them only login / Riot account linkin
   which runs no JavaScript, and a meta refresh to `/b/{id}`; names via `BuildCards`); `Home` → `GET /api/rotation` (public, `FreeRotation` caches 1 h), `GET /api/leaderboard` (logged in; `Leaderboard` sums
   Champion-Mastery-V4 points per linked player plus the Solo/Duo rank, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
   not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
-  matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `BOT_API_KEY`;
-  `RiotAccount` → link a League account: `POST /api/me/riot/challenge` (Riot ID → a default profile icon 0-28 to set, 15 min),
-  `POST /api/me/riot/verify` (Summoner-V4 icon check), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id,
-  rows `link` / `challenge`); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
+  matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `TREVOR_WEB_KEY`;
+  `RiotAccount` → link a League account: `POST /api/me/riot` (Riot ID, no ownership check: login is guild-only and an account
+  linked by someone else is a 409), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id, row `link`); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
   `MatchHistory` (singleton: last 20 match ids, only unknown matches fetched, at most one Riot refresh per player per 2 min)
   over table `playedmatches` (PartitionKey = PUUID, RowKey = match id), numbers from `StatsCalculator` (Summoner's Rift queues,
   no remakes) plus the ranks, put together by `StatsReport` (also used by the profiles); `Players` → `GET /api/players/{name}/{tag}` (logged in; only linked players, Riot ID ignoring case: `PlayerProfiles` adds icon, level, top 5 masteries and the player's builds); `Ranks/RankedStandings` (League-V4 entries → Solo/Duo then Flex, with label and emblem, for every page); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),

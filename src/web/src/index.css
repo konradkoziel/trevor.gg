@@ -1029,25 +1029,6 @@ img {
   border-radius: var(--radius);
 }
 
-/* ---------- Account ---------- */
-
-.challenge {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: flex-start;
-}
-
-.challenge img {
-  border: 2px solid var(--gold);
-  border-radius: 10px;
-  box-shadow: 0 0 24px rgb(200 170 110 / 30%);
-}
-
-.challenge > div {
-  flex: 1 1 260px;
-}
-
 /* ---------- Stats ---------- */
 
 .summary-tiles {

@@ -9,16 +9,13 @@ using Web.Api.Infrastructure.Sessions;
 
 namespace Web.Api.Features.RiotAccount;
 
-// POST /api/me/riot/challenge: look the account up and pick the icon the user has to set
-public class StartRiotLinkFunction(
-    ISessionTokens sessions, IRiotApiClient riot, IRiotLinkStore store, IDataDragon dataDragon, TimeProvider time, Random random)
+// POST /api/me/riot: link a League account by Riot ID. No proof of ownership: only members of Trevor's server log in,
+// and an account already linked by someone else is refused, so nobody quietly takes a friend's stats
+public class LinkRiotAccountFunction(ISessionTokens sessions, IRiotApiClient riot, IRiotLinkStore store, TimeProvider time)
 {
-    // Time to open the client, change the icon and come back
-    public static readonly TimeSpan ChallengeLifetime = TimeSpan.FromMinutes(15);
-
-    [Function("StartRiotLink")]
+    [Function("LinkRiotAccount")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "me/riot/challenge")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "me/riot")] HttpRequest req,
         CancellationToken ct)
     {
         var user = await sessions.ReadAsync(req, ct);
@@ -34,23 +31,25 @@ public class StartRiotLinkFunction(
             var account = await riot.GetAccountAsync(riotId, ct);
             if (account is null)
                 return new BadRequestObjectResult(new ApiError(RiotAccountMessages.NoSuchAccount));
-            var summoner = await riot.GetSummonerAsync(account.Puuid, ct);
-            if (summoner is null)
+            if (await riot.GetSummonerAsync(account.Puuid, ct) is null)
                 return new BadRequestObjectResult(new ApiError(RiotAccountMessages.NeverPlayed));
+            if (await IsLinkedByAnotherAsync(account.Puuid, user.DiscordId, ct))
+                return new ConflictObjectResult(new ApiError(RiotAccountMessages.AlreadyLinked));
 
             var name = RiotNames.RiotId(account) ?? riotId.ToString();
-            var challenge = new RiotLinkChallenge(user.DiscordId, account.Puuid, name,
-                VerificationIcons.Pick(summoner.ProfileIconId, random), time.GetUtcNow() + ChallengeLifetime);
-            await store.SaveChallengeAsync(challenge, ct);
-            return new OkObjectResult(await RiotAccountViews.ChallengeAsync(challenge, dataDragon, ct));
+            await store.SaveLinkAsync(new RiotLink(user.DiscordId, account.Puuid, name, time.GetUtcNow()), ct);
+            return new OkObjectResult(new RiotAccountView(name));
         });
     }
 
-    private static async Task<StartRiotLinkRequest?> ReadAsync(HttpRequest req, CancellationToken ct)
+    private async Task<bool> IsLinkedByAnotherAsync(string puuid, string discordId, CancellationToken ct) =>
+        (await store.ListLinksAsync(ct)).Any(l => l.Puuid == puuid && l.DiscordId != discordId);
+
+    private static async Task<LinkRiotAccountRequest?> ReadAsync(HttpRequest req, CancellationToken ct)
     {
         try
         {
-            return await req.ReadFromJsonAsync<StartRiotLinkRequest>(ct);
+            return await req.ReadFromJsonAsync<LinkRiotAccountRequest>(ct);
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {

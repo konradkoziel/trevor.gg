@@ -36,11 +36,11 @@ builder.Services
 builder.Services.AddOptions<DiscordOptions>()
     .Configure<IConfiguration>((options, config) =>
     {
-        options.PublicKey = config["DISCORD_API_KEY"] ?? string.Empty;
-        options.MatchesWebhookUrl = config["DISCORD_URL_MATCHES"];
+        options.PublicKey = config["DISCORD_PUBLIC_KEY"] ?? string.Empty;
+        options.MatchesWebhookUrl = config["DISCORD_MATCHES_WEBHOOK"];
         options.SkipSignatureValidation = string.Equals(config["DISCORD_SKIP_SIGNATURE"], "true", StringComparison.OrdinalIgnoreCase);
     })
-    .Validate(o => o.SkipSignatureValidation || o.HasValidPublicKey, "DISCORD_API_KEY must be the 64-char hex public key")
+    .Validate(o => o.SkipSignatureValidation || o.HasValidPublicKey, "DISCORD_PUBLIC_KEY must be the 64-char hex public key")
     .ValidateOnStart();
 
 builder.Services.AddOptions<OpenAiOptions>()
@@ -59,7 +59,7 @@ builder.Services.AddOptions<WebApiOptions>()
     .Configure<IConfiguration>((options, config) =>
     {
         options.Url = config["WEB_API_URL"];
-        options.Key = config["WEB_API_KEY"];
+        options.Key = config["TREVOR_WEB_KEY"];
         options.SiteUrl = config["WEB_SITE_URL"];
     });
 

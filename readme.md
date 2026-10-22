@@ -46,7 +46,7 @@ finished game posts a short card to a dedicated matches channel: result, queue, 
 the team's **🏆 MVP** (best KDA, with the champion's icon) and **🚨 report candidate** (worst KDA). Tracked players count too,
 so a friend can end up on either line. No AI here — just the numbers.
 Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
-(reported match ids are remembered); remakes are skipped. Needs `DISCORD_URL_MATCHES`.
+(reported match ids are remembered); remakes are skipped. Needs `DISCORD_MATCHES_WEBHOOK`.
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
@@ -63,8 +63,8 @@ Logged in, you **save** builds (up to 50, checked again by the API against the c
 under **Moje buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
 The copied link goes through the API (`/api/share/<id>`), so on Discord it unfolds into a preview with the build's name,
 items, runes and the champion's splash art, then sends people on to the site.
-Under **Konto** (click your name) you link your League account: enter your Riot ID, set the default profile icon the site
-shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so nobody can claim someone else's account.
+Under **Konto** (click your name) you link your League account by Riot ID. There is no ownership check: only members of
+Trevor's server can log in, and an account someone else already linked is refused.
 With a linked account, **Statystyki** shows your Solo/Duo and Flex rank (emblem, LP, wins/losses) and your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
 KDA, CS/min, damage/min; Summoner's Rift only, no remakes) and the recent games. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
@@ -99,34 +99,41 @@ Login: site ─▶ /api/auth/discord/login ─▶ discord.com (Authorize) ─▶
 - **Website:** separate resource group `trevor-web`, created from `infra/web.bicep` by its own workflow; the bot is never redeployed for a website-only change.
 - **Queue-based deferral:** Discord needs an answer within 3 s; slow work goes through the `deferred-commands` queue and is retried if posting to Discord fails.
 
-More detail: [`docs/setup.md`](docs/setup.md) (optional settings still to add by hand), [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
+More detail: [`docs/setup.md`](docs/setup.md) (every secret to set, in one table), [`CLAUDE.md`](CLAUDE.md) (conventions, gotchas), [`docs/ROADMAP.md`](docs/ROADMAP.md) (ideas and patterns), [`docs/riot-api.md`](docs/riot-api.md) (Riot endpoints and rate limits).
 
 ---
 
 ## ⚙️ Configuration
 
-Azure Function App settings (locally: copy `src/trevor/local.settings.example.json` to `src/trevor/local.settings.json`):
+Every setting has one name everywhere: a **GitHub secret** of that name, which the deploy workflows put into Azure
+(`bot.yml` into the Function App Trevor, `web.yml` into the website's API). Nothing is typed into Azure by hand.
+The full list with where each value comes from: [`docs/setup.md`](docs/setup.md).
+
+The bot's app settings (locally: copy `src/trevor/local.settings.example.json` to `src/trevor/local.settings.json`):
 
 | Setting | Required | What it is |
 |---|---|---|
-| `DISCORD_API_KEY` | yes | Discord application **public key** (64 hex chars) |
+| `DISCORD_PUBLIC_KEY` | yes | Discord application **public key** (64 hex chars) |
 | `OPENAI_URL`, `OPENAI_KEY`, `OPENAI_DEPLOYMENT` | yes | Azure OpenAI endpoint, key and deployment name |
 | `RIOT_API_KEY` | no | Riot API key; without it the LoL commands say the key is missing and match tracking is off |
 | `RIOT_PLATFORM` | no | Players' server, default `eun1` (EUNE); `euw1` for EUW |
-| `DISCORD_URL_MATCHES` | no | Webhook of the channel for tracked players' match cards; without it tracking posts nothing |
+| `DISCORD_MATCHES_WEBHOOK` | no | Webhook of the channel for tracked players' match cards; without it tracking posts nothing |
 | `AzureWebJobsStorage` | yes (Functions host) | Storage account **connection string**: queue, timers and the `trackedplayers` / `reportedmatches` tables |
 | `DISCORD_SKIP_SIGNATURE` | local only | `true` disables Discord signature checks for local testing |
-| `WEB_API_URL`, `WEB_API_KEY`, `WEB_SITE_URL` | no | The website's API address, the shared key (= GitHub secret `TREVOR_WEB_KEY`) and the site address. Without them `/rank` and `/roast` need a nick and `/build` says the site isn't connected |
+| `TREVOR_WEB_KEY` | no | The key the bot and the website's API share. Without it `/rank` and `/roast` need a nick and `/build` says the site isn't connected |
+| `WEB_API_URL`, `WEB_SITE_URL` | no | The website's API and site addresses; `bot.yml` reads them from the website's last deployment |
 
-GitHub repository secrets used by the deploy workflow:
+`AzureWebJobsStorage`, `RIOT_PLATFORM` and `DISCORD_SKIP_SIGNATURE` are not managed by the workflow.
+
+GitHub repository secrets that are not app settings, or are shared by both apps:
 
 | Secret | What it is |
 |---|---|
 | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` | OIDC login to Azure |
 | `DISCORD_APP_ID`, `DISCORD_BOT_TOKEN` | Register slash commands from `deploy/discord-commands.json` after each deploy (skipped if missing) |
-| `TREVOR_WEB_KEY` | Any long random string, shared by the website API (`BOT_API_KEY`, set by `web.yml`) and the bot (`WEB_API_KEY`, set by hand on the Function App Trevor). Without it the bot works without the site |
-| `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it, with `DISCORD_APP_ID`, to the API). Without it login answers 503 |
-| `RIOT_API_KEY` | The same Riot API key the bot uses, for the website (linking League accounts). Without it linking answers 503 |
+| `TREVOR_WEB_KEY` | Any long random string, the same app setting on the bot and the website's API. Without it the bot works without the site |
+| `DISCORD_CLIENT_SECRET` | OAuth2 client secret of the same Discord application: website login (`web.yml` passes it and `DISCORD_APP_ID` to the API). Without it login answers 503 |
+| `RIOT_API_KEY` | One Riot API key for both apps (their rate limits add up). Without it the LoL features say the key is missing |
 
 GitHub repository **variable** (Settings → Secrets and variables → Actions → Variables):
 
@@ -134,7 +141,7 @@ GitHub repository **variable** (Settings → Secrets and variables → Actions �
 |---|---|
 | `DISCORD_GUILD_ID` | Id of Trevor's Discord server (Developer Mode → right-click the server → Copy Server ID). Only its members can log in to the website. Without it anyone with Discord can |
 
-The website's API settings (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by
+The website's API settings (`DISCORD_APP_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by
 `infra/web.bicep`, not by hand. The redirect URL Discord must allow (Developer Portal → OAuth2 → Redirects) is printed in the
 `Deploy website` run summary.
 
