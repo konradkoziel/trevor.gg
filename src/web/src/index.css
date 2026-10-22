@@ -704,6 +704,354 @@ img {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Champion picker ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.champion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.champion:hover,
+.champion:focus-visible {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.champion img {
+  border: 1px solid var(--gold-dark);
+  border-radius: 6px;
+}
+
+.champion span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Build editor ---------- */
+
+.editor-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+}
+
+.editor-header img {
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+}
+
+.editor-title {
+  flex: 1 1 260px;
+}
+
+.editor-title h2 {
+  font-size: 1.6rem;
+}
+
+.editor-title .search {
+  margin: 8px 0 0;
+}
+
+.build-name {
+  margin: 6px 0 0;
+}
+
+.editor-body {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.editor-section {
+  padding: 18px;
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.editor-section h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.item-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 14px;
+  list-style: none;
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  min-height: 66px;
+  background: var(--bg-raised);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-small);
+}
+
+.slot.filled {
+  padding: 6px 0 4px;
+  border: 1px solid var(--gold);
+  box-shadow: inset 0 0 12px rgb(200 170 110 / 15%);
+}
+
+.slot-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.slot-actions button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.slot-actions button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.item-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.item-filters .search {
+  flex: 1;
+  margin: 0;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px;
+  max-height: 340px;
+  padding: 0;
+  margin: 12px 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.icon-button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 4px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.icon-button img {
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
+}
+
+.icon-button .gold {
+  color: var(--gold);
+}
+
+.rune-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 20px;
+}
+
+.tree-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tree-tab {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 10px 4px 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tree-tab.selected {
+  color: var(--text);
+  background: rgb(200 170 110 / 10%);
+  border-color: var(--gold);
+}
+
+.rune-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rune {
+  padding: 2px;
+  cursor: pointer;
+  filter: grayscale(1) brightness(0.65);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  transition: filter 0.15s;
+}
+
+.rune img {
+  display: block;
+  border-radius: 50%;
+}
+
+.rune:hover,
+.rune.selected {
+  filter: none;
+}
+
+.rune.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgb(200 170 110 / 45%);
+}
+
+.skill-grid-scroll {
+  overflow-x: auto;
+}
+
+.skill-grid {
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+
+.skill-grid th {
+  min-width: 28px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.skill-grid th img {
+  display: block;
+  border-radius: 4px;
+}
+
+.skill-cell {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--bg);
+  cursor: pointer;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.skill-cell:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+
+.skill-cell:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.skill-cell.chosen {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  border-color: var(--gold);
+}
+
+/* Read-only view: show the choices at full strength, only the clicking is off */
+.editor-body:disabled .rune.selected,
+.editor-body:disabled .skill-cell.chosen {
+  opacity: 1;
+}
+
+.editor-body:disabled .rune,
+.editor-body:disabled .skill-cell {
+  cursor: default;
+}
+
+.editor-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 18px;
+  margin-top: 16px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
 /* ---------- Stats and profiles ---------- */
 
 .player-header {
