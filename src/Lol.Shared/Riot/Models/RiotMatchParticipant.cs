@@ -1,6 +1,6 @@
 ﻿namespace Lol.Shared.Riot.Models;
 
-// Match-V5 ParticipantDto (only the fields we use)
+// Match-V5 ParticipantDto (only the fields we use); the item, spell and rune fields are 0/null in older stored copies
 public record RiotMatchParticipant(
     string Puuid,
     string ChampionName,
@@ -16,4 +16,19 @@ public record RiotMatchParticipant(
     int VisionScore,
     int GoldEarned,
     string? RiotIdGameName = null,
-    string? RiotIdTagline = null);
+    string? RiotIdTagline = null,
+    int ChampLevel = 0,
+    int Item0 = 0,
+    int Item1 = 0,
+    int Item2 = 0,
+    int Item3 = 0,
+    int Item4 = 0,
+    int Item5 = 0,
+    int Item6 = 0, // the trinket slot
+    int Summoner1Id = 0,
+    int Summoner2Id = 0,
+    RiotMatchPerks? Perks = null)
+{
+    // Inventory slots in order, the trinket last; 0 = empty slot
+    public IReadOnlyList<int> ItemIds() => [Item0, Item1, Item2, Item3, Item4, Item5, Item6];
+}

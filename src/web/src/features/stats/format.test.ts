@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { formatAgo, formatDecimal, formatDuration, formatPercent, kdaRatio, winRateOf, winRateTone } from './format'
+import {
+  formatAgo,
+  formatDecimal,
+  formatDuration,
+  formatThousands,
+  formatPercent,
+  kdaRatio,
+  winRateOf,
+  winRateTone,
+} from './format'
 
 describe('stats formatting', () => {
   it('uses Polish decimals', () => {
@@ -34,5 +43,10 @@ describe('stats formatting', () => {
     expect(formatAgo(new Date('2026-10-22T09:00:00Z'), now)).toBe('3 h temu')
     expect(formatAgo(new Date('2026-10-21T09:00:00Z'), now)).toBe('wczoraj')
     expect(formatAgo(new Date('2026-10-17T12:00:00Z'), now)).toBe('5 dni temu')
+  })
+
+  it('shows gold in thousands', () => {
+    expect(formatThousands(12400)).toBe('12,4k')
+    expect(formatThousands(900)).toBe('0,9k')
   })
 })

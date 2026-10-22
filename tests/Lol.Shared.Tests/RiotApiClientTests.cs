@@ -135,6 +135,27 @@ public class RiotApiClientTests
     }
 
     [Fact]
+    public async Task GetMatch_ParsesItemsSpellsAndRunes()
+    {
+        var handler = new StubHandler(_ => Json("""
+            {"info":{"gameDuration":1834,"queueId":420,"gameMode":"CLASSIC",
+             "participants":[{"puuid":"p1","championName":"Yasuo","teamId":100,"win":true,"kills":1,"deaths":1,"assists":1,
+               "totalMinionsKilled":1,"neutralMinionsKilled":0,"totalDamageDealtToChampions":1,"visionScore":1,"goldEarned":1,
+               "champLevel":16,"item0":3006,"item1":0,"item2":6672,"item3":0,"item4":0,"item5":0,"item6":3340,
+               "summoner1Id":4,"summoner2Id":14,
+               "perks":{"styles":[{"style":8000,"selections":[{"perk":8005},{"perk":9111}]},{"style":8400,"selections":[{"perk":8446}]}]}}]}}
+            """));
+
+        var player = Assert.Single((await Client(handler).GetMatchAsync("EUN1_1"))!.Info.Participants);
+
+        Assert.Equal(16, player.ChampLevel);
+        Assert.Equal([3006, 0, 6672, 0, 0, 0, 3340], player.ItemIds());
+        Assert.Equal((4, 14), (player.Summoner1Id, player.Summoner2Id));
+        Assert.Equal(8005, player.Perks!.Styles[0].Selections[0].Perk);
+        Assert.Equal(8400, player.Perks.Styles[1].Style);
+    }
+
+    [Fact]
     public async Task GetMatch_NotFound_ReturnsNull()
     {
         Assert.Null(await Client(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound))).GetMatchAsync("x"));

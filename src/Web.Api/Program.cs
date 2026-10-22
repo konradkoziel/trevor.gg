@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Web.Api.Features.Bot;
 using Web.Api.Features.Builds;
 using Web.Api.Features.Home;
+using Web.Api.Features.Matches;
 using Web.Api.Features.Players;
 using Web.Api.Features.RiotAccount;
 using Web.Api.Features.Share;
@@ -51,6 +52,14 @@ builder.Services.AddSingleton<IRiotLinkStore, TableRiotLinkStore>();
 // Stats of the linked account; MatchHistory is a singleton so its refresh throttle is shared
 builder.Services.AddSingleton<IMatchHistoryStore, TableMatchHistoryStore>();
 builder.Services.AddSingleton<MatchHistory>();
+builder.Services.AddOptions<MatchHistoryOptions>()
+    .Configure<IConfiguration>((options, config) =>
+    {
+        if (int.TryParse(config["MATCH_HISTORY_GAMES"], out var games))
+            options.Games = games;
+    })
+    .Validate(o => o.IsValid, $"MATCH_HISTORY_GAMES must be between 1 and {MatchHistoryOptions.MaxGames}")
+    .ValidateOnStart();
 builder.Services.AddSingleton<StatsReport>();
 
 // Builds
@@ -63,6 +72,10 @@ builder.Services.AddSingleton<Leaderboard>();
 
 // Player profiles (/gracz/...) of linked friends
 builder.Services.AddSingleton<PlayerProfiles>();
+
+// Match details for the expandable games; finished matches never change, so they're cached in memory
+builder.Services.AddMemoryCache(options => options.SizeLimit = MatchDetailSource.CacheSize);
+builder.Services.AddSingleton<MatchDetailSource>();
 
 // Endpoints for the bot (/api/bot/...), behind the shared TREVOR_WEB_KEY
 builder.Services.AddOptions<BotApiOptions>()

@@ -67,7 +67,8 @@ Under **Konto** (click your name) you link your League account by Riot ID. There
 Trevor's server can log in, and an account someone else already linked is refused.
 With a linked account, **Statystyki** shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
 division, this season's record and winrate ring from Riot) and the champions of your recent games next to the last 20 games, one line
-each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes). Each match is fetched from Riot once and kept;
+each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes); click a game to see both teams with
+everyone's score, damage, CS, gold, final items, summoner spells and runes. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
 Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the leaderboard; logged-in users only):
 rank, level, the same stats, their five most played champions by mastery and their builds.
@@ -140,6 +141,7 @@ GitHub repository **variable** (Settings → Secrets and variables → Actions �
 
 | Variable | What it is |
 |---|---|
+| `MATCH_HISTORY_GAMES` | How many recent games the stats show and storage keeps per player (1–100, default 20); older ones are deleted |
 | `DISCORD_GUILD_ID` | Id of Trevor's Discord server (Developer Mode → right-click the server → Copy Server ID). Only its members can log in to the website. Without it anyone with Discord can |
 
 The website's API settings (`DISCORD_APP_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `SITE_URL`, `RIOT_API_KEY`, storage) are set by

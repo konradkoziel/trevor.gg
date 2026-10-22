@@ -1,9 +1,10 @@
-﻿using Azure.Data.Tables;
+﻿using Azure;
+using Azure.Data.Tables;
 using Web.Api.Features.Stats;
 
 namespace Web.Api.Infrastructure.Storage;
 
-// A finished match never changes, so a row is written once and read forever
+// A finished match never changes, so a row is written once and read until MatchHistory drops it as too old
 public class TableMatchHistoryStore(TableServiceClient tables) : IMatchHistoryStore
 {
     private const string TableName = "playedmatches";
@@ -34,6 +35,14 @@ public class TableMatchHistoryStore(TableServiceClient tables) : IMatchHistorySt
                     Deaths = m.Deaths, Assists = m.Assists, CreepScore = m.CreepScore, DamageToChampions = m.DamageToChampions,
                     DurationSeconds = m.DurationSeconds, QueueId = m.QueueId, PlayedAt = m.PlayedAt,
                 })), ct);
+    }
+
+    public async Task DeleteAsync(string puuid, IReadOnlyList<string> matchIds, CancellationToken ct = default)
+    {
+        var table = await TableAsync(ct);
+        foreach (var batch in matchIds.Chunk(BatchSize))
+            await table.SubmitTransactionAsync(batch.Select(id =>
+                new TableTransactionAction(TableTransactionActionType.Delete, new TableEntity(puuid, id), ETag.All)), ct);
     }
 
     private async Task<TableClient> TableAsync(CancellationToken ct)

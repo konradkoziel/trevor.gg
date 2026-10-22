@@ -16,6 +16,9 @@ public sealed class FakeDataDragon(string? iconUrl = "https://icons.test/Yasuo.p
     public Task<string?> ProfileIconUrlAsync(int iconId, CancellationToken ct = default) =>
         Task.FromResult<string?>($"https://icons.test/profile/{iconId}.png");
 
+    public Task<string?> ItemIconUrlAsync(int itemId, CancellationToken ct = default) =>
+        Task.FromResult<string?>($"https://icons.test/item/{itemId}.png");
+
     public Task<IReadOnlyList<Champion>?> ChampionsAsync(CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Champion>?>([]);
 }

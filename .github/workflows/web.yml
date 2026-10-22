@@ -75,6 +75,8 @@ jobs:
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
           # A repository variable, not a secret: the server id isn't secret, it just stays out of the code
           DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          # A repository variable too: how many recent games the stats keep per player (default 20, 1-100)
+          MATCH_HISTORY_GAMES: ${{ vars.MATCH_HISTORY_GAMES }}
           # Shared with the bot, which gets it from bot.yml; without it /api/bot/... answers 503
           TREVOR_WEB_KEY: ${{ secrets.TREVOR_WEB_KEY }}
         run: |
@@ -83,6 +85,7 @@ jobs:
             --name website \
             --template-file infra/web.bicep \
             --parameters discordAppId="$DISCORD_APP_ID" discordClientSecret="$DISCORD_CLIENT_SECRET" riotApiKey="$RIOT_API_KEY" discordGuildId="$DISCORD_GUILD_ID" trevorWebKey="$TREVOR_WEB_KEY" \
+              matchHistoryGames="${MATCH_HISTORY_GAMES:-20}" \
             --query properties.outputs --output json)
           for key in staticSiteName siteUrl apiName apiUrl discordRedirectUri; do
             echo "$key=$(jq -r ".$key.value" <<< "$outputs")" >> "$GITHUB_OUTPUT"

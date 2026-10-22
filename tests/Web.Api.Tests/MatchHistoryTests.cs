@@ -10,7 +10,7 @@ public class MatchHistoryTests
     private readonly FakeMatchHistoryStore _store = new();
     private readonly FakeTimeProvider _time = new(Start);
 
-    private MatchHistory History() => new(_riot, _store, _time);
+    private MatchHistory History(int games = MatchHistoryOptions.DefaultGames) => new(_riot, _store, _time, TestStats.Options(games));
 
     [Fact]
     public async Task FirstVisit_FetchesEveryMatch_AndStoresThem()
@@ -76,5 +76,39 @@ public class MatchHistoryTests
 
         // EUN1_1 dropped out of Riot's recent list, so it's no longer "recent"
         Assert.Equal(["EUN1_9"], matches.Select(m => m.MatchId));
+    }
+
+    [Fact]
+    public async Task GamesOlderThanTheLastOnes_AreDeleted()
+    {
+        _store.ByPuuid[Puuid] = [Played(1, "Yasuo", true, 1, 1, 1), Played(2, "Ahri", true, 1, 1, 1)];
+        _riot.MatchIds = ["EUN1_3", "EUN1_2"];
+        _riot.Matches["EUN1_3"] = RiotMatchOf("Zed", false, endMs: Start.AddHours(3).ToUnixTimeMilliseconds());
+
+        await History(games: 2).RecentAsync(Puuid);
+
+        Assert.Equal(["EUN1_2", "EUN1_3"], _store.ByPuuid[Puuid].Select(m => m.MatchId).Order());
+    }
+
+    [Fact]
+    public async Task TheSettingDecidesHowManyGames()
+    {
+        _riot.MatchIds = ["EUN1_3", "EUN1_2", "EUN1_1"];
+        foreach (var id in _riot.MatchIds)
+            _riot.Matches[id] = RiotMatchOf("Zed", true);
+
+        await History(games: 2).RecentAsync(Puuid);
+
+        Assert.Equal(["EUN1_3", "EUN1_2"], _riot.FetchedMatches);
+    }
+
+    [Fact]
+    public async Task NoIdsFromRiot_DeletesNothing()
+    {
+        _store.ByPuuid[Puuid] = [Played(1, "Yasuo", true, 1, 1, 1)];
+
+        await History().RecentAsync(Puuid);
+
+        Assert.Single(_store.ByPuuid[Puuid]);
     }
 }

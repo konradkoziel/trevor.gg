@@ -658,10 +658,24 @@ img {
 
 .recent {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto 14px;
   gap: 4px 16px;
+  align-items: center;
+  width: 100%;
   padding: 8px 14px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   border-left: 4px solid var(--border);
+}
+
+.recent:hover {
+  border-color: var(--border-strong);
+}
+
+.recent-toggle {
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .recent.win {
@@ -1300,7 +1314,7 @@ img {
 
 @media (width <= 520px) {
   .recent {
-    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto 14px;
   }
 
   .recent-extra {
@@ -1536,4 +1550,196 @@ img {
   line-height: 1.5;
   color: var(--text);
   white-space: pre-line;
+}
+
+/* ---------- Expanded match ---------- */
+
+.match-details {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  margin-top: 4px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+}
+
+.match-loading {
+  padding: 10px 14px;
+  margin: 4px 0 0;
+}
+
+.match-team {
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+}
+
+.match-team.win {
+  border-left-color: var(--success);
+}
+
+.match-team.loss {
+  border-left-color: var(--error);
+}
+
+.match-team-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.match-team.win .match-team-header strong {
+  color: var(--success);
+}
+
+.match-team.loss .match-team-header strong {
+  color: var(--error);
+}
+
+.match-team-totals {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-players {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.match-player {
+  display: grid;
+  grid-template-columns: 34px 36px minmax(0, 1.4fr) 86px minmax(70px, 1fr) 96px auto;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-player:nth-child(even) {
+  background: rgb(255 255 255 / 2%);
+}
+
+.match-player.owner {
+  background: rgb(200 170 110 / 10%);
+  box-shadow: inset 2px 0 0 var(--gold);
+}
+
+.match-champion {
+  position: relative;
+}
+
+.match-champion img {
+  display: block;
+  border-radius: 50%;
+}
+
+.match-level {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 16px;
+  padding: 0 3px;
+  font-size: 0.65rem;
+  line-height: 16px;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+
+.match-loadout {
+  display: grid;
+  grid-template-columns: repeat(2, 16px);
+  gap: 2px;
+}
+
+.match-loadout img {
+  display: block;
+  border-radius: 3px;
+}
+
+.match-loadout img.round {
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.match-name,
+.match-kda,
+.match-damage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.match-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-kda {
+  align-items: center;
+}
+
+.match-kda .deaths {
+  color: var(--error);
+}
+
+.damage-bar {
+  display: block;
+  height: 5px;
+  margin-top: 3px;
+  overflow: hidden;
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.damage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--error);
+  border-radius: 3px;
+}
+
+.match-items {
+  display: flex;
+  gap: 2px;
+}
+
+.match-items img,
+.item-empty {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.item-empty {
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.match-items img:last-child {
+  border-radius: 50%;
+}
+
+@media (width <= 760px) {
+  .match-player {
+    grid-template-columns: 34px 36px minmax(0, 1fr) 78px;
+  }
+
+  .match-damage,
+  .match-cs {
+    display: none;
+  }
+
+  .match-items {
+    grid-column: 3 / -1;
+  }
 }

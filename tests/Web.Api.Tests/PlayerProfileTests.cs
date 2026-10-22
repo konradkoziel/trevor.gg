@@ -32,7 +32,7 @@ public class PlayerProfileTests
         if (loggedIn)
             context.Request.Headers.Authorization = $"Bearer {await _tokens.IssueAsync(new SessionUser("9", "Bob", ""))}";
         var dataDragon = new FakeDataDragon(Champions);
-        var history = new MatchHistory(riot, new FakeMatchHistoryStore(), new FakeTimeProvider(Start));
+        var history = new MatchHistory(riot, new FakeMatchHistoryStore(), new FakeTimeProvider(Start), TestStats.Options());
         var profiles = new PlayerProfiles(_links, riot, dataDragon, new StatsReport(riot, history, dataDragon), _builds);
         return await new PlayerProfileFunction(_tokens, riot, profiles).Run(context.Request, name, tag, CancellationToken.None);
     }

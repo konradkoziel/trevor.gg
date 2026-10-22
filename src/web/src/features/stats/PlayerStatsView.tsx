@@ -56,7 +56,7 @@ export function PlayerStatsView({ stats: s, title, aside }: Props) {
             <span>{formatDecimal(s.kda)} KDA</span>
           </div>
           {s.recent.length > 0 ? (
-            <RecentMatches matches={s.recent} />
+            <RecentMatches matches={s.recent} riotId={s.riotId} />
           ) : (
             <p className="muted">Brak gier. Może czas zagrać?</p>
           )}

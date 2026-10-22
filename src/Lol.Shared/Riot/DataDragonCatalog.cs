@@ -52,7 +52,7 @@ public class DataDragonCatalog(DataDragonCdn cdn) : IDataDragonCatalog
                 : data.Values
                     .Where(s => s.Modes?.Contains(ClassicMode) == true)
                     .Select(s => new SummonerSpell(s.Id, s.Name, DataDragonText.Plain(s.Description),
-                        DataDragonCdn.Url(version, $"img/spell/{s.Image.Full}")))
+                        DataDragonCdn.Url(version, $"img/spell/{s.Image.Full}"), int.TryParse(s.Key, out var key) ? key : 0))
                     .OrderBy(s => s.Name, NameOrder)
                     .ToList(), ct);
 
@@ -103,10 +103,10 @@ public class DataDragonCatalog(DataDragonCdn cdn) : IDataDragonCatalog
 
     private sealed record RuneDto(int Id, string Name, string Icon, [property: JsonPropertyName("shortDesc")] string? ShortDesc);
 
-    // summoner.json: { "data": { "SummonerFlash": { "id", "name", "description", "image": { "full" }, "modes" } } }
+    // summoner.json: { "data": { "SummonerFlash": { "id", "key", "name", "description", "image": { "full" }, "modes" } } }
     private sealed record SummonerListDto(Dictionary<string, SummonerDto>? Data);
 
-    private sealed record SummonerDto(string Id, string Name, string? Description, ImageDto Image, List<string>? Modes);
+    private sealed record SummonerDto(string Id, string? Key, string Name, string? Description, ImageDto Image, List<string>? Modes);
 
     // champion/Yasuo.json: { "data": { "Yasuo": { "spells": [ 4 × { "name", "description", "image" } ], "passive": { ... } } } }
     private sealed record ChampionDetailDto(Dictionary<string, ChampionDetailEntryDto>? Data);

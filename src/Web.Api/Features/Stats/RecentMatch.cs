@@ -1,6 +1,7 @@
 ﻿namespace Web.Api.Features.Stats;
 
 public record RecentMatch(
+    string MatchId,
     string ChampionName,
     string? IconUrl,
     bool Win,

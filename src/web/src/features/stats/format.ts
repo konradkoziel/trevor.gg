@@ -41,3 +41,8 @@ export function formatAgo(at: Date, now: Date): string {
   const days = Math.floor(ms / DayMs)
   return days === 1 ? 'wczoraj' : `${days} dni temu`
 }
+
+const thousandsFormat = new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+// Gold the way the client shows it: 12,4k
+export const formatThousands = (value: number) => `${thousandsFormat.format(value / 1000)}k`
