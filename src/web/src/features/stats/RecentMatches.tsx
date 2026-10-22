@@ -1,5 +1,5 @@
 import type { RecentMatch } from '../../api/stats'
-import { formatDecimal } from './format'
+import { formatDecimal, formatDuration, kdaRatio } from './format'
 
 const dateFormat = new Intl.DateTimeFormat('pl-PL', {
   day: 'numeric',
@@ -8,25 +8,31 @@ const dateFormat = new Intl.DateTimeFormat('pl-PL', {
   minute: '2-digit',
 })
 
+// One line per game: result colour, champion, score with its KDA ratio, CS and length
 export function RecentMatches({ matches }: { matches: RecentMatch[] }) {
   return (
     <ul className="recent-matches">
       {matches.map((m) => (
         <li key={m.playedAt} className={m.win ? 'recent win' : 'recent loss'}>
-          {m.iconUrl && <img src={m.iconUrl} alt="" width={36} height={36} />}
-          <div className="recent-main">
-            <strong>{m.win ? 'Wygrana' : 'Przegrana'}</strong> · {m.championName}
+          {m.iconUrl && <img src={m.iconUrl} alt="" width={40} height={40} />}
+          <span className="recent-main">
+            <strong>{m.championName}</strong>
             <span className="muted">
-              {' '}
-              · {m.queue} · {dateFormat.format(new Date(m.playedAt))}
+              {m.win ? 'Wygrana' : 'Przegrana'} · {m.queue}
             </span>
-          </div>
-          <div className="recent-numbers">
+          </span>
+          <span className="recent-score">
+            <strong>
+              {m.kills} / <span className="deaths">{m.deaths}</span> / {m.assists}
+            </strong>
+            <span className="muted">{formatDecimal(kdaRatio(m.kills, m.deaths, m.assists))} KDA</span>
+          </span>
+          <span className="recent-extra muted">
+            <span>{formatDecimal(m.csPerMinute)} CS/min</span>
             <span>
-              {m.kills}/{m.deaths}/{m.assists}
+              {formatDuration(m.durationSeconds)} · {dateFormat.format(new Date(m.playedAt))}
             </span>
-            <span className="muted">{formatDecimal(m.csPerMinute)} CS/min</span>
-          </div>
+          </span>
         </li>
       ))}
     </ul>

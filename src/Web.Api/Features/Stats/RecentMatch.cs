@@ -9,4 +9,5 @@ public record RecentMatch(
     int Assists,
     double CsPerMinute,
     string Queue,
-    DateTimeOffset PlayedAt);
+    DateTimeOffset PlayedAt,
+    long DurationSeconds);

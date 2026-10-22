@@ -65,8 +65,9 @@ The copied link goes through the API (`/api/share/<id>`), so on Discord it unfol
 items, runes and the champion's splash art, then sends people on to the site.
 Under **Konto** (click your name) you link your League account by Riot ID. There is no ownership check: only members of
 Trevor's server can log in, and an account someone else already linked is refused.
-With a linked account, **Statystyki** shows your Solo/Duo and Flex rank (emblem, LP, wins/losses) and your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
-KDA, CS/min, damage/min; Summoner's Rift only, no remakes) and the recent games. Each match is fetched from Riot once and kept;
+With a linked account, **Statystyki** shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
+division, this season's record and winrate ring from Riot) and the champions of your recent games next to the last 20 games, one line
+each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes). Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
 Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the leaderboard; logged-in users only):
 rank, level, the same stats, their five most played champions by mastery and their builds.

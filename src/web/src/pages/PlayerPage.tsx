@@ -36,8 +36,8 @@ function Profile({ riotId }: { riotId: string }) {
     )
 
   const p = profile.data
-  const header = (
-    <div className="player-header">
+  const title = (
+    <div className="player-title">
       {p.profileIconUrl && <img src={p.profileIconUrl} alt="" width={72} height={72} />}
       <div>
         <h2 className="page-title">{p.riotId}</h2>
@@ -45,14 +45,16 @@ function Profile({ riotId }: { riotId: string }) {
       </div>
     </div>
   )
+  const mains = (
+    <section className="side-section">
+      <h3 className="side-title">Najwięcej zmarnowanych godzin</h3>
+      <TopChampions champions={p.topChampions} />
+    </section>
+  )
 
   return (
     <>
-      <PlayerStatsView stats={p.stats} header={header} />
-      <section className="home-section">
-        <h2 className="page-title">Najwięcej zmarnowanych godzin</h2>
-        <TopChampions champions={p.topChampions} />
-      </section>
+      <PlayerStatsView stats={p.stats} title={title} aside={mains} />
       <section className="home-section">
         <h2 className="page-title">Buildy</h2>
         {p.builds.length > 0 ? (

@@ -8,3 +8,7 @@ export interface RankedStanding {
   losses: number
   emblemUrl: string
 }
+
+// Queue names as RankedStandings in Web.Api sends them
+export const SoloQueue = 'Solo/Duo'
+export const FlexQueue = 'Flex'
