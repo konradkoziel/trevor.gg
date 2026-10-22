@@ -9,7 +9,9 @@ public record DiscordEmbed(
     [property: JsonPropertyName("color")] int? Color = null,
     [property: JsonPropertyName("fields")] IReadOnlyList<DiscordEmbedField>? Fields = null,
     [property: JsonPropertyName("thumbnail")] DiscordEmbedThumbnail? Thumbnail = null,
-    [property: JsonPropertyName("footer")] DiscordEmbedFooter? Footer = null
+    [property: JsonPropertyName("footer")] DiscordEmbedFooter? Footer = null,
+    // Makes the title a link
+    [property: JsonPropertyName("url")] string? Url = null
 )
 {
     public const int MaxTitleLength = 256;

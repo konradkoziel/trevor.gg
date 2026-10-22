@@ -11,8 +11,11 @@ public static class MatchReportMessage
     private const int MixedColor = 0x95A5A6;
     private const string MvpTitle = "🏆 MVP";
     private const string FeederTitle = "🚨 Do reportu";
+    private const string DetailsTitle = "🔍 Cały mecz";
+    private const string DetailsText = "Obie drużyny, buildy i obrażenia na stronie";
 
-    public static DiscordResponseData Format(MatchReport r, string? mvpIconUrl) =>
+    // matchUrl: the game's page on the website; without it the card has no link
+    public static DiscordResponseData Format(MatchReport r, string? mvpIconUrl, string? matchUrl = null) =>
         DiscordResponseData.FromEmbed(new DiscordEmbed(
             Title: $"{Result(r)} · {r.Queue} · {r.DurationSeconds / 60} min",
             Color: r.Win switch { true => WinColor, false => LossColor, null => MixedColor },
@@ -20,10 +23,12 @@ public static class MatchReportMessage
             [
                 .. r.Players.Select(p => new DiscordEmbedField(p.Name, PlayerColumn(p), Inline: true)),
                 new DiscordEmbedField(MvpTitle, $"**{r.Mvp.Name}** — {Line(r.Mvp)}"),
-                new DiscordEmbedField(FeederTitle, $"**{r.Feeder.Name}** — {Line(r.Feeder)}{Shame(r.Feeder)}")
+                new DiscordEmbedField(FeederTitle, $"**{r.Feeder.Name}** — {Line(r.Feeder)}{Shame(r.Feeder)}"),
+                .. matchUrl is null ? [] : new[] { new DiscordEmbedField(DetailsTitle, $"[{DetailsText}]({matchUrl})") }
             ],
             Thumbnail: mvpIconUrl is null ? null : new DiscordEmbedThumbnail(mvpIconUrl),
-            Footer: new DiscordEmbedFooter(LolMessages.EmbedFooter)));
+            Footer: new DiscordEmbedFooter(LolMessages.EmbedFooter),
+            Url: matchUrl));
 
     private static string Result(MatchReport r) => r.Win switch
     {

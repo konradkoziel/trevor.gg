@@ -49,7 +49,7 @@ export function RecentMatches({ matches, riotId }: { matches: RecentMatch[]; rio
                 {expanded ? '▴' : '▾'}
               </span>
             </button>
-            {expanded && <MatchDetails matchId={m.matchId} riotId={riotId} durationSeconds={m.durationSeconds} />}
+            {expanded && <MatchDetails matchId={m.matchId} riotId={riotId} />}
           </li>
         )
       })}

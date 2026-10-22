@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Lol.Shared.Riot.Models;
 using trevor.Features.Lol.Tracking;
 using trevor.Infrastructure.Discord;
+using trevor.Infrastructure.Web;
 using static trevor.Tests.TrackingTestData;
 
 namespace trevor.Tests;
@@ -19,10 +20,21 @@ public class MatchTrackerTests
 
     private static Task<int> Run(
         FakeTrackedPlayerStore store, FakeRiot riot, FakeDiscordApi discord, string? webhook = Webhook,
-        FakeReportedMatchStore? reported = null, FakeDataDragon? dataDragon = null) =>
+        FakeReportedMatchStore? reported = null, FakeDataDragon? dataDragon = null, string? siteUrl = null) =>
         new MatchTracker(store, reported ?? new FakeReportedMatchStore(), riot, dataDragon ?? new FakeDataDragon(), discord,
-                Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }), NullLogger<MatchTracker>.Instance)
+                Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }),
+                Options.Create(new WebApiOptions { SiteUrl = siteUrl }), NullLogger<MatchTracker>.Instance)
             .PostNewMatchesAsync();
+
+    [Fact]
+    public async Task Report_LinksToTheMatchPage()
+    {
+        var discord = new FakeDiscordApi();
+
+        await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, siteUrl: "https://site.test");
+
+        Assert.Equal("https://site.test/mecz/EUN1_1", Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!).Url);
+    }
 
     [Fact]
     public async Task NewMatch_IsPostedOnce_AndMarkedAsSeen()

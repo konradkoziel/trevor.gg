@@ -9,6 +9,7 @@ import { AccountPage } from './pages/AccountPage'
 import { BuildPage } from './pages/BuildPage'
 import { BuildsPage } from './pages/BuildsPage'
 import { HomePage } from './pages/HomePage'
+import { MatchPage } from './pages/MatchPage'
 import { NewBuildPage } from './pages/NewBuildPage'
 import { PlayerPage } from './pages/PlayerPage'
 import { StatsPage } from './pages/StatsPage'
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/konto" element={<AccountPage />} />
             <Route path="/statystyki" element={<StatsPage />} />
             <Route path="/gracz/:name/:tag" element={<PlayerPage />} />
+            <Route path="/mecz/:matchId" element={<MatchPage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>
