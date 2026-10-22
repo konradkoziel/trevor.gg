@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Web.Api.Features.Bot;
 using Web.Api.Features.Builds;
 using Web.Api.Features.Home;
+using Web.Api.Features.Players;
 using Web.Api.Features.RiotAccount;
 using Web.Api.Features.Stats;
 using Web.Api.Infrastructure.Discord;
@@ -50,6 +51,7 @@ builder.Services.AddSingleton(Random.Shared);
 // Stats of the linked account; MatchHistory is a singleton so its refresh throttle is shared
 builder.Services.AddSingleton<IMatchHistoryStore, TableMatchHistoryStore>();
 builder.Services.AddSingleton<MatchHistory>();
+builder.Services.AddSingleton<StatsReport>();
 
 // Builds
 builder.Services.AddSingleton<IBuildStore, TableBuildStore>();
@@ -58,6 +60,9 @@ builder.Services.AddSingleton<BuildValidator>();
 // Home page: singletons so their caches are shared
 builder.Services.AddSingleton<FreeRotation>();
 builder.Services.AddSingleton<Leaderboard>();
+
+// Player profiles (/gracz/...) of linked friends
+builder.Services.AddSingleton<PlayerProfiles>();
 
 // Endpoints for the bot (/api/bot/...), behind the shared BOT_API_KEY
 builder.Services.AddOptions<BotApiOptions>()

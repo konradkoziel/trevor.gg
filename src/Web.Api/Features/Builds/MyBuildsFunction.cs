@@ -18,6 +18,6 @@ public class MyBuildsFunction(ISessionTokens sessions, IBuildStore store)
             return new UnauthorizedResult();
 
         var builds = await store.ListByOwnerAsync(user.DiscordId, ct);
-        return new OkObjectResult(builds.Select(b => new BuildSummary(b.Id, b.Build.Name, b.Build.ChampionId, b.UpdatedAt)).ToList());
+        return new OkObjectResult(builds.Select(BuildSummary.Of).ToList());
     }
 }
