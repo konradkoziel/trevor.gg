@@ -30,7 +30,7 @@ public record MatchStats(
         if (me is null)
             return null;
 
-        var team = info.Participants.Where(p => p.TeamId == me.TeamId).ToList();
+        var team = info.Participants.Where(p => p.Squad() == me.Squad()).ToList();
         var teamKills = team.Sum(p => p.Kills);
         var teamDamage = team.Sum(p => p.TotalDamageDealtToChampions);
         var minutes = Math.Max(info.GameDuration / 60.0, 1);

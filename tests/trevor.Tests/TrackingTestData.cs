@@ -24,4 +24,17 @@ public static class TrackingTestData
             Player("enemy-3", 200, !annWins, 6, 3, 9),
             Player("enemy-4", 200, !annWins, 4, 4, 7),
         ]));
+
+    // An Arena game: every pair has the same TeamId, only PlayerSubteamId tells them apart. Ann (puuid-1) and
+    // ally-1 are pair 1; pair 2 has the best and pair 3 the worst score of the lobby
+    public static RiotMatch ArenaMatch() =>
+        new(new RiotMatchInfo(1200, 1700, "CHERRY",
+        [
+            Player("puuid-1", 100, true, 6, 4, 3, "Yasuo", "") with { PlayerSubteamId = 1, SubteamPlacement = 2 },
+            Player("ally-1", 100, true, 4, 5, 6, "Thresh", "", "Partner", "EUNE") with { PlayerSubteamId = 1, SubteamPlacement = 2 },
+            Player("enemy-1", 100, true, 20, 1, 5) with { PlayerSubteamId = 2, SubteamPlacement = 1 },
+            Player("enemy-2", 100, true, 15, 2, 5) with { PlayerSubteamId = 2, SubteamPlacement = 1 },
+            Player("enemy-3", 200, false, 0, 15, 0) with { PlayerSubteamId = 3, SubteamPlacement = 3 },
+            Player("enemy-4", 200, false, 1, 14, 1) with { PlayerSubteamId = 3, SubteamPlacement = 3 },
+        ]));
 }

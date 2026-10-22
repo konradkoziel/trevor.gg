@@ -41,11 +41,11 @@ public record MatchReport(
             Describe(feeder, names));
     }
 
-    // The tracked players' team; the whole match when tracked players were on both teams (a custom game among friends)
+    // The tracked players' team (their pair in Arena); the whole match when tracked players were on both teams (a custom game among friends)
     private static IReadOnlyList<RiotMatchParticipant> TheirTeam(IReadOnlyList<RiotMatchParticipant> participants, HashSet<string> tracked)
     {
-        var teams = participants.Where(p => tracked.Contains(p.Puuid)).Select(p => p.TeamId).Distinct().ToList();
-        return teams.Count == 1 ? participants.Where(p => p.TeamId == teams[0]).ToList() : participants;
+        var teams = participants.Where(p => tracked.Contains(p.Puuid)).Select(p => p.Squad()).Distinct().ToList();
+        return teams.Count == 1 ? participants.Where(p => p.Squad() == teams[0]).ToList() : participants;
     }
 
     // Tracked players by their stored Riot ID, everyone else by the Riot ID in the match, or the champion
