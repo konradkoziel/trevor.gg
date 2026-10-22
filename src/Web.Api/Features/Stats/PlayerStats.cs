@@ -1,4 +1,6 @@
-﻿namespace Web.Api.Features.Stats;
+﻿using Web.Api.Features.Ranks;
+
+namespace Web.Api.Features.Stats;
 
 // GET /api/me/stats: Games/Wins/Kda over the counted matches, champions by games played
 public record PlayerStats(
@@ -8,4 +10,6 @@ public record PlayerStats(
     double WinRate,
     double Kda,
     IReadOnlyList<ChampionStats> Champions,
-    IReadOnlyList<RecentMatch> Recent);
+    IReadOnlyList<RecentMatch> Recent,
+    // Filled in by MyStatsFunction; StatsCalculator only knows matches
+    IReadOnlyList<RankedStanding>? Ranks = null);

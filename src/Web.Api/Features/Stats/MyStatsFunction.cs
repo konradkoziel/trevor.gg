@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Web.Api.Features.Ranks;
 using Web.Api.Features.RiotAccount;
 using Web.Api.Infrastructure.Http;
 using Web.Api.Infrastructure.Sessions;
@@ -33,7 +34,8 @@ public class MyStatsFunction(
             var icons = new Dictionary<string, string?>();
             foreach (var champion in matches.Select(m => m.ChampionName).Distinct())
                 icons[champion] = await dataDragon.ChampionIconUrlAsync(champion, ct);
-            return new OkObjectResult(StatsCalculator.Calculate(link.RiotId, matches, icons));
+            var ranks = RankedStandings.From(await riot.GetLeagueEntriesAsync(link.Puuid, ct));
+            return new OkObjectResult(StatsCalculator.Calculate(link.RiotId, matches, icons) with { Ranks = ranks });
         });
     }
 }

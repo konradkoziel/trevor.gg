@@ -34,12 +34,14 @@ public class MyStatsFunctionTests
         _links.Links["1"] = new RiotLink("1", Puuid, "Player#EUNE", Start);
         var riot = new FakeRiot { MatchIds = ["EUN1_1"] };
         riot.Matches["EUN1_1"] = RiotMatchOf("Yasuo", true);
+        riot.Entries[Puuid] = [new Lol.Shared.Riot.Models.LeagueEntry(Lol.Shared.Riot.Models.LeagueEntry.SoloQueue, "GOLD", "II", 47, 58, 61)];
 
         var stats = Assert.IsType<PlayerStats>(Assert.IsType<OkObjectResult>(await Run(riot, Ann)).Value);
 
         Assert.Equal("Player#EUNE", stats.RiotId);
         Assert.Equal(1, stats.Games);
         Assert.Equal("Yasuo", Assert.Single(stats.Champions).ChampionName);
+        Assert.Equal("Gold II", Assert.Single(stats.Ranks!).Label);
     }
 
     [Fact]
