@@ -58,7 +58,7 @@ a searchable champion picker (names and titles in Polish, icons from Data Dragon
 **Log in with Discord** (the same Discord id the bot sees; with `DISCORD_GUILD_ID` set only members of Trevor's server get in,
 shown with their server nickname and avatar; after the first consent, logging in again skips Discord's consent screen) and the **build editor**:
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
-skill order for levels 1–18 (impossible orders can't be clicked; the max order, e.g. Q > E > W, is shown).
+max order (click e.g. Q, E, W; the level-by-level order with the ultimate at 6/11/16 follows from it).
 Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
 under **Moje buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
 The copied link goes through the API (`/api/share/<id>`), so on Discord it unfolds into a preview with the build's name,

@@ -805,13 +805,29 @@ img {
   font-size: 1rem;
 }
 
+/* Slots on the left, the shop on the right; stacked on narrow screens */
+.items-layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.items-layout.read-only {
+  grid-template-columns: 1fr;
+}
+
 .item-slots {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 66px);
   gap: 8px;
   padding: 0;
-  margin: 0 0 14px;
+  margin: 0;
   list-style: none;
+}
+
+.items-layout.read-only .item-slots {
+  grid-template-columns: repeat(6, 66px);
 }
 
 .slot {
@@ -870,9 +886,9 @@ img {
 
 .icon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 6px;
-  max-height: 340px;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 4px;
+  max-height: 280px;
   padding: 0;
   margin: 12px 0 0;
   overflow-y: auto;
@@ -885,9 +901,10 @@ img {
   gap: 2px;
   align-items: center;
   width: 100%;
-  padding: 8px 4px;
+  padding: 6px 3px;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
+  line-height: 1.25;
   color: var(--text);
   text-align: center;
   cursor: pointer;
@@ -981,62 +998,120 @@ img {
   box-shadow: 0 0 14px rgb(200 170 110 / 45%);
 }
 
-.skill-grid-scroll {
-  overflow-x: auto;
+.max-order {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0 14px;
 }
 
-.skill-grid {
-  border-collapse: separate;
-  border-spacing: 3px;
-}
-
-.skill-grid th {
-  min-width: 28px;
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-.skill-grid th img {
-  display: block;
-  border-radius: 4px;
-}
-
-.skill-cell {
-  width: 28px;
-  height: 28px;
-  padding: 0;
+.max-pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 8px;
   font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.max-pick img {
+  border-radius: 6px;
+  opacity: 0.55;
+}
+
+.max-pick:hover:not(:disabled) {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.max-pick.chosen {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 14px rgb(200 170 110 / 20%);
+}
+
+.max-pick.chosen img {
+  opacity: 1;
+}
+
+.max-key {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  place-items: center;
+}
+
+.max-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.max-rank {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--bg);
-  cursor: pointer;
+  place-items: center;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  border-radius: 50%;
+}
+
+.level-strip {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(26px, 1fr));
+  gap: 3px;
+  max-width: 720px;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.level-strip li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 0.7rem;
   background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: 4px;
 }
 
-.skill-cell:hover:not(:disabled) {
-  border-color: var(--gold);
+.level-strip strong {
+  font-size: 0.85rem;
 }
 
-.skill-cell:disabled {
-  cursor: default;
-  opacity: 0.3;
+.level-strip li.ultimate {
+  border-color: var(--gold-dark);
 }
 
-.skill-cell.chosen {
-  background: linear-gradient(180deg, var(--gold-light), var(--gold));
-  border-color: var(--gold);
+.level-strip li.ultimate strong {
+  color: var(--gold-light);
 }
 
 /* Read-only view: show the choices at full strength, only the clicking is off */
 .editor-body:disabled .rune.selected,
-.editor-body:disabled .skill-cell.chosen {
+.editor-body:disabled .max-pick.chosen {
   opacity: 1;
 }
 
 .editor-body:disabled .rune,
-.editor-body:disabled .skill-cell {
+.editor-body:disabled .max-pick {
   cursor: default;
 }
 
@@ -1234,6 +1309,29 @@ img {
 }
 
 /* ---------- Phones ---------- */
+
+@media (width <= 760px) {
+  .items-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .items-layout.read-only .item-slots,
+  .item-slots {
+    grid-template-columns: repeat(6, minmax(0, 66px));
+    gap: 5px;
+  }
+
+  .slot {
+    width: auto;
+    min-height: 56px;
+  }
+
+  .slot img {
+    width: 100%;
+    max-width: 48px;
+    height: auto;
+  }
+}
 
 @media (width <= 640px) {
   .site-header-inner {
