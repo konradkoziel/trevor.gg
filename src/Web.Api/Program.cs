@@ -11,6 +11,7 @@ using Web.Api.Features.Builds;
 using Web.Api.Features.Home;
 using Web.Api.Features.Players;
 using Web.Api.Features.RiotAccount;
+using Web.Api.Features.Share;
 using Web.Api.Features.Stats;
 using Web.Api.Infrastructure.Discord;
 using Web.Api.Infrastructure.Sessions;
@@ -71,5 +72,9 @@ builder.Services.AddOptions<BotApiOptions>()
         options.Key = config["BOT_API_KEY"] ?? string.Empty;
         options.SiteUrl = config["SITE_URL"] ?? string.Empty;
     });
+
+// Link previews of shared builds (/api/share/{id})
+builder.Services.AddOptions<ShareOptions>()
+    .Configure<IConfiguration>((options, config) => options.SiteUrl = config["SITE_URL"] ?? string.Empty);
 
 builder.Build().Run();

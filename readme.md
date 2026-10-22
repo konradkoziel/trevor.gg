@@ -60,7 +60,9 @@ shown with their server nickname and avatar; after the first consent, logging in
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
 skill order for levels 1–18 (impossible orders can't be clicked; the max order, e.g. Q > E > W, is shown).
 Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
-under **Moje buildy**, and **share** a link (`/b/<id>`): anyone can open it read-only, only you can edit or delete it.
+under **Moje buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
+The copied link goes through the API (`/api/share/<id>`), so on Discord it unfolds into a preview with the build's name,
+items, runes and the champion's splash art, then sends people on to the site.
 Under **Konto** (click your name) you link your League account: enter your Riot ID, set the default profile icon the site
 shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so nobody can claim someone else's account.
 With a linked account, **Statystyki** shows your Solo/Duo and Flex rank (emblem, LP, wins/losses) and your last 20 games: games, winrate and KDA, a table per champion (games, winrate,

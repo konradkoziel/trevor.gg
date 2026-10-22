@@ -23,17 +23,14 @@ public class BotBuildsFunction(IOptions<BotApiOptions> options, IBuildStore buil
             return rejection;
 
         var champions = await dataDragon.ChampionsAsync(ct);
-        var items = await catalog.ItemsAsync(ct);
-        var trees = await catalog.RuneTreesAsync(ct);
-        var spells = await catalog.SummonerSpellsAsync(ct);
-        if (champions is null || items is null || trees is null || spells is null)
+        var data = await BuildDataSource.LoadAsync(catalog, ct);
+        if (champions is null || data is null)
             return new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
 
         var champion = ChampionNames.Find(champions, req.Query["champion"].ToString());
         if (champion is null)
             return new NotFoundResult();
 
-        var data = new BuildData(items, trees, spells);
         var cards = (await builds.ListByOwnerAsync(discordId, ct))
             .Where(b => b.Build.ChampionId == champion.Id)
             .Take(MaxCards)

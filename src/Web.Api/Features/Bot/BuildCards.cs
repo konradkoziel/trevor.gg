@@ -25,7 +25,7 @@ public static class BuildCards
             champion.Name,
             champion.IconUrl,
             stored.OwnerName,
-            $"{siteUrl.TrimEnd('/')}/b/{Uri.EscapeDataString(stored.Id)}",
+            Url(siteUrl, stored.Id),
             NamesOf(build.Items.Select(items.GetValueOrDefault)),
             keystone,
             NamesOf(minorRunes),
@@ -33,6 +33,9 @@ public static class BuildCards
             NamesOf(build.SummonerSpells.Select(spells.GetValueOrDefault)),
             SkillOrderRules.MaxOrder(build.SkillOrder));
     }
+
+    // The site's page of a build, the same path as buildPath in src/web/src/features/builds/buildLinks.ts
+    public static string Url(string siteUrl, string buildId) => $"{siteUrl.TrimEnd('/')}/b/{Uri.EscapeDataString(buildId)}";
 
     private static IReadOnlyList<string> NamesOf(IEnumerable<string?> names) => names.OfType<string>().ToList();
 }
