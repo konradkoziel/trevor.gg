@@ -7,6 +7,6 @@ public record RiotAccountsView(IReadOnlyList<RiotAccountView> Accounts, int MaxA
     {
         var ordered = RiotLinks.Ordered(accounts);
         var main = RiotLinks.MainOf(ordered);
-        return new RiotAccountsView(ordered.Select(a => new RiotAccountView(a.Puuid, a.RiotId, a == main)).ToList(), RiotLinks.MaxAccounts);
+        return new RiotAccountsView(ordered.Select(a => new RiotAccountView(a.Puuid, a.RiotId, a == main, a.Tracked)).ToList(), RiotLinks.MaxAccounts);
     }
 }

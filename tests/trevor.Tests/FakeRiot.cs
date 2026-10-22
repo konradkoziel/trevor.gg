@@ -7,6 +7,8 @@ public sealed class FakeRiot : IRiotApiClient
 {
     public bool IsConfigured { get; init; } = true;
     public RiotAccount? Account { get; init; } = new("puuid-1", "Player", "EUNE");
+    // Per Riot ID (as text); falls back to Account when not set
+    public IReadOnlyDictionary<string, RiotAccount?>? AccountsByRiotId { get; init; }
     public IReadOnlyList<LeagueEntry> Entries { get; init; } = [];
     public IReadOnlyList<string> MatchIds { get; init; } = ["EUN1_1"];
     public RiotMatch? Match { get; init; }
@@ -20,7 +22,9 @@ public sealed class FakeRiot : IRiotApiClient
     public Task<RiotAccount?> GetAccountAsync(RiotId riotId, CancellationToken ct = default)
     {
         RequestedId = riotId;
-        return Error is null ? Task.FromResult(Account) : Task.FromException<RiotAccount?>(Error);
+        if (Error is not null)
+            return Task.FromException<RiotAccount?>(Error);
+        return Task.FromResult(AccountsByRiotId is null ? Account : AccountsByRiotId.GetValueOrDefault(riotId.ToString()));
     }
 
     public Task<RiotSummoner?> GetSummonerAsync(string puuid, CancellationToken ct = default) =>

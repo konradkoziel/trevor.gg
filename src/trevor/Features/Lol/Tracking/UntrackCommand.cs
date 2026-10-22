@@ -15,8 +15,15 @@ public class UntrackCommand(IRiotPlayerRunner players, ITrackedPlayerStore store
     public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
         players.RunAsync(interaction, UntrackAsync, ct);
 
-    private async Task<DiscordResponseData> UntrackAsync(RiotPlayer player, CancellationToken ct) =>
-        DiscordResponseData.FromText(await store.RemoveAsync(player.Puuid, ct)
+    // A player switched on on the website would be added back by the next sync, so they're switched off there
+    private async Task<DiscordResponseData> UntrackAsync(RiotPlayer player, CancellationToken ct)
+    {
+        var tracked = (await store.ListAsync(ct)).FirstOrDefault(t => t.Puuid == player.Puuid);
+        if (tracked is { FromWebsite: true })
+            return DiscordResponseData.FromText(TrackingMessage.TrackedOnWebsite(player.DisplayName));
+
+        return DiscordResponseData.FromText(tracked is not null && await store.RemoveAsync(player.Puuid, ct)
             ? TrackingMessage.Untracked(player.DisplayName)
             : TrackingMessage.NotTracked(player.DisplayName));
+    }
 }

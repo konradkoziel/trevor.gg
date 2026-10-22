@@ -61,6 +61,23 @@ public class BotFunctionsTests
     }
 
     [Fact]
+    public async Task Tracked_AreTheSwitchedOnAccountsOfEveryone()
+    {
+        _links.Add(new RiotLink("1", "a", "Ann#EUNE", Now, Tracked: true));
+        _links.Add(new RiotLink("1", "s", "Smurf#EUNE", Now));
+        _links.Add(new RiotLink("2", "b", "Bob#EUNE", Now, Tracked: true));
+
+        var result = await new BotTrackedPlayersFunction(Options, _links).Run(Request(), CancellationToken.None);
+
+        Assert.Equal([new LinkedPlayer("Ann#EUNE", "a"), new LinkedPlayer("Bob#EUNE", "b")],
+            Assert.IsAssignableFrom<IReadOnlyList<LinkedPlayer>>(Assert.IsType<OkObjectResult>(result).Value));
+    }
+
+    [Fact]
+    public async Task Tracked_NeedsTheKey() =>
+        Assert.IsType<UnauthorizedResult>(await new BotTrackedPlayersFunction(Options, _links).Run(Request("wrong"), CancellationToken.None));
+
+    [Fact]
     public async Task Builds_AreCardsWithNames_NewestFirst_ForThatChampionOnly()
     {
         _builds.Builds["AAAAAAAAAAA"] = new StoredBuild("AAAAAAAAAAA", "1", "Ann", Now, TestBuilds.Valid());

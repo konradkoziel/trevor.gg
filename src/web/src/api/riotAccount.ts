@@ -5,6 +5,8 @@ export interface RiotAccountView {
   id: string
   riotId: string
   isMain: boolean
+  // Games reported on Trevor's matches channel on Discord
+  tracked: boolean
 }
 
 export interface RiotAccountsView {
@@ -18,6 +20,9 @@ export const linkRiotAccount = (riotId: string) => sendJson<RiotAccountsView>('P
 
 export const unlinkRiotAccount = (id: string) =>
   sendJson<RiotAccountsView>('DELETE', `me/riot/${encodeURIComponent(id)}`)
+
+export const setRiotAccountTracked = (id: string, tracked: boolean) =>
+  sendJson<RiotAccountsView>(tracked ? 'PUT' : 'DELETE', `me/riot/${encodeURIComponent(id)}/tracked`)
 
 export const setMainRiotAccount = (id: string) =>
   sendJson<RiotAccountsView>('PUT', `me/riot/${encodeURIComponent(id)}/main`)

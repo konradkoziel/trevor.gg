@@ -77,6 +77,15 @@ public class TrackCommandTests
     }
 
     [Fact]
+    public async Task Untrack_PlayerSwitchedOnOnTheWebsite_IsKept()
+    {
+        var store = new FakeTrackedPlayerStore(new TrackedPlayer("puuid-1", "Player#EUNE", "EUN1_1", FromWebsite: true));
+
+        Assert.Equal(TrackingMessage.TrackedOnWebsite("Player#EUNE"), await Untrack(store));
+        Assert.Single(store.Players);
+    }
+
+    [Fact]
     public async Task Untrack_UnknownPlayer_SaysSo()
     {
         Assert.Equal(TrackingMessage.NotTracked("Player#EUNE"), await Untrack(new FakeTrackedPlayerStore()));

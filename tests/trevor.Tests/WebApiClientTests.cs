@@ -40,6 +40,17 @@ public class WebApiClientTests
     }
 
     [Fact]
+    public async Task TrackedPlayers_ReadsTheList()
+    {
+        var handler = new StubHandler(_ => Json("""[{"riotId":"Player#EUNE","puuid":"p1"}]"""));
+
+        var tracked = await Client(handler).GetTrackedPlayersAsync();
+
+        Assert.Equal("https://api.test/api/bot/tracked", handler.Requests[0].RequestUri!.AbsoluteUri);
+        Assert.Equal([new LinkedPlayer("Player#EUNE", "p1")], tracked!);
+    }
+
+    [Fact]
     public async Task Builds_EscapeTheChampion()
     {
         var handler = new StubHandler(_ => Json("[]"));

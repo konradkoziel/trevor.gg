@@ -17,6 +17,9 @@ public class WebApiClient(HttpClient httpClient, IOptions<WebApiOptions> options
     public Task<LinkedPlayer?> GetLinkedPlayerAsync(string discordId, CancellationToken ct = default) =>
         GetAsync<LinkedPlayer>($"api/bot/players/{Uri.EscapeDataString(discordId)}", ct);
 
+    public Task<IReadOnlyList<LinkedPlayer>?> GetTrackedPlayersAsync(CancellationToken ct = default) =>
+        GetAsync<IReadOnlyList<LinkedPlayer>>("api/bot/tracked", ct);
+
     public Task<IReadOnlyList<WebBuildCard>?> GetBuildsAsync(string discordId, string champion, CancellationToken ct = default) =>
         GetAsync<IReadOnlyList<WebBuildCard>>(
             $"api/bot/players/{Uri.EscapeDataString(discordId)}/builds?champion={Uri.EscapeDataString(champion)}", ct);

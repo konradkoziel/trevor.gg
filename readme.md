@@ -48,6 +48,8 @@ so a friend can end up on either line. No AI here — just the numbers.
 Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
 (reported match ids are remembered); remakes are skipped. Needs `DISCORD_MATCHES_WEBHOOK`.
 With `WEB_SITE_URL` set, the card's title links to the game on the website (`/mecz/<id>`: both teams, builds and damage).
+Everyone can also switch reports on or off for each of their own accounts on the website ("Konto" → "Raporty na Discordzie");
+the bot picks the change up on its next 5-minute run. `/untrack` leaves such an account alone and points to the website.
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
@@ -89,7 +91,7 @@ Discord ──HTTP──▶ DiscordCommands (HTTP function: signature check)
                   DeferredCommands (queue function) ◀──────────────┘
                     └─ runs the command (Azure OpenAI / Riot API) → posts the answer back to Discord
 
-MatchTracker (timer, every 5 min) → tracked players (Table Storage) → new matches (Riot API) → card on the matches channel (webhook)
+MatchTracker (timer, every 5 min) → accounts switched on on the website (/api/bot/tracked) + tracked players (Table Storage) → new matches (Riot API) → card on the matches channel (webhook)
 
 Browser ──▶ Static Web App "trevor-web" (React, src/web)
         └─fetch─▶ Function App "trevor-web-api-*" (src/Web.Api, CORS: only the site) ──▶ Data Dragon / Riot API

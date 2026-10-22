@@ -11,6 +11,10 @@ public interface IWebApiClient
     // Null when the user hasn't linked an account (or the site can't be reached)
     Task<LinkedPlayer?> GetLinkedPlayerAsync(string discordId, CancellationToken ct = default);
 
+    // Accounts whose owners switched on match reports on the website; null when the site can't tell (not configured,
+    // unreachable), which is not the same as nobody
+    Task<IReadOnlyList<LinkedPlayer>?> GetTrackedPlayersAsync(CancellationToken ct = default);
+
     // Newest first; null when the champion doesn't exist; empty when the user has no build for it
     Task<IReadOnlyList<WebBuildCard>?> GetBuildsAsync(string discordId, string champion, CancellationToken ct = default);
 }
