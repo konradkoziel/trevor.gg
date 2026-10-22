@@ -49,7 +49,8 @@ Friends in the same game get one shared card, even when Riot lists the match for
 (reported match ids are remembered); remakes are skipped. Needs `DISCORD_MATCHES_WEBHOOK`.
 With `WEB_SITE_URL` set, the card's title links to the game on the website (`/mecz/<id>`: both teams, builds and damage).
 Everyone can also switch reports on or off for each of their own accounts on the website ("Konto" → "Raporty na Discordzie");
-the bot picks the change up on its next 5-minute run. `/untrack` leaves such an account alone and points to the website.
+the bot picks the change up on its next 5-minute run. `/track` and `/untrack` flip the same switch for an account linked on the
+website (anyone can, like before), so the site and the bot always agree; other accounts are tracked by the bot alone.
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 

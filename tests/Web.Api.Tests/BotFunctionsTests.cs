@@ -77,6 +77,36 @@ public class BotFunctionsTests
     public async Task Tracked_NeedsTheKey() =>
         Assert.IsType<UnauthorizedResult>(await new BotTrackedPlayersFunction(Options, _links).Run(Request("wrong"), CancellationToken.None));
 
+    private Task<IActionResult> SetTracking(string method, string name, string tag, string? key = "k-1")
+    {
+        var req = Request(key);
+        req.Method = method;
+        return new BotTrackingFunction(Options, _links).Run(req, name, tag, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Tracking_SwitchesTheLinkedAccount_IgnoringCase()
+    {
+        _links.Add(new RiotLink("1", "a", "Ann#EUNE", Now, IsMain: true));
+
+        Assert.Equal(new LinkedPlayer("Ann#EUNE", "a"), Assert.IsType<OkObjectResult>(await SetTracking("PUT", "ann", "eune")).Value);
+        Assert.True(_links.Accounts.Single().Tracked);
+
+        await SetTracking("DELETE", "Ann", "EUNE");
+        Assert.False(_links.Accounts.Single().Tracked);
+        Assert.True(_links.Accounts.Single().IsMain);
+    }
+
+    [Fact]
+    public async Task Tracking_UnlinkedAccount_Is404_AndNeedsTheKey()
+    {
+        _links.Add(new RiotLink("1", "a", "Ann#EUNE", Now));
+
+        Assert.IsType<NotFoundResult>(await SetTracking("PUT", "Bob", "EUNE"));
+        Assert.IsType<UnauthorizedResult>(await SetTracking("PUT", "Ann", "EUNE", key: "wrong"));
+        Assert.False(_links.Accounts.Single().Tracked);
+    }
+
     [Fact]
     public async Task Builds_AreCardsWithNames_NewestFirst_ForThatChampionOnly()
     {

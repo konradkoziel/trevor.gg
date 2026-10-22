@@ -50,6 +50,29 @@ public class WebApiClientTests
         Assert.Equal([new LinkedPlayer("Player#EUNE", "p1")], tracked!);
     }
 
+    [Theory]
+    [InlineData(true, "PUT")]
+    [InlineData(false, "DELETE")]
+    public async Task Tracking_SwitchesByRiotId(bool tracked, string method)
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+
+        Assert.Equal(WebTracking.Switched, await Client(handler).SetTrackedAsync("Nick Two#EUNE", tracked));
+        Assert.Equal(method, handler.Requests[0].Method.Method);
+        Assert.Equal("https://api.test/api/bot/tracked/Nick%20Two/EUNE", handler.Requests[0].RequestUri!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Tracking_TellsUnlinkedFromUnavailable()
+    {
+        Assert.Equal(WebTracking.NotLinked,
+            await Client(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound))).SetTrackedAsync("Nick#EUNE", true));
+        Assert.Equal(WebTracking.Unavailable,
+            await Client(new StubHandler(_ => throw new HttpRequestException("down"))).SetTrackedAsync("Nick#EUNE", true));
+        Assert.Equal(WebTracking.Unavailable,
+            await Client(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)), url: null).SetTrackedAsync("Nick#EUNE", true));
+    }
+
     [Fact]
     public async Task Builds_EscapeTheChampion()
     {

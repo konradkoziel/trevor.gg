@@ -1,11 +1,12 @@
 ﻿using trevor.Core;
 using trevor.Features.Lol.Common;
 using trevor.Infrastructure.Discord.Models;
+using trevor.Infrastructure.Web;
 
 namespace trevor.Features.Lol.Tracking;
 
-// /untrack nick:<Riot ID> — stop reporting the player's matches
-public class UntrackCommand(IRiotPlayerRunner players, ITrackedPlayerStore store) : ICommand
+// /untrack nick:<Riot ID> — stop reporting the player's matches; an account linked on the website gets its switch turned off
+public class UntrackCommand(IRiotPlayerRunner players, ITrackedPlayerStore store, IWebApiClient web) : ICommand
 {
     public string Name => "untrack";
 
@@ -15,14 +16,17 @@ public class UntrackCommand(IRiotPlayerRunner players, ITrackedPlayerStore store
     public Task<DiscordResponseData> ExecuteAsync(DiscordInteraction interaction, CancellationToken ct = default) =>
         players.RunAsync(interaction, UntrackAsync, ct);
 
-    // A player switched on on the website would be added back by the next sync, so they're switched off there
     private async Task<DiscordResponseData> UntrackAsync(RiotPlayer player, CancellationToken ct)
     {
         var tracked = (await store.ListAsync(ct)).FirstOrDefault(t => t.Puuid == player.Puuid);
-        if (tracked is { FromWebsite: true })
+        var website = await web.SetTrackedAsync(player.DisplayName, tracked: false, ct);
+
+        // Still switched on on the site, so the next sync would bring the player straight back
+        if (website == WebTracking.Unavailable && tracked is { FromWebsite: true })
             return DiscordResponseData.FromText(TrackingMessage.TrackedOnWebsite(player.DisplayName));
 
-        return DiscordResponseData.FromText(tracked is not null && await store.RemoveAsync(player.Puuid, ct)
+        var removed = tracked is not null && await store.RemoveAsync(player.Puuid, ct);
+        return DiscordResponseData.FromText(removed || website == WebTracking.Switched
             ? TrackingMessage.Untracked(player.DisplayName)
             : TrackingMessage.NotTracked(player.DisplayName));
     }

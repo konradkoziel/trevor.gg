@@ -122,7 +122,7 @@ rate limits add up). All optional: without them only login / Riot account linkin
   `Share` → `GET /api/share/{id}` (the link "Kopiuj link" copies: an HTML page with Open Graph tags for Discord's crawler,
   which runs no JavaScript, and a meta refresh to `/b/{id}`; names via `BuildCards`); `Home` → `GET /api/rotation` (public, `FreeRotation` caches 1 h), `GET /api/leaderboard` (logged in; `Leaderboard` sums
   Champion-Mastery-V4 points per linked player plus the Solo/Duo rank, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
-  not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID), `GET /api/bot/tracked` (accounts with reports switched on) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
+  not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID), `GET /api/bot/tracked` (accounts with reports switched on), `PUT|DELETE /api/bot/tracked/{name}/{tag}` (`/track` / `/untrack` flip that switch) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
   matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `TREVOR_WEB_KEY`;
   `RiotAccount` → up to `RiotLinks.MaxAccounts` (5) League accounts per user: `POST /api/me/riot` (Riot ID, no ownership check:
   login is guild-only and an account linked by someone else is a 409), `GET /api/me/riot`, `DELETE /api/me/riot/{puuid}`,

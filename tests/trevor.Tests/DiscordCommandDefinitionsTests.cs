@@ -22,8 +22,8 @@ public class DiscordCommandDefinitionsTests
         new RankCommand(null!, null!, null!),
         new RoastCommand(null!, null!, null!, null!),
         new RateThisCommand(null!),
-        new TrackCommand(null!, null!, null!, null!),
-        new UntrackCommand(null!, null!),
+        new TrackCommand(null!, null!, null!, null!, null!),
+        new UntrackCommand(null!, null!, null!),
         new BuildCommand(null!),
     ];
 
