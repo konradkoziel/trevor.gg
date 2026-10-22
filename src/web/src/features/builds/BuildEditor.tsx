@@ -10,7 +10,8 @@ import {
   newBuild,
   removeItem,
   rename,
-  toggleSummonerSpell,
+  clearSummonerSpell,
+  setSummonerSpell,
   type Build,
 } from './build'
 import { ItemsSection } from './ItemsSection'
@@ -79,7 +80,8 @@ export function BuildEditor({ champion, saved }: Props) {
               spells={data.data.summonerSpells}
               selected={build.summonerSpells}
               readOnly={readOnly}
-              onToggle={(id) => setBuild((b) => toggleSummonerSpell(b, id))}
+              onPick={(slot, id) => setBuild((b) => setSummonerSpell(b, slot, id))}
+              onClear={(slot) => setBuild((b) => clearSummonerSpell(b, slot))}
             />
           </>
         )}

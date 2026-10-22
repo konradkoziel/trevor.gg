@@ -42,12 +42,22 @@ export function moveItem(build: Build, index: number, offset: -1 | 1): Build {
   return { ...build, items }
 }
 
-export function toggleSummonerSpell(build: Build, spellId: string): Build {
-  const spells = build.summonerSpells
-  if (spells.includes(spellId)) return { ...build, summonerSpells: spells.filter((s) => s !== spellId) }
-  // A third pick replaces the older one
-  const kept = spells.length >= maxSummonerSpells ? spells.slice(1) : spells
-  return { ...build, summonerSpells: [...kept, spellId] }
+// Puts the spell in one of the two slots, like the game's client: a spell already in the other slot swaps places.
+// Slots don't leave holes, so picking the second slot while the first is empty fills the first
+export function setSummonerSpell(build: Build, slot: number, spellId: string): Build {
+  const spells = [...build.summonerSpells]
+  const current = spells.indexOf(spellId)
+  if (current === slot) return build
+  if (current >= 0) {
+    if (slot >= spells.length) return build
+    ;[spells[current], spells[slot]] = [spells[slot], spells[current]]
+  } else if (slot < spells.length) spells[slot] = spellId
+  else if (spells.length < maxSummonerSpells) spells.push(spellId)
+  return { ...build, summonerSpells: spells }
+}
+
+export function clearSummonerSpell(build: Build, slot: number): Build {
+  return { ...build, summonerSpells: build.summonerSpells.filter((_, i) => i !== slot) }
 }
 
 export const rename = (build: Build, name: string): Build => ({ ...build, name: name.slice(0, maxBuildNameLength) })

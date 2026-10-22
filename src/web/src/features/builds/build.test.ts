@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { addItem, maxItems, moveItem, newBuild, removeItem, rename, toggleSummonerSpell } from './build'
+import {
+  addItem,
+  clearSummonerSpell,
+  maxItems,
+  moveItem,
+  newBuild,
+  removeItem,
+  rename,
+  setSummonerSpell,
+} from './build'
 
 describe('build', () => {
   it('holds at most six items, duplicates allowed', () => {
@@ -16,11 +25,16 @@ describe('build', () => {
     expect(removeItem(build, 1).items).toEqual(['b', 'c'])
   })
 
-  it('keeps two summoner spells, the older giving way, toggling off on a second click', () => {
-    let build = ['Flash', 'Ignite', 'Teleport'].reduce(toggleSummonerSpell, newBuild('Yasuo'))
+  it('fills two spell slots, swapping a spell picked for the other slot', () => {
+    let build = setSummonerSpell(newBuild('Yasuo'), 1, 'Flash')
+    expect(build.summonerSpells).toEqual(['Flash'])
+    build = setSummonerSpell(build, 1, 'Ignite')
+    expect(build.summonerSpells).toEqual(['Flash', 'Ignite'])
+    build = setSummonerSpell(build, 0, 'Teleport')
+    expect(build.summonerSpells).toEqual(['Teleport', 'Ignite'])
+    build = setSummonerSpell(build, 0, 'Ignite')
     expect(build.summonerSpells).toEqual(['Ignite', 'Teleport'])
-    build = toggleSummonerSpell(build, 'Ignite')
-    expect(build.summonerSpells).toEqual(['Teleport'])
+    expect(clearSummonerSpell(build, 0).summonerSpells).toEqual(['Teleport'])
   })
 
   it('limits the name length', () => {
