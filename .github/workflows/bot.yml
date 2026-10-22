@@ -1,4 +1,6 @@
-name: Deploy Azure Function
+name: Deploy bot
+
+# The bot (src/trevor) to Function App Trevor; .github/workflows/web.yml deploys the website
 
 on:
   push:
@@ -13,23 +15,29 @@ on:
       - 'tests/Web.Api.Tests/**'
       - 'infra/**'
       - '.github/workflows/web.yml'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
+
+concurrency:
+  group: deploy-bot
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-        id-token: write
-        contents: read
+      id-token: write
+      contents: read
     env:
       # Optional: without these the slash-command registration step is skipped
       DISCORD_APP_ID: ${{ secrets.DISCORD_APP_ID }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v5
 
-      - name: Setup .NET
+      - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
@@ -46,14 +54,14 @@ jobs:
       - name: Publish
         run: dotnet publish src/trevor/trevor.csproj --configuration Release --output ./publish
 
-      - name: Logowanie do Azure za pomocą sekretów
+      - name: Log in to Azure
         uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to Azure
+      - name: Deploy bot
         uses: azure/functions-action@v1
         with:
           app-name: Trevor

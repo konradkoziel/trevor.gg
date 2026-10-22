@@ -28,22 +28,22 @@ The same repo holds the **website** (builds and stats): React + Vite + TypeScrip
 
 ## Deploy flow — read before pushing
 
-- `Trevor.yml` ignores `**.md`, `docs/**` and website-only paths, so a docs or site change doesn't redeploy the bot.
-- **Every push to `main` deploys to production** (`.github/workflows/Trevor.yml`: build → test → `dotnet publish src/trevor/trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
+- `bot.yml` ignores `**.md`, `docs/**` and website-only paths, so a docs or site change doesn't redeploy the bot.
+- **Every push to `main` deploys to production** (`.github/workflows/bot.yml`, "Deploy bot": build → test → `dotnet publish src/trevor/trevor.csproj` → OIDC login → `azure/functions-action` → register slash commands, ~2 min). Never push to `main` directly.
 - **The website deploys separately** (`.github/workflows/web.yml`, only when `src/web`, `src/Web.Api`, `src/Lol.Shared`, `infra` or the
   workflow change): tests → `az deployment group create` of `infra/web.bicep` into resource group `trevor-web` (Static Web App
   `trevor-web` on the Free plan, Flex Consumption Function App `trevor-web-api-*`, its own storage and Application Insights) →
-  API package → `npm run build` with `VITE_API_URL` → Static Web App upload. `Trevor.yml` ignores website-only paths.
+  API package → `npm run build` with `VITE_API_URL` → Static Web App upload. `bot.yml` ignores website-only paths.
   The deploy identity (`AZURE_CLIENT_ID`) has Contributor on `trevor-web` only. Static Web Apps don't exist in Poland Central,
   hence `staticSiteLocation = westeurope`. Managed SWA functions lag behind .NET releases, which is why the API is its own Function App.
-- Work on a branch, open a PR to `main`. `.github/workflows/build.yml` builds and runs the tests on every PR.
+- Work on a branch, open a PR to `main`. `.github/workflows/build.yml` ("Build and test") builds and runs the tests on every PR.
 - **Local build in cloud sessions:** the dotnet-install script is blocked, but Ubuntu's own package works:
   `apt-get update && apt-get install -y dotnet-sdk-10.0` (~3 min). Then `dotnet build -c Release && dotnet test -c Release --no-build`. NuGet is reachable.
   Website: `cd src/web && npm ci && npm run lint && npm test && npm run build` (npm is reachable). Bicep CLI: download
   `https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64`, then `bicep build infra/web.bicep` / `bicep lint`.
   Data Dragon (`ddragon.leagueoflegends.com`) is blocked in cloud sessions: screenshot the site with a mocked `/api`.
 - Azure Functions Core Tools can't be installed (downloads from `pkgs.dev.azure.com`, blocked), so the app can't be run end-to-end locally. Check the generated bindings in `src/trevor/bin/Release/net10.0/functions.metadata` instead.
-- After merge, check the `Deploy Azure Function` run via GitHub Actions; the person you work for tests on Discord (Claude has no Discord access).
+- After merge, check the `Deploy bot` run (and `Deploy website` when the site changed) via GitHub Actions; the person you work for tests on Discord (Claude has no Discord access).
 - The Function App runtime stack must match `TargetFramework` (now .NET 10 isolated). Changing the target framework needs the
   stack changed in Azure Portal too (Function App → Settings → Configuration → General settings → .NET version).
 - The bot's infrastructure is not in code: its Azure resources (Function App `Trevor`, storage account, OpenAI deployment) were
