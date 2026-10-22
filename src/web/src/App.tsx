@@ -10,6 +10,7 @@ import { BuildPage } from './pages/BuildPage'
 import { BuildsPage } from './pages/BuildsPage'
 import { HomePage } from './pages/HomePage'
 import { NewBuildPage } from './pages/NewBuildPage'
+import { PlayerPage } from './pages/PlayerPage'
 import { StatsPage } from './pages/StatsPage'
 
 // Before the first render, so the account menu already sees a token that just arrived
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/b/:id" element={<BuildPage />} />
             <Route path="/konto" element={<AccountPage />} />
             <Route path="/statystyki" element={<StatsPage />} />
+            <Route path="/gracz/:name/:tag" element={<PlayerPage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>

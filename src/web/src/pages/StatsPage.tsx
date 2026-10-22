@@ -5,10 +5,7 @@ import { fetchMyStats } from '../api/stats'
 import { useApi } from '../api/useApi'
 import { LoginLink } from '../features/account/LoginLink'
 import { useCurrentUser } from '../features/account/useCurrentUser'
-import { ChampionTable } from '../features/stats/ChampionTable'
-import { formatDecimal, formatPercent, winRateTone } from '../features/stats/format'
-import { RankBadge } from '../features/ranks/RankBadge'
-import { RecentMatches } from '../features/stats/RecentMatches'
+import { PlayerStatsView } from '../features/stats/PlayerStatsView'
 
 export function StatsPage() {
   const { state } = useCurrentUser()
@@ -43,53 +40,5 @@ function Stats() {
     )
   }
 
-  const s = stats.data
-  return (
-    <>
-      <section className="stats-summary">
-        <h2 className="page-title">{s.riotId}</h2>
-        <div className="rank-row">
-          {s.ranks && s.ranks.length > 0 ? (
-            s.ranks.map((r) => <RankBadge key={r.queue} rank={r} />)
-          ) : (
-            <RankBadge rank={null} />
-          )}
-        </div>
-        <div className="summary-tiles">
-          <div className="tile">
-            <span className="tile-value">{s.games}</span>
-            <span className="muted">gier na Rifcie</span>
-          </div>
-          <div className="tile">
-            <span className={`tile-value ${winRateTone(s.winRate)}`}>{formatPercent(s.winRate)}</span>
-            <span className="muted">
-              winrate ({s.wins}W / {s.games - s.wins}L)
-            </span>
-          </div>
-          <div className="tile">
-            <span className="tile-value">{formatDecimal(s.kda)}</span>
-            <span className="muted">KDA</span>
-          </div>
-        </div>
-        <p className="muted">
-          Ostatnie mecze z Riot API, bez remake'ów. Statystyki championów tylko z Summoner's Rift.
-        </p>
-      </section>
-
-      {s.champions.length > 0 && (
-        <section className="home-section">
-          <h2 className="page-title">Championy</h2>
-          <ChampionTable champions={s.champions} />
-        </section>
-      )}
-      <section className="home-section">
-        <h2 className="page-title">Ostatnie gry</h2>
-        {s.recent.length > 0 ? (
-          <RecentMatches matches={s.recent} />
-        ) : (
-          <p className="muted">Brak gier. Może czas zagrać?</p>
-        )}
-      </section>
-    </>
-  )
+  return <PlayerStatsView stats={stats.data} header={<h2 className="page-title">{stats.data.riotId}</h2>} />
 }

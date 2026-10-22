@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { fetchLeaderboard } from '../../api/home'
 import { useApi } from '../../api/useApi'
 import { RankBadge } from '../ranks/RankBadge'
+import { playerPath } from '../players/playerLinks'
 import { formatWhole } from '../stats/format'
 
 export function ShameLeaderboard() {
@@ -25,7 +26,7 @@ export function ShameLeaderboard() {
               {e.profileIconUrl && <img src={e.profileIconUrl} alt="" width={36} height={36} />}
               <div className="leader-main">
                 <span className="leader-name">
-                  <strong>{e.riotId}</strong>
+                  <PlayerName riotId={e.riotId} />
                   <RankBadge rank={e.rank} compact />
                 </span>
                 <span className="muted">
@@ -46,4 +47,9 @@ export function ShameLeaderboard() {
       </p>
     </section>
   )
+}
+
+function PlayerName({ riotId }: { riotId: string }) {
+  const path = playerPath(riotId)
+  return <strong>{path ? <Link to={path}>{riotId}</Link> : riotId}</strong>
 }

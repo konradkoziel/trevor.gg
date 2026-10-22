@@ -1220,3 +1220,73 @@ img {
 .tier-master strong { color: #b86cf0; }
 .tier-grandmaster strong { color: #ec5c5c; }
 .tier-challenger strong { color: #f4d27a; }
+
+/* ---------- Player profile ---------- */
+
+.player-header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.player-header img {
+  border: 2px solid var(--gold-dark);
+  border-radius: 50%;
+}
+
+.player-header .page-title {
+  margin: 0;
+}
+
+.leader-name a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.leader-name a:hover {
+  color: var(--gold-light);
+}
+
+.top-champions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.top-champion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 14px 8px;
+  color: var(--text);
+  text-align: center;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.top-champions li:first-child .top-champion {
+  border-color: var(--gold-dark);
+}
+
+.top-champion:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.top-champion img {
+  margin-bottom: 4px;
+  border-radius: 8px;
+}
+
+.top-champion .muted {
+  font-size: 0.8rem;
+}
