@@ -14,6 +14,7 @@ export interface ChampionStats {
 }
 
 export interface RecentMatch {
+  matchId: string
   championName: string
   iconUrl: string | null
   win: boolean
