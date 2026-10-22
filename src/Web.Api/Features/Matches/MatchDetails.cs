@@ -13,17 +13,21 @@ public static class MatchDetails
     {
         var info = match.Info;
         var teams = info.Participants
-            .GroupBy(p => p.TeamId)
-            .OrderBy(g => g.Key == BlueTeam ? 0 : 1)
+            .GroupBy(p => p.Squad())
             .Select(g => Team(g.Key, g.ToList(), assets))
+            .OrderBy(t => t.Placement ?? (t.TeamId == BlueTeam ? 0 : 1))
             .ToList();
         return new MatchDetail(matchId, RiotNames.Queue(info.QueueId, info.GameMode), info.GameDuration,
             DateTimeOffset.FromUnixTimeMilliseconds(info.GameEndTimestamp), teams);
     }
 
     private static MatchTeam Team(int teamId, IReadOnlyList<RiotMatchParticipant> players, MatchAssets assets) =>
-        new(teamId, players.Any(p => p.Win), players.Sum(p => p.Kills), players.Sum(p => p.Deaths), players.Sum(p => p.Assists),
+        new(teamId, Placement(players), players.Any(p => p.Win), players.Sum(p => p.Kills), players.Sum(p => p.Deaths), players.Sum(p => p.Assists),
             players.Sum(p => p.GoldEarned), players.Select(p => Player(p, assets)).ToList());
+
+    // Only Arena pairs have a place; 0 means another mode
+    private static int? Placement(IReadOnlyList<RiotMatchParticipant> players) =>
+        players[0].SubteamPlacement > 0 ? players[0].SubteamPlacement : null;
 
     private static MatchPlayer Player(RiotMatchParticipant p, MatchAssets assets)
     {

@@ -55,11 +55,33 @@ public class MatchDetailTests
         var detail = (await Source(riot).GetAsync(MatchId))!;
 
         Assert.Equal([100, 200], detail.Teams.Select(t => t.TeamId));
+        Assert.All(detail.Teams, t => Assert.Null(t.Placement));
         var blue = detail.Teams[0];
         Assert.True(blue.Win);
         Assert.Equal(10, blue.Kills);
         Assert.Equal(["Yasuo", "Garen"], blue.Players.Select(p => p.ChampionName));
         Assert.Equal("Ranked Solo/Duo", detail.Queue);
+    }
+
+    [Fact]
+    public async Task Arena_SplitsIntoPairs_BestPlaceFirst()
+    {
+        // Riot gives several pairs the same TeamId; PlayerSubteamId is the pair
+        RiotMatchParticipant ArenaPlayer(string puuid, int team, int pair, int place) =>
+            Player(puuid, "Ahri", team, place <= 4, 1) with { PlayerSubteamId = pair, SubteamPlacement = place };
+        var riot = new FakeRiot();
+        riot.Matches[MatchId] = new(new RiotMatchInfo(1200, 1700, "CHERRY",
+        [
+            ArenaPlayer("a", 100, 1, 3), ArenaPlayer("b", 100, 1, 3),
+            ArenaPlayer("c", 100, 2, 1), ArenaPlayer("d", 100, 2, 1),
+            ArenaPlayer("e", 200, 3, 2), ArenaPlayer("f", 200, 3, 2),
+        ]));
+
+        var detail = (await Source(riot).GetAsync(MatchId))!;
+
+        Assert.Equal([1, 2, 3], detail.Teams.Select(t => t.Placement));
+        Assert.Equal([2, 3, 1], detail.Teams.Select(t => t.TeamId));
+        Assert.All(detail.Teams, t => Assert.Equal(2, t.Players.Count));
     }
 
     [Fact]

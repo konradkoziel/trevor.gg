@@ -73,7 +73,7 @@ leaderboard adds up a person's accounts. There is no ownership check: only membe
 account someone else already linked is refused.
 With a linked account, **Statystyki** shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
 division, this season's record and winrate ring from Riot) and the champions of your recent games next to the last 20 games, one line
-each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes); click a game to see both teams with
+each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes); click a game to see both teams (in Arena every pair with its place) with
 everyone's score, damage, CS, gold, final items, summoner spells and runes. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
 Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the leaderboard; logged-in users only):
