@@ -10,4 +10,6 @@ public record PlayerProfile(
     long Level,
     IReadOnlyList<MasteryChampion> TopChampions,
     PlayerStats Stats,
-    IReadOnlyList<BuildSummary> Builds);
+    IReadOnlyList<BuildSummary> Builds,
+    // The same person's other linked accounts, main first
+    IReadOnlyList<string>? OtherAccounts = null);

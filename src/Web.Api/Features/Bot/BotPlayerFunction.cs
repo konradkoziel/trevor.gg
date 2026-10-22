@@ -6,7 +6,7 @@ using Web.Api.Features.RiotAccount;
 
 namespace Web.Api.Features.Bot;
 
-// GET /api/bot/players/{discordId}: lets /rank and /roast work without a nick
+// GET /api/bot/players/{discordId}: the user's main account, so /rank and /roast work without a nick
 public class BotPlayerFunction(IOptions<BotApiOptions> options, IRiotLinkStore links)
 {
     [Function("BotPlayer")]
@@ -18,7 +18,7 @@ public class BotPlayerFunction(IOptions<BotApiOptions> options, IRiotLinkStore l
         if (BotAuth.Reject(req, options.Value) is { } rejection)
             return rejection;
 
-        var link = await links.GetLinkAsync(discordId, ct);
+        var link = await links.GetMainAsync(discordId, ct);
         return link is null ? new NotFoundResult() : new OkObjectResult(new LinkedPlayer(link.RiotId, link.Puuid));
     }
 }

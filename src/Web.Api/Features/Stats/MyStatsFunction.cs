@@ -8,7 +8,7 @@ using Web.Api.Infrastructure.Sessions;
 
 namespace Web.Api.Features.Stats;
 
-// GET /api/me/stats: champions, winrate and recent games of the linked League account
+// GET /api/me/stats?account=: champions, winrate and recent games of one of the user's League accounts
 public class MyStatsFunction(ISessionTokens sessions, IRiotLinkStore links, IRiotApiClient riot, StatsReport report)
 {
     public const string NotLinked = "Najpierw podepnij konto LoL, Trevor nie zgaduje.";
@@ -22,7 +22,10 @@ public class MyStatsFunction(ISessionTokens sessions, IRiotLinkStore links, IRio
         if (user is null)
             return new UnauthorizedResult();
 
-        var link = await links.GetLinkAsync(user.DiscordId, ct);
+        // ?account=<id> picks one of the user's accounts; the main one otherwise
+        var accounts = await links.ListAccountsAsync(user.DiscordId, ct);
+        var requested = req.Query["account"].ToString();
+        var link = accounts.FirstOrDefault(a => a.Puuid == requested) ?? RiotLinks.MainOf(accounts);
         if (link is null)
             return new NotFoundObjectResult(new ApiError(NotLinked));
 

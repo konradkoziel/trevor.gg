@@ -64,8 +64,8 @@ public class HomeTests
     [Fact]
     public async Task Leaderboard_SortsByMasteryPoints_WithTopChampion()
     {
-        _links.Links["1"] = new RiotLink("1", "p1", "Ann#EUNE", Now);
-        _links.Links["2"] = new RiotLink("2", "p2", "Bob#EUNE", Now);
+        _links.Add(new RiotLink("1", "p1", "Ann#EUNE", Now));
+        _links.Add(new RiotLink("2", "p2", "Bob#EUNE", Now));
         var riot = new FakeRiot { Summoner = new RiotSummoner(7, 300) };
         riot.Masteries["p1"] = [new ChampionMastery(157, 30, 400_000), new ChampionMastery(103, 10, 50_000)];
         riot.Masteries["p2"] = [new ChampionMastery(86, 50, 900_000)];
@@ -87,8 +87,8 @@ public class HomeTests
     [Fact]
     public async Task Leaderboard_SkipsPlayersRiotFailsOn()
     {
-        _links.Links["1"] = new RiotLink("1", "p1", "Ann#EUNE", Now);
-        _links.Links["2"] = new RiotLink("2", "p2", "Bob#EUNE", Now);
+        _links.Add(new RiotLink("1", "p1", "Ann#EUNE", Now));
+        _links.Add(new RiotLink("2", "p2", "Bob#EUNE", Now));
         var riot = new FakeRiot();
         riot.FailingPuuids.Add("p2");
 
@@ -100,7 +100,7 @@ public class HomeTests
     {
         var board = Board(new FakeRiot());
         await board.EntriesAsync();
-        _links.Links["1"] = new RiotLink("1", "p1", "Ann#EUNE", Now);
+        _links.Add(new RiotLink("1", "p1", "Ann#EUNE", Now));
 
         Assert.Empty(await board.EntriesAsync());
         _time.Advance(Leaderboard.CacheFor);
@@ -131,5 +131,23 @@ public class HomeTests
         Assert.Equal(RecentBuildsFunction.Count, builds.Count);
         Assert.Equal("b7", builds[0].Id);
         Assert.Equal("Bob", builds[0].OwnerName);
+    }
+
+    [Fact]
+    public async Task Leaderboard_IsOneEntryPerPerson_WithMasteryOfAllAccounts()
+    {
+        _links.Add(new RiotLink("1", "main", "Ann#EUNE", Now, IsMain: true));
+        _links.Add(new RiotLink("1", "smurf", "AnnSmurf#EUNE", Now.AddDays(1)));
+        var riot = new FakeRiot { Summoner = new RiotSummoner(7, 300) };
+        riot.Masteries["main"] = [new ChampionMastery(157, 30, 400_000)];
+        riot.Masteries["smurf"] = [new ChampionMastery(103, 10, 300_000), new ChampionMastery(157, 10, 50_000)];
+
+        var entry = Assert.Single(await Board(riot).EntriesAsync());
+
+        Assert.Equal("Ann#EUNE", entry.RiotId);
+        Assert.Equal(750_000, entry.MasteryPoints);
+        // Yasuo's points from both accounts beat Ahri's
+        Assert.Equal(("Yasuo", 450_000L), (entry.TopChampionName, entry.TopChampionPoints));
+        Assert.Equal(2, entry.AccountCount);
     }
 }

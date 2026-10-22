@@ -5,6 +5,7 @@ public static class RiotAccountMessages
     public const string BadRiotId = "Riot ID wygląda tak: Nick#EUNE. Z hashtagiem.";
     public const string NoSuchAccount = "Nie ma takiego konta. Literówka czy konto wyimaginowane?";
     public const string NeverPlayed = "To konto nigdy nie grało w LoLa. Szczęściarz.";
+    public const string TooManyAccounts = "Pięć kont starczy. Odepnij któreś, zanim dodasz kolejnego smurfa.";
     public const string AlreadyLinked = "To konto podpiął już ktoś inny. Jak to pomyłka, niech je u siebie odepnie.";
     public const string RiotUnavailable = "Riot nie odpowiada. Spróbuj za chwilę.";
     public const string RiotNotConfigured = "Na serwerze brakuje klucza Riot API.";

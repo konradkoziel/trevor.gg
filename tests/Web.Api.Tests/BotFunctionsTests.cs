@@ -35,7 +35,7 @@ public class BotFunctionsTests
     [InlineData("wrong")]
     public async Task WithoutTheRightKey_Is401(string? key)
     {
-        _links.Links["1"] = new RiotLink("1", "p", "Player#EUNE", Now);
+        _links.Add(new RiotLink("1", "p", "Player#EUNE", Now));
 
         Assert.IsType<UnauthorizedResult>(await new BotPlayerFunction(Options, _links).Run(Request(key), "1", CancellationToken.None));
     }
@@ -52,7 +52,7 @@ public class BotFunctionsTests
     [Fact]
     public async Task Player_IsTheLinkedAccount_Or404()
     {
-        _links.Links["1"] = new RiotLink("1", "p", "Player#EUNE", Now);
+        _links.Add(new RiotLink("1", "p", "Player#EUNE", Now));
         var function = new BotPlayerFunction(Options, _links);
 
         Assert.Equal(new LinkedPlayer("Player#EUNE", "p"),
