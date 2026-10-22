@@ -117,7 +117,8 @@ rate limits add up). All optional: without them only login / Riot account linkin
   PUT/DELETE owner only), `GET /api/me/builds`. `BuildValidator` re-checks every build against the patch and the game's rules
   (`SkillOrderRules` mirrors `src/web/src/features/builds/skillOrder.ts` — change both together). Builds are stored by
   `Infrastructure/Storage/TableBuildStore` in table `builds` of the API's storage (PartitionKey = build id, the build as JSON);
-  `Home` → `GET /api/rotation` (public, `FreeRotation` caches 1 h), `GET /api/leaderboard` (logged in; `Leaderboard` sums
+  `Share` → `GET /api/share/{id}` (the link "Kopiuj link" copies: an HTML page with Open Graph tags for Discord's crawler,
+  which runs no JavaScript, and a meta refresh to `/b/{id}`; names via `BuildCards`); `Home` → `GET /api/rotation` (public, `FreeRotation` caches 1 h), `GET /api/leaderboard` (logged in; `Leaderboard` sums
   Champion-Mastery-V4 points per linked player plus the Solo/Duo rank, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
   not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
   matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `BOT_API_KEY`;
