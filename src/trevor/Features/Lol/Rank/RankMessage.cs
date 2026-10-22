@@ -68,11 +68,7 @@ public static class RankMessage
 
     private static string Describe(LeagueEntry entry) => $"{RankName(entry)} — {Record(entry)}";
 
-    private static string RankName(LeagueEntry entry)
-    {
-        var division = IsApexTier(entry.Tier) ? string.Empty : $" {entry.Rank}";
-        return $"{TierName(entry.Tier)}{division}, {entry.LeaguePoints} LP";
-    }
+    private static string RankName(LeagueEntry entry) => $"{RankNames.Label(entry)}, {entry.LeaguePoints} LP";
 
     private static string Record(LeagueEntry entry)
     {
@@ -96,9 +92,4 @@ public static class RankMessage
         "CHALLENGER" => 0xF4C874,
         _ => UnrankedColor
     };
-
-    private static bool IsApexTier(string tier) => tier is "MASTER" or "GRANDMASTER" or "CHALLENGER";
-
-    private static string TierName(string tier) =>
-        tier.Length == 0 ? tier : tier[0] + tier[1..].ToLowerInvariant();
 }
