@@ -69,7 +69,7 @@ public class DataDragonCatalogTests
         var stub = new StubDataDragon().With("data/pl_PL/summoner.json", """
             { "data": {
                 "SummonerSnowball": { "id": "SummonerSnowball", "name": "Śnieżka", "image": { "full": "SummonerSnowball.png" }, "modes": ["ARAM"] },
-                "SummonerFlash": { "id": "SummonerFlash", "name": "Błysk", "description": "Teleportuje", "image": { "full": "SummonerFlash.png" }, "modes": ["CLASSIC", "ARAM"] },
+                "SummonerFlash": { "id": "SummonerFlash", "key": "4", "name": "Błysk", "description": "Teleportuje", "image": { "full": "SummonerFlash.png" }, "modes": ["CLASSIC", "ARAM"] },
                 "SummonerDot": { "id": "SummonerDot", "name": "Podpalenie", "image": { "full": "SummonerDot.png" }, "modes": ["CLASSIC"] }
             } }
             """);
@@ -78,6 +78,8 @@ public class DataDragonCatalogTests
 
         Assert.Equal(["Błysk", "Podpalenie"], spells.Select(s => s.Name));
         Assert.Equal($"{Cdn}/img/spell/SummonerFlash.png", spells[0].IconUrl);
+        // Match-V5 names spells by this number
+        Assert.Equal(4, spells[0].Key);
     }
 
     [Fact]
