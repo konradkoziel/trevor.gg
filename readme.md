@@ -66,6 +66,8 @@ shows you, click *Sprawdź* — the API checks the icon through Summoner-V4, so 
 With a linked account, **Statystyki** shows your Solo/Duo and Flex rank (emblem, LP, wins/losses) and your last 20 games: games, winrate and KDA, a table per champion (games, winrate,
 KDA, CS/min, damage/min; Summoner's Rift only, no remakes) and the recent games. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
+Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the leaderboard; logged-in users only):
+rank, level, the same stats, their five most played champions by mastery and their builds.
 Next: `/build` in Trevor.
 
 ---
