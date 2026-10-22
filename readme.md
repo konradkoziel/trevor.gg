@@ -162,7 +162,7 @@ dotnet test -c Release --no-build
 
 - **Adding a command:** create `src/trevor/Features/<Name>/<Name>Command.cs` implementing `ICommand`, register it in `Program.cs`, add its definition to `deploy/discord-commands.json` and write tests in `tests/trevor.Tests`. A test fails if the JSON and the code drift apart.
 - **Deploy:** open a PR to `main` (CI builds and tests the bot, the API and the site, and checks the Bicep). Merging deploys the bot
-  (`Trevor.yml`, registers the slash commands too) and, when website files changed, the website (`web.yml`: creates or updates
+  (`bot.yml`, registers the slash commands too) and, when website files changed, the website (`web.yml`: creates or updates
   the Azure resources in `trevor-web`, then deploys the API and the site). The site's URL is in the run's summary.
 - **Website locally:** `cd src/web && npm ci && npm run dev`; with the API running (`func start` in `src/Web.Api`, settings from
   `local.settings.example.json`) Vite proxies `/api` to it.

@@ -83,6 +83,17 @@ public class RiotAccountFunctionsTests
         Assert.Equal(RiotAccountMessages.RiotNotConfigured, ErrorOf(result));
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task Start_RejectedRiotKey_SaysSo(HttpStatusCode status)
+    {
+        var result = await Start(new FakeRiot { Error = new RiotApiException(status) });
+
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, Assert.IsType<ObjectResult>(result).StatusCode);
+        Assert.Equal(RiotAccountMessages.RiotKeyRejected, ErrorOf(result));
+    }
+
     [Fact]
     public async Task Start_RiotDown_Is503()
     {

@@ -13,5 +13,8 @@ Sekretów nie ma w kodzie, bo repo jest publiczne. Po dodaniu czegokolwiek w Git
 | | | `WEB_API_KEY` | Ta sama wartość co `TREVOR_WEB_KEY` | | |
 | | | `WEB_SITE_URL` | Adres strony (podsumowanie *Deploy website*, linia „Site”) | | |
 
+Po dodaniu lub zmianie `RIOT_API_KEY` uruchom ręcznie *Deploy website* (Actions → Deploy website → Run workflow): strona bierze klucz przy wdrożeniu.
+Komunikat „Riot odrzucił klucz API” znaczy, że klucz jest, ale nieważny: deweloperski wygasa po 24 h. Wgraj nowy w obu miejscach (ten sekret i Function App Trevor) albo poproś Riot o Personal API Key.
+
 Kolejność dla `/build`: najpierw 3, potem wdrożenie strony, potem 4.
 Punkt 4 jest ręczny celowo: wdrożenie strony nie zmienia produkcyjnych ustawień bota.

@@ -21,7 +21,8 @@ public static class RiotServiceCollectionExtensions
         services.AddOptions<RiotOptions>()
             .Configure<IConfiguration>((options, config) =>
             {
-                options.ApiKey = config["RIOT_API_KEY"];
+                // A key pasted with a trailing newline would be sent as is and rejected by Riot
+                options.ApiKey = config["RIOT_API_KEY"]?.Trim();
                 var platform = config["RIOT_PLATFORM"];
                 if (!string.IsNullOrWhiteSpace(platform))
                     options.Platform = platform.Trim();
