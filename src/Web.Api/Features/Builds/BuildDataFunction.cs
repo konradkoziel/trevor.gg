@@ -12,14 +12,6 @@ public class BuildDataFunction(IDataDragonCatalog catalog)
     [Function("BuildData")]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "build-data")] HttpRequest req,
-        CancellationToken ct)
-    {
-        var items = catalog.ItemsAsync(ct);
-        var runes = catalog.RuneTreesAsync(ct);
-        var spells = catalog.SummonerSpellsAsync(ct);
-        await Task.WhenAll(items, runes, spells);
-
-        var data = items.Result is { } i && runes.Result is { } r && spells.Result is { } s ? new BuildData(i, r, s) : null;
-        return ApiResults.StaticData(req, data);
-    }
+        CancellationToken ct) =>
+        ApiResults.StaticData(req, await BuildDataSource.LoadAsync(catalog, ct));
 }
