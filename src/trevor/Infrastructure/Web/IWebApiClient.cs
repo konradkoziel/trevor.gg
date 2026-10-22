@@ -15,6 +15,9 @@ public interface IWebApiClient
     // unreachable), which is not the same as nobody
     Task<IReadOnlyList<LinkedPlayer>?> GetTrackedPlayersAsync(CancellationToken ct = default);
 
+    // The same switch as "Raporty na Discordzie" on the website, for /track and /untrack
+    Task<WebTracking> SetTrackedAsync(string riotId, bool tracked, CancellationToken ct = default);
+
     // Newest first; null when the champion doesn't exist; empty when the user has no build for it
     Task<IReadOnlyList<WebBuildCard>?> GetBuildsAsync(string discordId, string champion, CancellationToken ct = default);
 }

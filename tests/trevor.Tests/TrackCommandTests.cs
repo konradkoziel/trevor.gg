@@ -3,22 +3,25 @@ using trevor.Features.Lol.Common;
 using trevor.Features.Lol.Tracking;
 using trevor.Infrastructure.Discord;
 using trevor.Infrastructure.Discord.Models;
+using trevor.Infrastructure.Web;
 
 namespace trevor.Tests;
 
 // Player lookup and Riot errors are covered by RiotPlayerRunnerTests
 public class TrackCommandTests
 {
-    private static async Task<string> Track(FakeTrackedPlayerStore store, FakeRiot? riot = null, string? webhook = "https://discord.test/webhook")
+    private static async Task<string> Track(
+        FakeTrackedPlayerStore store, FakeRiot? riot = null, string? webhook = "https://discord.test/webhook", FakeWebApi? web = null)
     {
         riot ??= new FakeRiot { MatchIds = ["EUN1_9"] };
-        var command = new TrackCommand(new RiotPlayerRunner(riot, new FakeWebApi()), riot, store,
+        var command = new TrackCommand(new RiotPlayerRunner(riot, new FakeWebApi()), riot, store, web ?? new FakeWebApi(),
             Options.Create(new DiscordOptions { MatchesWebhookUrl = webhook }));
         return (await command.ExecuteAsync(Nick("track"))).Content!;
     }
 
-    private static async Task<string> Untrack(FakeTrackedPlayerStore store) =>
-        (await new UntrackCommand(new RiotPlayerRunner(new FakeRiot(), new FakeWebApi()), store).ExecuteAsync(Nick("untrack"))).Content!;
+    private static async Task<string> Untrack(FakeTrackedPlayerStore store, FakeWebApi? web = null) =>
+        (await new UntrackCommand(new RiotPlayerRunner(new FakeRiot(), new FakeWebApi()), store, web ?? new FakeWebApi())
+            .ExecuteAsync(Nick("untrack"))).Content!;
 
     private static DiscordInteraction Nick(string command) =>
         TestInteractions.Command(command, """[{ "name": "nick", "type": 3, "value": "Player#EUNE" }]""");
@@ -77,11 +80,35 @@ public class TrackCommandTests
     }
 
     [Fact]
-    public async Task Untrack_PlayerSwitchedOnOnTheWebsite_IsKept()
+    public async Task Track_LinkedAccount_SwitchesTheWebsiteOn()
+    {
+        var store = new FakeTrackedPlayerStore();
+        var web = new FakeWebApi { Tracking = WebTracking.Switched };
+
+        await Track(store, web: web);
+
+        Assert.Equal(("Player#EUNE", true), Assert.Single(web.TrackingCalls));
+        Assert.True(Assert.Single(store.Players).FromWebsite);
+    }
+
+    [Fact]
+    public async Task Untrack_LinkedAccount_SwitchesTheWebsiteOff()
+    {
+        var store = new FakeTrackedPlayerStore(new TrackedPlayer("puuid-1", "Player#EUNE", "EUN1_1", FromWebsite: true));
+        var web = new FakeWebApi { Tracking = WebTracking.Switched };
+
+        Assert.Equal(TrackingMessage.Untracked("Player#EUNE"), await Untrack(store, web));
+        Assert.Equal(("Player#EUNE", false), Assert.Single(web.TrackingCalls));
+        Assert.Empty(store.Players);
+    }
+
+    [Fact]
+    public async Task Untrack_WebsiteAccount_WhileTheSiteIsDown_IsKept()
     {
         var store = new FakeTrackedPlayerStore(new TrackedPlayer("puuid-1", "Player#EUNE", "EUN1_1", FromWebsite: true));
 
-        Assert.Equal(TrackingMessage.TrackedOnWebsite("Player#EUNE"), await Untrack(store));
+        Assert.Equal(TrackingMessage.TrackedOnWebsite("Player#EUNE"),
+            await Untrack(store, new FakeWebApi { Tracking = WebTracking.Unavailable }));
         Assert.Single(store.Players);
     }
 
