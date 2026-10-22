@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Lol.Shared.Riot;
 using trevor.Infrastructure.Discord;
+using trevor.Infrastructure.Web;
 
 namespace trevor.Features.Lol.Tracking;
 
@@ -13,6 +14,7 @@ public class MatchTracker(
     IDataDragon dataDragon,
     IDiscordApiClient discord,
     IOptions<DiscordOptions> options,
+    IOptions<WebApiOptions> web,
     ILogger<MatchTracker> logger)
 {
     // Returns how many reports were posted
@@ -98,7 +100,8 @@ public class MatchTracker(
         if (report is { IsRemake: false })
         {
             var icon = await dataDragon.ChampionIconUrlAsync(report.Mvp.Champion, ct);
-            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, icon), ct);
+            var matchUrl = SiteLinks.Match(web.Value.SiteUrl, matchId);
+            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, icon, matchUrl), ct);
         }
 
         await reported.AddAsync(matchId, ct);

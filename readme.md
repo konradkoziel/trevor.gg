@@ -47,6 +47,7 @@ the team's **🏆 MVP** (best KDA, with the champion's icon) and **🚨 report c
 so a friend can end up on either line. No AI here — just the numbers.
 Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
 (reported match ids are remembered); remakes are skipped. Needs `DISCORD_MATCHES_WEBHOOK`.
+With `WEB_SITE_URL` set, the card's title links to the game on the website (`/mecz/<id>`: both teams, builds and damage).
 
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 

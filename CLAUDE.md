@@ -132,7 +132,7 @@ rate limits add up). All optional: without them only login / Riot account linkin
   up to 300 matches in memory for 6 h, a result without Data Dragon icons is not cached); `Players` → `GET /api/players/{name}/{tag}` (logged in; only linked players, Riot ID ignoring case: `PlayerProfiles` adds icon, level, top 5 masteries and the player's builds); `Ranks/RankedStandings` (League-V4 entries → Solo/Duo then Flex, with label and emblem, for every page); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader), `src/features/<name>/` components;
   rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
-  component per route of `react-router` (`/` home, `/buildy`, `/nowy/:championId`, `/b/:id`, `/konto`, `/statystyki`, `/gracz/:name/:tag`); daily picks
+  component per route of `react-router` (`/` home, `/buildy`, `/nowy/:championId`, `/b/:id`, `/konto`, `/statystyki`, `/gracz/:name/:tag`, `/mecz/:matchId` (linked from the bot's match reports via `Infrastructure/Web/SiteLinks`)); daily picks
   (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; styles in one `src/index.css` with colour
   and font tokens on `:root` (Cinzel for headings only, it has no lowercase; Inter for text; both self-hosted via `@fontsource`),
   `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's

@@ -132,7 +132,25 @@ public class MatchReportTests
         Assert.Equal("**Bob#EUNE** — Thresh (Support) · 7/2/10", fields[2].Value);
         Assert.Equal("**Random#EUNE** — Amumu (Jungle) · 0/10/2", fields[3].Value);
         Assert.Equal("https://icons.test/Thresh.png", embed.Thumbnail!.Url);
+        Assert.Null(embed.Url);
     }
+
+    [Fact]
+    public void Message_LinksToTheMatchOnTheWebsite()
+    {
+        const string url = "https://site.test/mecz/EUN1_1";
+
+        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(Match(), [Ann])!, null, url).Embeds!);
+
+        Assert.Equal(url, embed.Url);
+        Assert.Contains($"]({url})", embed.Fields!.Last().Value);
+    }
+
+    [Theory]
+    [InlineData("https://site.test/", "https://site.test/mecz/EUN1_1")]
+    [InlineData(null, null)]
+    public void SiteLink_IsBuiltFromWebSiteUrl(string? siteUrl, string? expected) =>
+        Assert.Equal(expected, trevor.Infrastructure.Web.SiteLinks.Match(siteUrl, "EUN1_1"));
 
     [Fact]
     public void Message_CallsOutATrackedFeeder()

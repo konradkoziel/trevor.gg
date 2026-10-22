@@ -1,4 +1,4 @@
-import { fetchMatch, type MatchIcon, type MatchPlayer, type MatchTeam } from '../../api/matches'
+import { fetchMatch, type MatchDetail, type MatchIcon, type MatchPlayer, type MatchTeam } from '../../api/matches'
 import { useApi } from '../../api/useApi'
 import { Tooltip } from '../tooltip/Tooltip'
 import { formatDecimal, formatThousands, kdaRatio } from './format'
@@ -10,25 +10,28 @@ const SecondsPerMinute = 60
 interface Props {
   matchId: string
   // Whose stats page this is; their row is highlighted
-  riotId: string
-  durationSeconds: number
+  riotId?: string
 }
 
-// The expanded game: both teams with everyone's score, damage, gold and final build
-export function MatchDetails({ matchId, riotId, durationSeconds }: Props) {
+// Loads one game for the expanded row of "Ostatnie gry"
+export function MatchDetails({ matchId, riotId }: Props) {
   const match = useApi(fetchMatch, matchId)
 
   if (match.status === 'loading') return <p className="muted match-loading">Ściągam mecz od Riota…</p>
   if (match.status === 'error')
     return <p className="error match-loading">Riot nie oddał tego meczu. Spróbuj za chwilę.</p>
+  return <MatchTeams match={match.data} riotId={riotId} />
+}
 
-  const players = match.data.teams.flatMap((t) => t.players)
+// Both teams with everyone's score, damage, gold and final build
+export function MatchTeams({ match, riotId }: { match: MatchDetail; riotId?: string }) {
+  const players = match.teams.flatMap((t) => t.players)
   const topDamage = Math.max(...players.map((p) => p.damage), 1)
-  const minutes = Math.max(durationSeconds / SecondsPerMinute, 1)
+  const minutes = Math.max(match.durationSeconds / SecondsPerMinute, 1)
 
   return (
     <div className="match-details">
-      {match.data.teams.map((team) => (
+      {match.teams.map((team) => (
         <TeamTable key={team.teamId} team={team} riotId={riotId} topDamage={topDamage} minutes={minutes} />
       ))}
     </div>
@@ -37,7 +40,7 @@ export function MatchDetails({ matchId, riotId, durationSeconds }: Props) {
 
 interface TeamProps {
   team: MatchTeam
-  riotId: string
+  riotId?: string
   topDamage: number
   minutes: number
 }
@@ -57,7 +60,7 @@ function TeamTable({ team, riotId, topDamage, minutes }: TeamProps) {
           <PlayerRow
             key={`${p.riotId}-${i}`}
             player={p}
-            isOwner={p.riotId?.toLowerCase() === riotId.toLowerCase()}
+            isOwner={!!riotId && p.riotId?.toLowerCase() === riotId.toLowerCase()}
             topDamage={topDamage}
             minutes={minutes}
           />
