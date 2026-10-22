@@ -1,6 +1,6 @@
 name: Deploy bot
 
-# The bot (src/trevor) to Function App Trevor; .github/workflows/web.yml deploys the website
+# The bot (src/trevor) to Function App Trevor, with its app settings; .github/workflows/web.yml deploys the website
 
 on:
   push:
@@ -28,12 +28,36 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    # Every app setting of the bot comes from a GitHub secret of the same name (docs/setup.md); nothing is typed into Azure
     env:
+      FUNCTION_APP: Trevor
+      WEBSITE_RESOURCE_GROUP: trevor-web
+      # Required: the bot doesn't start without them
+      DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+      OPENAI_URL: ${{ secrets.OPENAI_URL }}
+      OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+      OPENAI_DEPLOYMENT: ${{ secrets.OPENAI_DEPLOYMENT }}
+      # Optional: each one only switches its feature off
+      DISCORD_MATCHES_WEBHOOK: ${{ secrets.DISCORD_MATCHES_WEBHOOK }}
+      RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+      TREVOR_WEB_KEY: ${{ secrets.TREVOR_WEB_KEY }}
       # Optional: without these the slash-command registration step is skipped
       DISCORD_APP_ID: ${{ secrets.DISCORD_APP_ID }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
     steps:
+      # Fails before anything is built or deployed, so a missing secret never reaches production
+      - name: Check required secrets
+        run: |
+          missing=()
+          for name in DISCORD_PUBLIC_KEY OPENAI_URL OPENAI_KEY OPENAI_DEPLOYMENT; do
+            if [ -z "${!name}" ]; then missing+=("$name"); fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing GitHub secrets: ${missing[*]} (see docs/setup.md)"
+            exit 1
+          fi
+
       - name: Check out code
         uses: actions/checkout@v5
 
@@ -61,11 +85,57 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Find the bot's resource group
+        id: bot
+        run: |
+          group=$(az resource list --name "$FUNCTION_APP" --resource-type Microsoft.Web/sites --query "[0].resourceGroup" --output tsv)
+          if [ -z "$group" ]; then
+            echo "::error::Function App $FUNCTION_APP not found, or the deploy identity has no role on it"
+            exit 1
+          fi
+          echo "group=$group" >> "$GITHUB_OUTPUT"
+
+      # The website's addresses come from its last deployment (web.yml), so nobody copies them by hand
+      - name: Read the website's addresses
+        id: website
+        run: |
+          outputs=$(az deployment group show --resource-group "$WEBSITE_RESOURCE_GROUP" --name website \
+            --query properties.outputs --output json 2>/dev/null || echo '{}')
+          echo "apiUrl=$(jq -r '.apiUrl.value // empty' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "siteUrl=$(jq -r '.siteUrl.value // empty' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+
+      # Merges into the existing settings (AzureWebJobsStorage and the platform's own stay as they are).
+      # An empty secret is left out, so a missing optional one never blanks a value that works
+      - name: Apply app settings
+        env:
+          WEB_API_URL: ${{ steps.website.outputs.apiUrl }}
+          WEB_SITE_URL: ${{ steps.website.outputs.siteUrl }}
+        run: |
+          settings=()
+          for name in DISCORD_PUBLIC_KEY DISCORD_MATCHES_WEBHOOK OPENAI_URL OPENAI_KEY OPENAI_DEPLOYMENT \
+                      RIOT_API_KEY TREVOR_WEB_KEY WEB_API_URL WEB_SITE_URL; do
+            if [ -n "${!name}" ]; then settings+=("$name=${!name}"); fi
+          done
+          az functionapp config appsettings set --name "$FUNCTION_APP" --resource-group "${{ steps.bot.outputs.group }}" \
+            --settings "${settings[@]}" --output none
+
       - name: Deploy bot
         uses: azure/functions-action@v1
         with:
-          app-name: Trevor
+          app-name: ${{ env.FUNCTION_APP }}
           package: ./publish
+
+      # Settings renamed in the repo; dropped only once the new name is set and the code reading it is live
+      - name: Remove renamed app settings
+        run: |
+          old=()
+          if [ -n "$DISCORD_PUBLIC_KEY" ]; then old+=(DISCORD_API_KEY); fi
+          if [ -n "$DISCORD_MATCHES_WEBHOOK" ]; then old+=(DISCORD_URL_MATCHES); fi
+          if [ -n "$TREVOR_WEB_KEY" ]; then old+=(WEB_API_KEY); fi
+          if [ ${#old[@]} -gt 0 ]; then
+            az functionapp config appsettings delete --name "$FUNCTION_APP" --resource-group "${{ steps.bot.outputs.group }}" \
+              --setting-names "${old[@]}" --output none
+          fi
 
       # Bulk overwrite of the app's global commands with deploy/discord-commands.json:
       # new commands appear, changed ones update, commands missing from the file are removed
