@@ -1,59 +1,89 @@
 import { useState, type FormEvent } from 'react'
 import { errorText } from '../../api/errorText'
-import { fetchRiotAccount, linkRiotAccount, unlinkRiotAccount, type RiotAccountView } from '../../api/riotAccount'
+import {
+  fetchRiotAccounts,
+  linkRiotAccount,
+  setMainRiotAccount,
+  unlinkRiotAccount,
+  type RiotAccountsView,
+} from '../../api/riotAccount'
 import { useApi } from '../../api/useApi'
 
-// Link a League account by Riot ID; only Trevor's server can log in, so there is no ownership check
+// The user's League accounts: add one by Riot ID, pick the main one (used by /rank, /roast and Statystyki), unlink.
+// Only Trevor's server can log in, so there is no ownership check
 export function RiotAccountPanel() {
-  const loaded = useApi(fetchRiotAccount)
+  const loaded = useApi(fetchRiotAccounts)
   // After an action the panel shows the server's answer instead of the first load
-  const [changed, setChanged] = useState<RiotAccountView>()
+  const [changed, setChanged] = useState<RiotAccountsView>()
   const [riotId, setRiotId] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
 
   if (!changed && loaded.status === 'loading') return <p className="muted">Ładuję…</p>
-  if (!changed && loaded.status === 'error') return <p className="error">Nie udało się sprawdzić Twojego konta.</p>
-  const view = changed ?? (loaded.status === 'ready' ? loaded.data : { linkedRiotId: null })
+  if (!changed && loaded.status === 'error') return <p className="error">Nie udało się sprawdzić Twoich kont.</p>
+  const view = changed ?? (loaded.status === 'ready' ? loaded.data : { accounts: [], maxAccounts: 0 })
+  const canAdd = view.accounts.length < view.maxAccounts
 
-  const run = async (action: () => Promise<RiotAccountView>, fallback: string) => {
+  const run = async (action: () => Promise<RiotAccountsView>, fallback: string) => {
     setBusy(true)
     setError(undefined)
     try {
       setChanged(await action())
+      return true
     } catch (e) {
       setError(errorText(e, fallback))
+      return false
     } finally {
       setBusy(false)
     }
   }
 
-  const link = (e: FormEvent) => {
+  const link = async (e: FormEvent) => {
     e.preventDefault()
-    void run(() => linkRiotAccount(riotId), 'Nie udało się podpiąć konta.')
+    if (await run(() => linkRiotAccount(riotId), 'Nie udało się podpiąć konta.')) setRiotId('')
   }
-  const unlink = () =>
-    run(async () => {
-      await unlinkRiotAccount()
-      return { linkedRiotId: null }
-    }, 'Nie udało się odłączyć konta.')
 
   return (
     <section className="panel">
-      <h2 className="page-title">Konto League of Legends</h2>
+      <h2 className="page-title">Konta League of Legends</h2>
 
-      {view.linkedRiotId ? (
-        <div className="panel-row">
-          <p>
-            Podpięte: <strong>{view.linkedRiotId}</strong>
-          </p>
-          <button type="button" className="button secondary" onClick={unlink} disabled={busy}>
-            Odłącz
-          </button>
-        </div>
-      ) : (
+      {view.accounts.length > 0 && (
+        <ul className="account-list">
+          {view.accounts.map((a) => (
+            <li key={a.id}>
+              <strong>{a.riotId}</strong>
+              {a.isMain ? (
+                <span className="account-main">główne</span>
+              ) : (
+                <button
+                  type="button"
+                  className="button secondary small"
+                  disabled={busy}
+                  onClick={() => run(() => setMainRiotAccount(a.id), 'Nie udało się zmienić głównego konta.')}
+                >
+                  Ustaw jako główne
+                </button>
+              )}
+              <button
+                type="button"
+                className="button secondary small"
+                disabled={busy}
+                onClick={() => run(() => unlinkRiotAccount(a.id), 'Nie udało się odłączyć konta.')}
+              >
+                Odłącz
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {canAdd ? (
         <>
-          <p className="muted">Podaj swój Riot ID. Trevor uwierzy Ci na słowo, ale kumple widzą, czyje to konto.</p>
+          <p className="muted">
+            {view.accounts.length === 0
+              ? 'Podaj swój Riot ID. Trevor uwierzy Ci na słowo, ale kumple widzą, czyje to konto.'
+              : 'Masz smurfa? Dodaj go tutaj. Główne konto biorą /rank i /roast bez nicku.'}
+          </p>
           <form className="panel-row" onSubmit={link}>
             <input
               className="search"
@@ -67,6 +97,8 @@ export function RiotAccountPanel() {
             </button>
           </form>
         </>
+      ) : (
+        <p className="muted">Komplet: {view.maxAccounts} kont. Wystarczy tych smurfów.</p>
       )}
 
       {busy && <p className="muted">Pytam Riota…</p>}

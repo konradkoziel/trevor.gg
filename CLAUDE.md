@@ -124,8 +124,10 @@ rate limits add up). All optional: without them only login / Riot account linkin
   Champion-Mastery-V4 points per linked player plus the Solo/Duo rank, caches 3 h, skips players Riot fails on), `GET /api/recent-builds` (logged in;
   not `/api/builds/recent`, which would read as an id); `Bot` → `GET /api/bot/players/{discordId}` (linked Riot ID) and `.../builds?champion=` (newest-first `BuildCard`s with names, champion
   matched by name or id ignoring case/accents/punctuation), only with header `X-Trevor-Key` = `TREVOR_WEB_KEY`;
-  `RiotAccount` → link a League account: `POST /api/me/riot` (Riot ID, no ownership check: login is guild-only and an account
-  linked by someone else is a 409), `GET|DELETE /api/me/riot`; table `riotlinks` (PartitionKey = Discord id, row `link`); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
+  `RiotAccount` → up to `RiotLinks.MaxAccounts` (5) League accounts per user: `POST /api/me/riot` (Riot ID, no ownership check:
+  login is guild-only and an account linked by someone else is a 409), `GET /api/me/riot`, `DELETE /api/me/riot/{puuid}`,
+  `PUT /api/me/riot/{puuid}/main`; `RiotLinks.MainOf` = the flagged main, else the oldest; table `riotlinks` (PartitionKey =
+  Discord id, RowKey = `acc_` + PUUID; an old single `link` row is read as the main account and moved on the next change); Riot failures become 503 with a message through `RiotCalls`; `Stats` → `GET /api/me/stats`:
   `MatchHistory` (singleton: last `MATCH_HISTORY_GAMES` match ids, default 20, from the GitHub variable of that name; only unknown matches fetched, older stored ones deleted, at most one Riot refresh per player per 2 min)
   over table `playedmatches` (PartitionKey = PUUID, RowKey = match id), numbers from `StatsCalculator` (Summoner's Rift queues,
   no remakes) plus the ranks, put together by `StatsReport` (also used by the profiles); `Matches` → `GET /api/matches/{matchId}` (logged in; both teams of one game with items, spells and runes, `MatchDetailSource` keeps

@@ -1,6 +1,8 @@
 import { Link } from 'react-router'
 import { ApiRequestError } from '../api/client'
 import { errorText } from '../api/errorText'
+import { useState } from 'react'
+import { fetchRiotAccounts } from '../api/riotAccount'
 import { fetchMyStats } from '../api/stats'
 import { useApi } from '../api/useApi'
 import { LoginLink } from '../features/account/LoginLink'
@@ -22,10 +24,38 @@ export function StatsPage() {
 }
 
 function Stats() {
-  const stats = useApi(fetchMyStats)
+  const accounts = useApi(fetchRiotAccounts)
+  // null = the main account
+  const [account, setAccount] = useState<string | null>(null)
+  const stats = useApi(fetchMyStats, account)
+  const list = accounts.status === 'ready' ? accounts.data.accounts : []
+  const tabs = list.length > 1 && (
+    <div className="account-tabs" role="tablist">
+      {list.map((a) => {
+        const selected = account === a.id || (account === null && a.isMain)
+        return (
+          <button
+            key={a.id}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            className={selected ? 'account-tab selected' : 'account-tab'}
+            onClick={() => setAccount(a.id)}
+          >
+            {a.riotId}
+          </button>
+        )
+      })}
+    </div>
+  )
 
   if (stats.status === 'loading')
-    return <p className="muted">Liczę Twoje porażki… Pierwszy raz może to potrwać kilka sekund.</p>
+    return (
+      <>
+        {tabs}
+        <p className="muted">Liczę Twoje porażki… Pierwszy raz może to potrwać kilka sekund.</p>
+      </>
+    )
   if (stats.status === 'error') {
     const notLinked = stats.error instanceof ApiRequestError && stats.error.status === 404
     return (
@@ -40,5 +70,10 @@ function Stats() {
     )
   }
 
-  return <PlayerStatsView stats={stats.data} title={<h2 className="page-title">{stats.data.riotId}</h2>} />
+  return (
+    <>
+      {tabs}
+      <PlayerStatsView stats={stats.data} title={<h2 className="page-title">{stats.data.riotId}</h2>} />
+    </>
+  )
 }

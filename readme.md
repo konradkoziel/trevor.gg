@@ -64,8 +64,10 @@ Logged in, you **save** builds (up to 50, checked again by the API against the c
 under **Moje buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
 The copied link goes through the API (`/api/share/<id>`), so on Discord it unfolds into a preview with the build's name,
 items, runes and the champion's splash art, then sends people on to the site.
-Under **Konto** (click your name) you link your League account by Riot ID. There is no ownership check: only members of
-Trevor's server can log in, and an account someone else already linked is refused.
+Under **Konto** (click your name) you link your League accounts by Riot ID, up to five (smurfs welcome). One of them is the
+**main** one: `/rank` and `/roast` without a nick use it, and Statystyki opens on it (tabs switch to the others). The
+leaderboard adds up a person's accounts. There is no ownership check: only members of Trevor's server can log in, and an
+account someone else already linked is refused.
 With a linked account, **Statystyki** shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
 division, this season's record and winrate ring from Riot) and the champions of your recent games next to the last 20 games, one line
 each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes); click a game to see both teams with
