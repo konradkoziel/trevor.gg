@@ -1,4 +1,4 @@
-using Lol.Shared.Riot.Models;
+﻿using Lol.Shared.Riot.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -147,6 +147,22 @@ public class HomeTests
         Assert.Equal(RecentBuildsFunction.Count, builds.Count);
         Assert.Equal("b7", builds[0].Id);
         Assert.Equal("Bob", builds[0].OwnerName);
+    }
+
+    [Fact]
+    public async Task ChampionBuilds_AreTheTeamsBuildsOfThatChampion_ForLoggedInUsers()
+    {
+        var store = new FakeBuildStore();
+        var valid = TestBuilds.Valid();
+        store.Builds["old"] = new StoredBuild("old", "1", "Ann", Now, valid);
+        store.Builds["new"] = new StoredBuild("new", "2", "Bob", Now.AddHours(1), valid);
+        store.Builds["other"] = new StoredBuild("other", "2", "Bob", Now.AddHours(2), valid with { ChampionId = "Other" });
+        var function = new ChampionBuildsFunction(_tokens, store);
+
+        Assert.IsType<UnauthorizedResult>(await function.Run(new DefaultHttpContext().Request, valid.ChampionId, CancellationToken.None));
+        var builds = Assert.IsAssignableFrom<IEnumerable<RecentBuild>>(
+            Assert.IsType<OkObjectResult>(await function.Run(await LoggedIn(), valid.ChampionId, CancellationToken.None)).Value);
+        Assert.Equal(["new", "old"], builds.Select(b => b.Id));
     }
 
     [Fact]

@@ -33,14 +33,21 @@ public class TableBuildStore(TableServiceClient tables) : IBuildStore
         return builds.OrderByDescending(b => b.UpdatedAt).ToList();
     }
 
-    // A full scan: fine for one server's builds (MaxBuildsPerUser each)
-    public async Task<IReadOnlyList<StoredBuild>> ListRecentAsync(int count, CancellationToken ct = default)
+    public async Task<IReadOnlyList<StoredBuild>> ListRecentAsync(int count, CancellationToken ct = default) =>
+        (await ListAllAsync(ct)).Take(count).ToList();
+
+    // The champion is inside the build's JSON, so this is the same scan
+    public async Task<IReadOnlyList<StoredBuild>> ListByChampionAsync(string championId, CancellationToken ct = default) =>
+        (await ListAllAsync(ct)).Where(b => b.Build.ChampionId == championId).ToList();
+
+    // A full scan, newest first: fine for one server's builds (MaxBuildsPerUser each)
+    private async Task<IReadOnlyList<StoredBuild>> ListAllAsync(CancellationToken ct)
     {
         var table = await TableAsync(ct);
         var builds = new List<StoredBuild>();
         await foreach (var e in table.QueryAsync<BuildEntity>(cancellationToken: ct))
             builds.Add(ToBuild(e));
-        return builds.OrderByDescending(b => b.UpdatedAt).Take(count).ToList();
+        return builds.OrderByDescending(b => b.UpdatedAt).ToList();
     }
 
     public async Task SaveAsync(StoredBuild build, CancellationToken ct = default)
