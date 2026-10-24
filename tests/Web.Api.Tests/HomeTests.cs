@@ -104,6 +104,22 @@ public class HomeTests
 
         Assert.Empty(await board.EntriesAsync());
         _time.Advance(Leaderboard.CacheFor);
+        // The old list is served while the new one is built
+        Assert.Empty(await board.EntriesAsync());
+        await board.WarmAsync();
+        Assert.Single(await board.EntriesAsync());
+    }
+
+    [Fact]
+    public async Task Leaderboard_WarmUp_BuildsItBeforeTheFirstVisit()
+    {
+        var riot = new FakeRiot();
+        var board = Board(riot);
+        _links.Add(new RiotLink("1", "p1", "Ann#EUNE", Now));
+
+        await board.WarmAsync();
+        riot.FailingPuuids.Add("p1");
+
         Assert.Single(await board.EntriesAsync());
     }
 
