@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { myAccountsPath } from './accountLinks'
 import { LoginLink } from './LoginLink'
 import { useCurrentUser } from './useCurrentUser'
 
@@ -15,7 +16,7 @@ export function AccountMenu() {
 
   return (
     <div className="account">
-      <Link to="/konto" className="account-link" title="Konto LoL">
+      <Link to={myAccountsPath} className="account-link" title="Konta LoL">
         <img src={state.user.avatarUrl} alt="" width={32} height={32} />
         <span>{state.user.name}</span>
       </Link>

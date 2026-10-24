@@ -114,7 +114,7 @@ rate limits add up). All optional: without them only login / Riot account linkin
 
 - Repo root: `src/trevor/` (the Function App project: code, `host.json`, `Properties/launchSettings.json`), `src/Lol.Shared/`
   (class library with the League of Legends code every app in the repo shares: `Riot/`), `tests/trevor.Tests/`, `tests/Lol.Shared.Tests/`, `deploy/` (files the deploy workflow sends elsewhere, e.g. `discord-commands.json`), `src/Web.Api/` + `tests/Web.Api.Tests/` (website API: `Features/<Name>/` with one HTTP function each, e.g. `Champions` → `GET /api/champions`,
-  `Champions` also `GET /api/champions/{id}/abilities` (only ids from the champion list), `Builds` → `GET /api/build-data` (items, rune trees,
+  `Champions` also `GET /api/champions/{id}/abilities` (only ids from the champion list), `Builds/ChampionBuildsFunction` → `GET /api/champions/{id}/builds` (logged in; the team's builds of one champion as `RecentBuild`s), `Builds` → `GET /api/build-data` (items, rune trees,
   summoner spells), `Auth` → Discord login, `Account` → `GET /api/me`; builds CRUD: `POST /api/builds`, `GET|PUT|DELETE /api/builds/{id}` (GET public,
   PUT/DELETE owner only), `GET /api/me/builds`. `BuildValidator` re-checks every build against the patch and the game's rules
   (`SkillOrderRules` mirrors `src/web/src/features/builds/skillOrder.ts` — change both together). Builds are stored by
@@ -134,10 +134,10 @@ rate limits add up). All optional: without them only login / Riot account linkin
   up to 300 matches in memory for 6 h, a result without Data Dragon icons is not cached); `Players` → `GET /api/players/{name}/{tag}` (logged in; only linked players, Riot ID ignoring case: `PlayerProfiles` adds icon, level, top 5 masteries and the player's builds); `Ranks/RankedStandings` (League-V4 entries → Solo/Duo then Flex, with label and emblem, for every page); `Infrastructure/Http/ApiResults.StaticData` (200 cacheable 1 h or 503); `Infrastructure/Discord` OAuth client, `Infrastructure/Sessions` tokens),
   `src/web/` (React site: `src/api/` typed fetch helpers + `useApi` (pass a module-level loader; it shows the loader's last answer from `apiCache` at once and refreshes it, the cache is cleared on login/logout; pages load alongside `/api/me` via `hasSession`, every page but `/` is a lazy chunk), `src/features/<name>/` components;
   rules live in pure functions with vitest tests, e.g. `features/builds/skillOrder.ts`, `runes.ts`, `build.ts`; `src/pages/` one
-  component per route of `react-router` (`/` home, `/buildy`, `/nowy/:championId`, `/b/:id`, `/konto`, `/statystyki`, `/gracz/:name/:tag`, `/mecz/:matchId` (linked from the bot's match reports via `Infrastructure/Web/SiteLinks`)); daily picks
+  component per route of `react-router` (`/` home: `Welcome` logged out, `TeamHome` with `LastGameCard` logged in; `/buildy` champion picker, `/buildy/:championId` the team's builds of it, `/nowy/:championId`, `/b/:id`, `/ja` = `MePage` with tabs as child routes: stats (index), `/ja/buildy`, `/ja/konta`, paths in `features/account/accountLinks.ts`; old `/konto` and `/statystyki` redirect there, the bot still links `/konto`; `/ekipa` ranking and builds, `/gracz/:name/:tag`, `/mecz/:matchId` (linked from the bot's match reports via `Infrastructure/Web/SiteLinks`)); daily picks
   (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; styles in one `src/index.css` with colour
   and font tokens on `:root` (Cinzel for headings only, it has no lowercase; Inter for text; both self-hosted via `@fontsource`),
-  `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's
+  `Skeleton` (`features/layout`) for loading placeholders, `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's
   required legal boilerplate, keep it; `CurrentUserProvider` shares the logged-in user),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 

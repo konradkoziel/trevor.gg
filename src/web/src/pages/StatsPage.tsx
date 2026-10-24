@@ -5,24 +5,12 @@ import { useState } from 'react'
 import { fetchRiotAccounts } from '../api/riotAccount'
 import { fetchMyStats } from '../api/stats'
 import { useApi } from '../api/useApi'
-import { LoginLink } from '../features/account/LoginLink'
-import { useCurrentUser } from '../features/account/useCurrentUser'
+import { myAccountsPath } from '../features/account/accountLinks'
+import { Skeleton } from '../features/layout/Skeleton'
 import { PlayerStatsView } from '../features/stats/PlayerStatsView'
 
+// /ja (MePage checks the login)
 export function StatsPage() {
-  const { state } = useCurrentUser()
-
-  if (state.status === 'anonymous')
-    return (
-      <section className="panel">
-        <p>Statystyki są dla zalogowanych. Trevor musi wiedzieć, czyje porażki liczy.</p>
-        <LoginLink />
-      </section>
-    )
-  return <Stats />
-}
-
-function Stats() {
   const accounts = useApi(fetchRiotAccounts)
   // null = the main account
   const [account, setAccount] = useState<string | null>(null)
@@ -53,6 +41,7 @@ function Stats() {
       <>
         {tabs}
         <p className="muted">Liczę Twoje porażki… Pierwszy raz może to potrwać kilka sekund.</p>
+        <Skeleton rows={6} height={56} />
       </>
     )
   if (stats.status === 'error') {
@@ -61,7 +50,7 @@ function Stats() {
       <section className="panel">
         <p className="error">{errorText(stats.error, 'Nie udało się pobrać statystyk.')}</p>
         {notLinked && (
-          <Link className="button gold" to="/konto">
+          <Link className="button gold" to={myAccountsPath}>
             Podepnij konto
           </Link>
         )}

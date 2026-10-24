@@ -1,26 +1,31 @@
 import { Link } from 'react-router'
 import { fetchLeaderboard } from '../../api/home'
 import { useApi } from '../../api/useApi'
+import { myAccountsPath, teamPath } from '../account/accountLinks'
+import { Skeleton } from '../layout/Skeleton'
 import { RankBadge } from '../ranks/RankBadge'
 import { playerPath } from '../players/playerLinks'
 import { formatWhole } from '../stats/format'
 
-export function ShameLeaderboard() {
+// limit: the home page shows the top few and links to the whole list on "Ekipa"
+export function ShameLeaderboard({ limit }: { limit?: number }) {
   const board = useApi(fetchLeaderboard)
+  const entries = board.status === 'ready' ? board.data.slice(0, limit) : []
+  const cut = board.status === 'ready' && entries.length < board.data.length
 
   return (
     <section className="card">
       <h2 className="page-title">Ranking zmarnowanego czasu</h2>
-      {board.status === 'loading' && <p className="muted">Liczę stracone godziny…</p>}
+      {board.status === 'loading' && <Skeleton rows={limit ?? 5} height={54} />}
       {board.status === 'error' && <p className="muted">Ranking chwilowo niedostępny. Riot też potrzebuje przerwy.</p>}
       {board.status === 'ready' && board.data.length === 0 && (
         <p className="muted">
-          Nikt jeszcze nie podpiął konta. <Link to="/konto">Bądź pierwszym, który się przyzna</Link>.
+          Nikt jeszcze nie podpiął konta. <Link to={myAccountsPath}>Bądź pierwszym, który się przyzna</Link>.
         </p>
       )}
-      {board.status === 'ready' && board.data.length > 0 && (
+      {entries.length > 0 && (
         <ol className="leaderboard">
-          {board.data.map((e, i) => (
+          {entries.map((e, i) => (
             <li key={e.riotId}>
               <span className="place">{i + 1}.</span>
               {e.profileIconUrl && <img src={e.profileIconUrl} alt="" width={36} height={36} />}
@@ -42,6 +47,11 @@ export function ShameLeaderboard() {
             </li>
           ))}
         </ol>
+      )}
+      {cut && (
+        <Link className="card-more" to={teamPath}>
+          Cały ranking ekipy →
+        </Link>
       )}
       <p className="muted small">
         Riot nie mówi, ile godzin przegrałeś, więc liczą się punkty maestrii i poziom konta. Wniosek i tak ten sam.

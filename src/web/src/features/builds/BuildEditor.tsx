@@ -14,6 +14,7 @@ import {
   setSummonerSpell,
   type Build,
 } from './build'
+import { championBuildsPath } from './buildLinks'
 import { ItemsSection } from './ItemsSection'
 import { RunesSection } from './RunesSection'
 import { SaveBar } from './SaveBar'
@@ -51,8 +52,8 @@ export function BuildEditor({ champion, saved }: Props) {
             />
           )}
         </div>
-        <Link className="button secondary" to="/buildy">
-          {readOnly ? 'Wróć' : 'Zmień championa'}
+        <Link className="button secondary" to={championBuildsPath(champion.id)}>
+          {readOnly ? 'Inne buildy' : 'Wróć'}
         </Link>
       </header>
 

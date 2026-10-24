@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router'
 import { fetchChampions } from '../api/champions'
 import { useApi } from '../api/useApi'
 import { BuildEditor } from '../features/builds/BuildEditor'
+import { buildsPath } from '../features/builds/buildLinks'
 
 export function NewBuildPage() {
   const { championId = '' } = useParams()
@@ -14,7 +15,7 @@ export function NewBuildPage() {
   if (!champion)
     return (
       <p className="error">
-        Nie ma takiego championa. <Link to="/buildy">Wybierz z listy</Link>.
+        Nie ma takiego championa. <Link to={buildsPath}>Wybierz z listy</Link>.
       </p>
     )
 
