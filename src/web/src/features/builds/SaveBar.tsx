@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { deleteBuild, saveBuild } from '../../api/builds'
 import { errorText } from '../../api/errorText'
+import { myBuildsPath } from '../account/accountLinks'
 import { LoginLink } from '../account/LoginLink'
 import { useCurrentUser } from '../account/useCurrentUser'
 import type { Build } from './build'
@@ -53,7 +54,7 @@ export function SaveBar({ build, buildId }: Props) {
     if (!buildId || !window.confirm(`Usunąć build „${build.name}”? Tego się nie da cofnąć.`)) return
     try {
       await deleteBuild(buildId)
-      navigate('/buildy')
+      navigate(myBuildsPath)
     } catch (error) {
       setStatus({ kind: 'error', message: describe(error) })
     }

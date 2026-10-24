@@ -10,6 +10,9 @@ public interface IBuildStore
     // Everyone's builds, newest first
     Task<IReadOnlyList<StoredBuild>> ListRecentAsync(int count, CancellationToken ct = default);
 
+    // Everyone's builds of one champion, newest first
+    Task<IReadOnlyList<StoredBuild>> ListByChampionAsync(string championId, CancellationToken ct = default);
+
     // Insert or replace
     Task SaveAsync(StoredBuild build, CancellationToken ct = default);
 

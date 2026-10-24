@@ -55,28 +55,31 @@ website (anyone can, like before), so the site and the bot always agree; other a
 Every message the bot sends blocks `@everyone`/role/user pings, and if the AI is down, Trevor falls back to his canned lines.
 
 ### 🌐 Website (work in progress)
-A React site for builds and stats. The **home page** has Trevor's quote of the day, the champion of the day (splash art, lore,
-"make a build"), this week's free rotation and, for logged-in users, the *Ranking zmarnowanego czasu* (linked players by
-mastery points and account level, with their Solo/Duo rank; Riot publishes no hours played) and the team's newest builds. Builds live under `/buildy`:
-a searchable champion picker (names and titles in Polish, icons from Data Dragon),
+A React site for builds and stats, four sections in the menu: **Start**, **Buildy**, **Ekipa** and **Ja**.
+Logged out, **Start** says what the site is and offers the login, with Trevor's quote of the day, the champion of the day
+(splash art, lore, "make a build") and this week's free rotation. Logged in, it opens with your main account's rank and last
+game, the top five of the *Ranking zmarnowanego czasu* (linked players by mastery points and account level, with their
+Solo/Duo rank; Riot publishes no hours played) and the team's newest builds. **Ekipa** (`/ekipa`) has the whole ranking.
+**Buildy** (`/buildy`) is a searchable champion picker (names and titles in Polish, icons from Data Dragon); a champion opens
+`/buildy/<id>` with the team's builds of it and the **Nowy build** button.
 **Log in with Discord** (the same Discord id the bot sees; with `DISCORD_GUILD_ID` set only members of Trevor's server get in,
 shown with their server nickname and avatar; after the first consent, logging in again skips Discord's consent screen) and the **build editor**:
 six items in buy order, a full rune page (keystone, primary and secondary runes with League's rules), two summoner spells and the
 max order (click e.g. Q, E, W; the level-by-level order with the ultimate at 6/11/16 follows from it).
 Logged in, you **save** builds (up to 50, checked again by the API against the current patch and the game's rules), find them
-under **Moje buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
+under **Ja → Buildy**, and **share** a link: anyone can open it read-only (`/b/<id>`), only you can edit or delete it.
 The copied link goes through the API (`/api/share/<id>`), so on Discord it unfolds into a preview with the build's name,
 items, runes and the champion's splash art, then sends people on to the site.
-Under **Konto** (click your name) you link your League accounts by Riot ID, up to five (smurfs welcome). One of them is the
-**main** one: `/rank` and `/roast` without a nick use it, and Statystyki opens on it (tabs switch to the others). The
+Under **Ja → Konta LoL** (`/ja/konta`, or click your name) you link your League accounts by Riot ID, up to five (smurfs welcome). One of them is the
+**main** one: `/rank` and `/roast` without a nick use it, and **Ja → Statystyki** opens on it (tabs switch to the others). The
 leaderboard adds up a person's accounts. There is no ownership check: only members of Trevor's server can log in, and an
 account someone else already linked is refused.
-With a linked account, **Statystyki** shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
+With a linked account, **Ja → Statystyki** (`/ja`) shows, in two columns, your Solo/Duo and Flex rank (big emblem, LP towards the next
 division, this season's record and winrate ring from Riot) and the champions of your recent games next to the last 20 games, one line
 each (score, KDA ratio, CS/min, length; Summoner's Rift only in the totals, no remakes); click a game to see both teams (in Arena every pair with its place) with
 everyone's score, damage, CS, gold, final items, summoner spells and runes. Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
-Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the leaderboard; logged-in users only):
+Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the ranking; logged-in users only):
 rank, level, the same stats, their five most played champions by mastery and their builds.
 Next: `/build` in Trevor.
 

@@ -20,6 +20,6 @@ public class RecentBuildsFunction(ISessionTokens sessions, IBuildStore store)
             return new UnauthorizedResult();
 
         var builds = await store.ListRecentAsync(Count, ct);
-        return new OkObjectResult(builds.Select(b => new RecentBuild(b.Id, b.Build.Name, b.Build.ChampionId, b.OwnerName, b.UpdatedAt)).ToList());
+        return new OkObjectResult(builds.Select(RecentBuild.From).ToList());
     }
 }

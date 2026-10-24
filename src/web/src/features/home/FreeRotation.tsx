@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { fetchRotation } from '../../api/home'
 import { useApi } from '../../api/useApi'
-import { newBuildPath } from '../builds/buildLinks'
+import { championBuildsPath } from '../builds/buildLinks'
 
 export function FreeRotation() {
   const rotation = useApi(fetchRotation)
@@ -14,7 +14,7 @@ export function FreeRotation() {
       <ul className="rotation">
         {rotation.data.map((c) => (
           <li key={c.id}>
-            <Link to={newBuildPath(c.id)} title={`${c.name}, ${c.title}`}>
+            <Link to={championBuildsPath(c.id)} title={`${c.name}, ${c.title}`}>
               <img src={c.iconUrl} alt="" width={48} height={48} loading="lazy" />
               <span>{c.name}</span>
             </Link>
