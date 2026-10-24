@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useCurrentUser } from '../features/account/useCurrentUser'
+import { hasSession, useCurrentUser } from '../features/account/useCurrentUser'
 import { newBuildPath } from '../features/builds/buildLinks'
 import { MyBuilds } from '../features/builds/MyBuilds'
 import { ChampionPicker } from '../features/champions/ChampionPicker'
@@ -10,7 +10,7 @@ export function BuildsPage() {
 
   return (
     <>
-      {state.status === 'loggedIn' && (
+      {hasSession(state) && (
         <section className="home-section">
           <h2 className="page-title">Moje buildy</h2>
           <MyBuilds />

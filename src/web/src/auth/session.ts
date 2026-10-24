@@ -1,3 +1,4 @@
+import { forgetAll } from '../api/apiCache'
 import { apiUrl } from '../api/apiUrl'
 import { parseSessionFragment, type LoginResult } from './sessionFragment'
 
@@ -24,7 +25,10 @@ export function completeLogin(): LoginResult {
   const path = returnPath?.startsWith('/') && !returnPath.startsWith('//') ? returnPath : window.location.pathname
   history.replaceState(null, '', path)
 
-  if (result.kind === 'session') safely(() => localStorage.setItem(storageKey, result.token))
+  if (result.kind === 'session') {
+    forgetAll()
+    safely(() => localStorage.setItem(storageKey, result.token))
+  }
   return result
 }
 
@@ -33,6 +37,7 @@ export function getSessionToken(): string | null {
 }
 
 export function clearSession() {
+  forgetAll()
   safely(() => localStorage.removeItem(storageKey))
 }
 
