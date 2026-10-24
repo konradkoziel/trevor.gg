@@ -14,7 +14,6 @@ export function PlayerPage() {
   const { name = '', tag = '' } = useParams()
   const { state } = useCurrentUser()
 
-  if (state.status === 'loading') return <p className="muted">…</p>
   if (state.status === 'anonymous')
     return (
       <section className="panel">

@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { LoginLink } from '../features/account/LoginLink'
-import { useCurrentUser } from '../features/account/useCurrentUser'
+import { hasSession, useCurrentUser } from '../features/account/useCurrentUser'
 import { ChampionOfTheDay } from '../features/home/ChampionOfTheDay'
 import { FreeRotation } from '../features/home/FreeRotation'
 import { RecentBuilds } from '../features/home/RecentBuilds'
@@ -9,7 +9,7 @@ import { TrevorQuote } from '../features/home/TrevorQuote'
 
 export function HomePage() {
   const { state } = useCurrentUser()
-  const loggedIn = state.status === 'loggedIn'
+  const loggedIn = hasSession(state)
 
   return (
     <>

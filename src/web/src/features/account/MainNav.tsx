@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router'
-import { useCurrentUser } from './useCurrentUser'
+import { hasSession, useCurrentUser } from './useCurrentUser'
 
 export function MainNav() {
   const { state } = useCurrentUser()
@@ -10,7 +10,7 @@ export function MainNav() {
         Start
       </NavLink>
       <NavLink to="/buildy">Buildy</NavLink>
-      {state.status === 'loggedIn' && <NavLink to="/statystyki">Statystyki</NavLink>}
+      {hasSession(state) && <NavLink to="/statystyki">Statystyki</NavLink>}
     </nav>
   )
 }

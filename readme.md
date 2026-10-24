@@ -189,7 +189,8 @@ dotnet test -c Release --no-build
 
 - **Azure Functions (.NET 10, isolated worker)** — webhook-based backend for Discord Interactions
 - **Azure Storage Queue** — reliable deferred responses for slow commands
-- **React + Vite + TypeScript** on **Azure Static Web Apps** — the website; its API on a Flex Consumption Function App; infrastructure in **Bicep**
+- **React + Vite + TypeScript** on **Azure Static Web Apps** — the website; its API on a Flex Consumption Function App (a 5-minute
+  warm-up timer keeps it awake and the leaderboard ready); infrastructure in **Bicep**
 - **Azure Table Storage** — tracked players and the matches already reported
 - **Azure OpenAI Service** — powers `/ask`, the `/rank` verdict, `/roast` and `Rate this`
 - **Riot API** — Account-V1, League-V4, Match-V5; **Data Dragon** for champion icons
