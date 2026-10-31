@@ -46,3 +46,11 @@ const thousandsFormat = new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 
 
 // Gold the way the client shows it: 12,4k
 export const formatThousands = (value: number) => `${thousandsFormat.format(value / 1000)}k`
+
+// Polish noun after a number: 1 gra, 2 gry, 5 gier, 22 gry, 12 gier
+export function plural(count: number, one: string, few: string, many: string): string {
+  if (count === 1) return one
+  const lastDigit = count % 10
+  const lastTwo = count % 100
+  return lastDigit >= 2 && lastDigit <= 4 && (lastTwo < 12 || lastTwo > 14) ? few : many
+}

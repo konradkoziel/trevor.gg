@@ -41,7 +41,7 @@ export function StatsPage() {
       <>
         {tabs}
         <p className="muted">Liczę Twoje porażki… Pierwszy raz może to potrwać kilka sekund.</p>
-        <Skeleton rows={6} height={56} />
+        <Skeleton rows={1} height={220} />
       </>
     )
   if (stats.status === 'error') {
@@ -61,7 +61,7 @@ export function StatsPage() {
   return (
     <>
       {tabs}
-      <PlayerStatsView stats={stats.data} title={<h2 className="page-title">{stats.data.riotId}</h2>} />
+      <PlayerStatsView stats={stats.data} />
     </>
   )
 }

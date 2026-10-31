@@ -1,68 +1,88 @@
 import { useState, type ReactNode } from 'react'
-import { FlexQueue, SoloQueue } from '../../api/ranks'
+import type { BuildSummary } from '../../api/builds'
+import type { MasteryChampion } from '../../api/players'
 import type { PlayerStats } from '../../api/stats'
-import { RankCard } from '../ranks/RankCard'
-import { ChampionList } from './ChampionList'
-import { formatAgo, formatDecimal, formatPercent, winRateTone } from './format'
+import { BuildList } from '../builds/BuildList'
+import { ChampionTable } from './ChampionTable'
+import { PlayerBadges } from './PlayerBadges'
+import { PlayerHero } from './PlayerHero'
 import { RecentMatches } from './RecentMatches'
 
 interface Props {
   stats: PlayerStats
-  // Name line: just the Riot ID on "Statystyki", icon and level on a profile
-  title: ReactNode
-  // Extra side-column sections, e.g. a profile's mastery mains
-  aside?: ReactNode
+  // Profile picture and account level; only profiles have them
+  iconUrl?: string | null
+  level?: number
+  // Under the name, e.g. a profile's other accounts
+  subtitle?: ReactNode
+  // A profile's mastery mains, joined into the champion table
+  masteries?: MasteryChampion[]
+  // A profile's builds get their own tab; your own are under Ja → Buildy
+  builds?: BuildSummary[]
 }
 
-// Ranks and champions on the side, the recent games as the main column (between the two on phones); shared by "Statystyki" and the player profiles
-export function PlayerStatsView({ stats: s, title, aside }: Props) {
-  // Fixed for the render, so "2 h temu" doesn't change between renders
-  const [now] = useState(() => new Date())
-  const ranks = s.ranks ?? []
-  const solo = ranks.find((r) => r.queue === SoloQueue)
-  const flex = ranks.find((r) => r.queue === FlexQueue)
-  const lastGame = s.recent[0]
+type Tab = 'matches' | 'champions' | 'builds'
+
+// Games shown before "Pokaż więcej": a screen's worth on a laptop
+const FirstMatches = 10
+
+// Banner with ranks and form, Trevor's badges, then the games, champions and builds as tabs; shared by Ja → Statystyki and the profiles
+export function PlayerStatsView({ stats: s, iconUrl, level, subtitle, masteries, builds }: Props) {
+  const [tab, setTab] = useState<Tab>('matches')
+  const [allMatches, setAllMatches] = useState(false)
+  const mainChampion = masteries?.[0]?.championId ?? [...s.champions].sort((a, b) => b.games - a.games)[0]?.championName
+  const tabs: [Tab, string][] = [
+    ['matches', `Mecze (${s.recent.length})`],
+    ['champions', 'Championy'],
+    ...(builds ? [['builds', `Buildy (${builds.length})`] as [Tab, string]] : []),
+  ]
+  const shown = allMatches ? s.recent : s.recent.slice(0, FirstMatches)
 
   return (
     <>
-      <header className="player-header">
-        {title}
-        {lastGame && <span className="muted">ostatnia gra {formatAgo(new Date(lastGame.playedAt), now)}</span>}
-      </header>
+      <PlayerHero stats={s} iconUrl={iconUrl} level={level} subtitle={subtitle} mainChampion={mainChampion} />
+      <PlayerBadges matches={s.recent} />
 
-      <div className="player-layout">
-        <div className="player-ranks">
-          <RankCard queue={SoloQueue} rank={solo} primary={!!solo || !flex} />
-          <RankCard queue={FlexQueue} rank={flex} primary={!solo && !!flex} />
-        </div>
+      <div className="page-tabs" role="tablist">
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            className={tab === id ? 'active' : undefined}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        <aside className="player-aside">
-          {s.champions.length > 0 && (
-            <section className="side-section">
-              <h3 className="side-title">Championy · ostatnie gry</h3>
-              <ChampionList champions={s.champions} />
-            </section>
-          )}
-          {aside}
-        </aside>
-
-        <section className="player-main">
-          <div className="recent-summary">
-            <h3 className="side-title">Ostatnie {s.recent.length} gier</h3>
-            <span>
-              {s.wins}W {s.games - s.wins}L
-            </span>
-            <strong className={winRateTone(s.winRate)}>{formatPercent(s.winRate)}</strong>
-            <span>{formatDecimal(s.kda)} KDA</span>
-          </div>
+      {tab === 'matches' && (
+        <section>
           {s.recent.length > 0 ? (
-            <RecentMatches matches={s.recent} riotId={s.riotId} />
+            <RecentMatches matches={shown} riotId={s.riotId} />
           ) : (
             <p className="muted">Brak gier. Może czas zagrać?</p>
           )}
-          <p className="muted small">Mecze z Riot API, bez remake'ów. Bilans, winrate i KDA tylko z Summoner's Rift.</p>
+          {shown.length < s.recent.length && (
+            <button type="button" className="button secondary show-more" onClick={() => setAllMatches(true)}>
+              Pokaż wszystkie ({s.recent.length})
+            </button>
+          )}
+          <p className="muted small">
+            Mecze z Riot API, bez remake'ów. Winrate i KDA w banerze tylko z Summoner's Rift.
+          </p>
         </section>
-      </div>
+      )}
+      {tab === 'champions' && <ChampionTable played={s.champions} masteries={masteries} />}
+      {tab === 'builds' &&
+        builds &&
+        (builds.length > 0 ? (
+          <BuildList builds={builds} />
+        ) : (
+          <p className="muted">Żadnych buildów. Gra na czuja, i to widać.</p>
+        ))}
     </>
   )
 }

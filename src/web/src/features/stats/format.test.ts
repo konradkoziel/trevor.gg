@@ -6,6 +6,7 @@ import {
   formatThousands,
   formatPercent,
   kdaRatio,
+  plural,
   winRateOf,
   winRateTone,
 } from './format'
@@ -48,5 +49,10 @@ describe('stats formatting', () => {
   it('shows gold in thousands', () => {
     expect(formatThousands(12400)).toBe('12,4k')
     expect(formatThousands(900)).toBe('0,9k')
+  })
+
+  it('picks the Polish plural', () => {
+    const games = (n: number) => `${n} ${plural(n, 'gra', 'gry', 'gier')}`
+    expect([1, 2, 4, 5, 12, 22, 25].map(games)).toEqual(['1 gra', '2 gry', '4 gry', '5 gier', '12 gier', '22 gry', '25 gier'])
   })
 })
