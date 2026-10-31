@@ -137,7 +137,7 @@ rate limits add up). All optional: without them only login / Riot account linkin
   component per route of `react-router` (`/` home: `Welcome` logged out, `TeamHome` with `LastGameCard` logged in; `/buildy` champion picker, `/buildy/:championId` the team's builds of it, `/nowy/:championId`, `/b/:id`, `/ja` = `MePage` with tabs as child routes: stats (index), `/ja/buildy`, `/ja/konta`, paths in `features/account/accountLinks.ts`; old `/konto` and `/statystyki` redirect there, the bot still links `/konto`; `/ekipa` ranking and builds, `/gracz/:name/:tag`, `/mecz/:matchId` (linked from the bot's match reports via `Infrastructure/Web/SiteLinks`)); daily picks
   (quote, champion) through `features/home/daily.ts` so everyone sees the same all day; styles in one `src/index.css` with colour
   and font tokens on `:root` (Cinzel for headings only, it has no lowercase; Inter for text; both self-hosted via `@fontsource`),
-  `Skeleton` (`features/layout`) for loading placeholders, `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's
+  `Skeleton` (`features/layout`) for loading placeholders, `features/stats/PlayerStatsView` = the stats of `/ja` and the profiles (`PlayerHero` banner with `FormStrip`, `PlayerBadges` from `badges.ts`, tabs Mecze / Championy (`championRows.ts` joins mastery) / Buildy), `button gold` for the site's own actions and `button discord` only for Discord login; `features/layout/SiteFooter` carries Riot's
   required legal boilerplate, keep it; `CurrentUserProvider` shares the logged-in user),
   `infra/` (Bicep of the website), `docs/`, `.github/`, `trevor.sln`. Paths below are relative to `src/trevor/`, except `Riot/` (in `src/Lol.Shared/`).
 
