@@ -22,7 +22,13 @@ export interface MatchPlayer {
   spells: MatchIcon[]
   keystone: MatchIcon | null
   secondaryTree: MatchIcon | null
+  // Performance against the team's average (Lol.Shared PerformanceScore): 1 = an average teammate
+  rating: number
+  award: MatchAward | null
 }
+
+// Web.Api MatchAwards: the best and the worst of a team (not in Arena pairs)
+export type MatchAward = 'mvp' | 'report'
 
 export interface MatchTeam {
   // 100 blue, 200 red, or the pair's number in Arena

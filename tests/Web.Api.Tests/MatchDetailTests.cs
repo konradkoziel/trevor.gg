@@ -82,6 +82,28 @@ public class MatchDetailTests
         Assert.Equal([1, 2, 3], detail.Teams.Select(t => t.Placement));
         Assert.Equal([2, 3, 1], detail.Teams.Select(t => t.TeamId));
         Assert.All(detail.Teams, t => Assert.Equal(2, t.Players.Count));
+        // A pair has no MVP of its own
+        Assert.All(detail.Teams.SelectMany(t => t.Players), p => Assert.Null(p.Award));
+    }
+
+    [Fact]
+    public async Task Players_AreRatedAgainstTheirTeam_WithTheBestAndWorstMarked()
+    {
+        var riot = new FakeRiot();
+        riot.Matches[MatchId] = new(new RiotMatchInfo(1800, 420, "CLASSIC",
+        [
+            Player("carry", "Ahri", 100, true, 12) with { Deaths = 1 },
+            Player("feeder", "Yasuo", 100, true, 0) with { Deaths = 12 },
+            Player("c", "Garen", 100, true, 4), Player("d", "Garen", 100, true, 4), Player("e", "Garen", 100, true, 4),
+        ]));
+
+        var players = (await Source(riot).GetAsync(MatchId))!.Teams.Single().Players;
+
+        Assert.Equal(MatchAwards.Mvp, players[0].Award);
+        Assert.Equal(MatchAwards.Report, players[1].Award);
+        Assert.All(players.Skip(2), p => Assert.Null(p.Award));
+        Assert.True(players[0].Rating > 1 && players[1].Rating < 1);
+        Assert.Equal(1, players.Average(p => p.Rating), 1);
     }
 
     [Fact]

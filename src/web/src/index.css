@@ -1632,7 +1632,7 @@ img {
 
 .match-player {
   display: grid;
-  grid-template-columns: 34px 36px minmax(0, 1.4fr) 86px minmax(70px, 1fr) 96px auto;
+  grid-template-columns: 34px 36px minmax(0, 1.4fr) 58px 86px minmax(70px, 1fr) 96px auto;
   gap: 10px;
   align-items: center;
   padding: 5px 10px;
@@ -1748,9 +1748,33 @@ img {
   border-radius: 50%;
 }
 
+/* Performance rating against the team: colour by how far from 1, the MVP / report mark in front */
+.match-rating {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  cursor: help;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.match-rating.good {
+  color: var(--success);
+  border-color: rgb(63 185 80 / 45%);
+}
+
+.match-rating.bad {
+  color: var(--error);
+  border-color: rgb(232 64 87 / 45%);
+}
+
 @media (width <= 760px) {
   .match-player {
-    grid-template-columns: 34px 36px minmax(0, 1fr) 78px;
+    grid-template-columns: 34px 36px minmax(0, 1fr) 58px 78px;
   }
 
   .match-damage,

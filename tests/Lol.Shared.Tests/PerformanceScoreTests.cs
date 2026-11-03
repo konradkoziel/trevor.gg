@@ -1,10 +1,13 @@
-using trevor.Features.Lol.Tracking;
-using static trevor.Tests.TrackingTestData;
+using Lol.Shared.Riot;
+using Lol.Shared.Riot.Models;
 
-namespace trevor.Tests;
+namespace Lol.Shared.Tests;
 
 public class PerformanceScoreTests
 {
+    private static RiotMatchParticipant Player(string puuid, int teamId, bool win, int k, int d, int a) =>
+        new(puuid, "Garen", teamId, "TOP", win, k, d, a, 150, 10, 15_000, 12, 9000);
+
     [Fact]
     public void Support_WhoCarriedTheTeam_BeatsAKdaPadder()
     {

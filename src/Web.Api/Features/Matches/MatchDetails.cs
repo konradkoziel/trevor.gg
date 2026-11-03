@@ -9,6 +9,9 @@ public static class MatchDetails
     // Riot's ids of the two sides
     private const int BlueTeam = 100;
 
+    // A rating like 1.4 reads well; more digits pretend a precision the weights don't have
+    private const int RatingDecimals = 1;
+
     public static MatchDetail From(string matchId, RiotMatch match, MatchAssets assets)
     {
         var info = match.Info;
@@ -21,9 +24,30 @@ public static class MatchDetails
             DateTimeOffset.FromUnixTimeMilliseconds(info.GameEndTimestamp), teams);
     }
 
-    private static MatchTeam Team(int teamId, IReadOnlyList<RiotMatchParticipant> players, MatchAssets assets) =>
-        new(teamId, Placement(players), players.Any(p => p.Win), players.Sum(p => p.Kills), players.Sum(p => p.Deaths), players.Sum(p => p.Assists),
-            players.Sum(p => p.GoldEarned), players.Select(p => Player(p, assets)).ToList());
+    private static MatchTeam Team(int teamId, IReadOnlyList<RiotMatchParticipant> players, MatchAssets assets)
+    {
+        var ratings = Ratings(players);
+        return new(teamId, Placement(players), players.Any(p => p.Win), players.Sum(p => p.Kills), players.Sum(p => p.Deaths),
+            players.Sum(p => p.Assists), players.Sum(p => p.GoldEarned),
+            players.Select(p => Player(p, assets) with { Rating = ratings[p.Puuid], Award = Award(p, players, ratings) }).ToList());
+    }
+
+    // PerformanceScore divided by the team's average, so 1 is an average teammate; a negative score (a feeder) counts as 0
+    private static Dictionary<string, double> Ratings(IReadOnlyList<RiotMatchParticipant> players)
+    {
+        var scores = players.ToDictionary(p => p.Puuid, p => Math.Max(PerformanceScore.Of(p, players), 0));
+        var average = scores.Values.Average();
+        return scores.ToDictionary(s => s.Key, s => average <= 0 ? 1 : Math.Round(s.Value / average, RatingDecimals));
+    }
+
+    private static string? Award(RiotMatchParticipant p, IReadOnlyList<RiotMatchParticipant> players, Dictionary<string, double> ratings)
+    {
+        if (players.Count < MatchAwards.MinTeamSize)
+            return null;
+        if (p.Puuid == players.MaxBy(x => ratings[x.Puuid])!.Puuid)
+            return MatchAwards.Mvp;
+        return p.Puuid == players.MinBy(x => ratings[x.Puuid])!.Puuid ? MatchAwards.Report : null;
+    }
 
     // Only Arena pairs have a place; 0 means another mode
     private static int? Placement(IReadOnlyList<RiotMatchParticipant> players) =>

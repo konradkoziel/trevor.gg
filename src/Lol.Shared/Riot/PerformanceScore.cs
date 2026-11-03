@@ -1,10 +1,11 @@
 ﻿using Lol.Shared.Riot.Models;
 
-namespace trevor.Features.Lol.Tracking;
+namespace Lol.Shared.Riot;
 
 // How much a player did for their team, beyond KDA: every part is the player's share of their team's total compared
 // with an even share (1 = an average teammate), so a support's heals and a tank's soaked damage count as much as a
-// carry's kills. Higher is better; the MVP has the highest score of the team, the report candidate the lowest
+// carry's kills. Higher is better: the bot's match reports and the website's match pages pick the MVP (highest of the
+// team) and the report candidate (lowest) by it
 public static class PerformanceScore
 {
     // Weights of the parts; together 1, so an average teammate scores about 1 minus the deaths penalty
