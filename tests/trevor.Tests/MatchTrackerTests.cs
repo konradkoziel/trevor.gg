@@ -48,7 +48,7 @@ public class MatchTrackerTests
 
         var (url, message) = Assert.Single(discord.Webhooks);
         Assert.Equal(Webhook, url);
-        Assert.Contains("**Ann#EUNE**", Assert.Single(message.Embeds!).Description);
+        Assert.Contains(Assert.Single(message.Embeds!).Fields!, f => f.Name == "Ann#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-1"));
     }
 
@@ -61,8 +61,8 @@ public class MatchTrackerTests
         await Run(store, RiotWith(Match()), discord);
 
         var embed = Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!);
-        Assert.Contains("**Ann#EUNE**", embed.Description);
-        Assert.Contains("**Bob#EUNE**", embed.Description);
+        Assert.Contains(embed.Fields!, f => f.Name == "Ann#EUNE");
+        Assert.Contains(embed.Fields!, f => f.Name == "Bob#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
     }
 
@@ -81,7 +81,7 @@ public class MatchTrackerTests
         Assert.Equal(0, await Run(store, riot, discord, reported: reported));
 
         var embed = Assert.Single(Assert.Single(discord.Webhooks).Message.Embeds!);
-        Assert.Contains("**Bob#EUNE**", embed.Description);
+        Assert.Contains(embed.Fields!, f => f.Name == "Bob#EUNE");
         Assert.Equal("EUN1_1", store.LastMatchOf("puuid-2"));
     }
 
@@ -156,8 +156,7 @@ public class MatchTrackerTests
         await Run(new FakeTrackedPlayerStore(Ann()), RiotWith(Match()), discord, dataDragon: dataDragon);
 
         var embed = Assert.Single(discord.Webhooks).Message.Embeds![0];
-        Assert.Contains("🏆 MVP", embed.Description);
-        Assert.Contains("🚨 do reportu", embed.Description);
+        Assert.Equal(["Ann#EUNE", "🏆 MVP", "🚨 Do reportu"], embed.Fields!.Select(f => f.Name));
         Assert.Equal("Thresh", dataDragon.RequestedChampion);
         Assert.NotNull(embed.Thumbnail);
     }
