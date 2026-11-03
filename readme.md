@@ -83,7 +83,9 @@ Solo/Duo and Flex rank (emblem, LP towards the next division, this season's reco
 of the recent Summoner's Rift games and a W/L strip of the last 20 games. Under it Trevor's badges for the recent games
 ("3 wygrane z rzędu", "Tilt: 4 porażki z rzędu", a deathless game, a death record, ARAM king, one-trick), then tabs:
 **Mecze** (the first 10 games, the rest on request; score, KDA ratio, CS/min, length, no remakes; click a game to see both
-teams (in Arena every pair with its place) with everyone's score, damage, CS, gold, final items, summoner spells and runes)
+teams (in Arena every pair with its place) with everyone's score, a performance rating against their team (the same score
+as the bot's match reports, 1 = an average teammate, 🏆 / 🚨 for the team's best and worst), damage, CS, gold, final items,
+summoner spells and runes)
 and **Championy** (games, winrate, KDA and CS/min per champion; a champion opens the team's builds of it). Each match is fetched from Riot once and kept;
 a reload within 2 minutes doesn't ask Riot again.
 Every linked friend has a **profile** at `/gracz/<name>/<tag>` (click a name in the ranking; logged-in users only):

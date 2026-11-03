@@ -2,6 +2,7 @@ import { fetchMatch, type MatchDetail, type MatchIcon, type MatchPlayer, type Ma
 import { useApi } from '../../api/useApi'
 import { Tooltip } from '../tooltip/Tooltip'
 import { formatDecimal, formatThousands, kdaRatio } from './format'
+import { awardIcons, formatRating, ratingTone } from './rating'
 import { teamSubtitle, teamTitle } from './teamLabels'
 
 const SecondsPerMinute = 60
@@ -93,6 +94,13 @@ function PlayerRow({ player: p, isOwner, topDamage, minutes }: PlayerProps) {
       <span className="match-name">
         <strong>{p.riotId ?? p.championName}</strong>
         <span className="muted">{p.championName}</span>
+      </span>
+      <span
+        className={`match-rating ${ratingTone(p.rating)}`}
+        title={`Ocena ${formatRating(p.rating)}: udział w zabójstwach, obrażenia, tankowanie, cele, pomoc drużynie i wizja na tle drużyny (1 = przeciętnie)${p.award ? `. ${awardIcons[p.award].label}` : ''}`}
+      >
+        {p.award && <span aria-label={awardIcons[p.award].label}>{awardIcons[p.award].icon}</span>}
+        <strong>{formatRating(p.rating)}</strong>
       </span>
       <span className="match-kda">
         <strong>

@@ -17,4 +17,8 @@ public record MatchPlayer(
     IReadOnlyList<MatchIcon?> Items,
     IReadOnlyList<MatchIcon> Spells,
     MatchIcon? Keystone,
-    MatchIcon? SecondaryTree);
+    MatchIcon? SecondaryTree,
+    // PerformanceScore against the team's average: 1 = an average teammate
+    double Rating = 1,
+    // "mvp" (best of the team) or "report" (worst of the team); null for the rest and in Arena pairs
+    string? Award = null);
