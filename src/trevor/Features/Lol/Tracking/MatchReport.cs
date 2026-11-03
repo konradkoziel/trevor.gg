@@ -3,10 +3,20 @@ using Lol.Shared.Riot.Models;
 
 namespace trevor.Features.Lol.Tracking;
 
-// A finished match from the tracked players' side: who of them played, plus the best (MVP) and the worst
-// (report candidate) player of their team — tracked players included
+// A finished match from the tracked players' side: their whole team (their pair in Arena, both teams when friends
+// played each other), the champions they played against, and the best (MVP) and the worst (report candidate) of the team
 public record MatchReport(
-    string Queue, long DurationSeconds, IReadOnlyList<MatchReportPlayer> Players, MatchReportPlayer Mvp, MatchReportPlayer Feeder)
+    string Queue,
+    long DurationSeconds,
+    IReadOnlyList<MatchReportPlayer> Players,
+    MatchReportPlayer Mvp,
+    MatchReportPlayer Feeder,
+    // Every team with a tracked player in it, in Riot's order (by role on Summoner's Rift)
+    IReadOnlyList<IReadOnlyList<MatchReportPlayer>> Teams,
+    // Riot's names of the other team's champions; empty in Arena and when friends played each other
+    IReadOnlyList<string> Opponents,
+    // The pair's final place in Arena, else null
+    int? Placement)
 {
     public bool IsRemake => MatchRules.IsRemake(DurationSeconds);
 
@@ -25,27 +35,28 @@ public record MatchReport(
         if (ours.Count == 0)
             return null;
 
-        var candidates = TheirTeam(info.Participants, names.Keys.ToHashSet());
+        var squads = info.Participants.GroupBy(p => p.Squad()).ToList();
+        var ourSquads = squads.Where(s => s.Any(p => names.ContainsKey(p.Puuid))).ToList();
+        var candidates = ourSquads.Count == 1 ? ourSquads[0].ToList() : info.Participants;
         var mvp = candidates
             .OrderByDescending(KdaRatio).ThenByDescending(p => p.Kills + p.Assists).ThenByDescending(p => p.TotalDamageDealtToChampions)
             .First();
         var feeder = candidates
             .OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).ThenBy(p => p.TotalDamageDealtToChampions)
             .First();
+        var placement = ourSquads.Count == 1 && ourSquads[0].First().SubteamPlacement > 0 ? ourSquads[0].First().SubteamPlacement : (int?)null;
 
         return new MatchReport(
             RiotNames.Queue(info.QueueId, info.GameMode),
             info.GameDuration,
             ours,
             Describe(mvp, names),
-            Describe(feeder, names));
-    }
-
-    // The tracked players' team (their pair in Arena); the whole match when tracked players were on both teams (a custom game among friends)
-    private static IReadOnlyList<RiotMatchParticipant> TheirTeam(IReadOnlyList<RiotMatchParticipant> participants, HashSet<string> tracked)
-    {
-        var teams = participants.Where(p => tracked.Contains(p.Puuid)).Select(p => p.Squad()).Distinct().ToList();
-        return teams.Count == 1 ? participants.Where(p => p.Squad() == teams[0]).ToList() : participants;
+            Describe(feeder, names),
+            ourSquads.Select(s => (IReadOnlyList<MatchReportPlayer>)s.Select(p => Describe(p, names)).ToList()).ToList(),
+            ourSquads.Count == 1 && placement is null
+                ? squads.Where(s => s.Key != ourSquads[0].Key).SelectMany(s => s).Select(p => p.ChampionName).ToList()
+                : [],
+            placement);
     }
 
     // Tracked players by their stored Riot ID, everyone else by the Riot ID in the match, or the champion

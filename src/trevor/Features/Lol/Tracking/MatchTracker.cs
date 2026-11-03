@@ -101,7 +101,9 @@ public class MatchTracker(
         {
             var icon = await dataDragon.ChampionIconUrlAsync(report.Mvp.Champion, ct);
             var matchUrl = SiteLinks.Match(web.Value.SiteUrl, matchId);
-            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, icon, matchUrl), ct);
+            // Polish names (Wukong, not MonkeyKing); without Data Dragon the report keeps Riot's names
+            var championNames = (await dataDragon.ChampionsAsync(ct))?.ToDictionary(c => c.Id, c => c.Name);
+            await discord.SendWebhookAsync(webhookUrl, MatchReportMessage.Format(report, icon, matchUrl, championNames), ct);
         }
 
         await reported.AddAsync(matchId, ct);

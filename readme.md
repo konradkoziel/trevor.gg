@@ -42,13 +42,15 @@ Works on any text message on the server; images and embeds without text get a sn
 
 ### `/track nick: Nick#EUNE` and `/untrack nick: Nick#EUNE`
 Puts a player on (or off) Trevor's watch list, up to 20 players. Every 5 minutes he checks their matches, and after each
-finished game posts a short card to a dedicated matches channel: result, queue, length, every tracked player's champion and KDA,
-the team's **🏆 MVP** (best KDA, with the champion's icon) and **🚨 report candidate** (worst KDA). Tracked players count too,
-so a friend can end up on either line. No AI here — just the numbers.
+finished game posts a short card to a dedicated matches channel: result, queue, length, then the whole team one player per
+line (tracked players in bold, champion names in Polish, role, KDA) with the **🏆 MVP** (best KDA, the champion's icon in the
+corner) and the **🚨 report candidate** (worst KDA) marked on their lines, and the opponents' champions. Tracked players count
+too, so a friend can end up on either mark. In Arena it shows the pair and its place; when friends played each other, both
+teams. No AI here — just the numbers.
 Friends in the same game get one shared card, even when Riot lists the match for one of them a few minutes later
 (reported match ids are remembered); remakes are skipped. Needs `DISCORD_MATCHES_WEBHOOK`.
 With `WEB_SITE_URL` set, the card's title links to the game on the website (`/mecz/<id>`: both teams, builds and damage).
-Everyone can also switch reports on or off for each of their own accounts on the website ("Konto" → "Raporty na Discordzie");
+Everyone can also switch reports on or off for each of their own accounts on the website ("Ja → Konta LoL" → "Raporty na Discordzie");
 the bot picks the change up on its next 5-minute run. `/track` and `/untrack` flip the same switch for an account linked on the
 website (anyone can, like before), so the site and the bot always agree; other accounts are tracked by the bot alone.
 
