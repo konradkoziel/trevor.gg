@@ -29,7 +29,14 @@ public record RiotMatchParticipant(
     int Summoner2Id = 0,
     RiotMatchPerks? Perks = null,
     int PlayerSubteamId = 0, // Arena's pair (1–8); 0 in every other mode
-    int SubteamPlacement = 0) // Arena's final place of that pair (1–8); 0 in every other mode
+    int SubteamPlacement = 0, // Arena's final place of that pair (1–8); 0 in every other mode
+    // What KDA misses, for the bot's performance score: tanking, objectives and helping teammates
+    long TotalDamageTaken = 0,
+    long DamageSelfMitigated = 0,
+    long DamageDealtToObjectives = 0,
+    long TotalHealsOnTeammates = 0,
+    long TotalDamageShieldedOnTeammates = 0,
+    int TimeCCingOthers = 0) // seconds
 {
     // The side the player fought on: Arena pairs share TeamId with other pairs, so there it is the pair
     public int Squad() => PlayerSubteamId > 0 ? PlayerSubteamId : TeamId;
