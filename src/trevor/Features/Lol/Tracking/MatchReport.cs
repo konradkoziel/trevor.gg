@@ -5,6 +5,7 @@ namespace trevor.Features.Lol.Tracking;
 
 // A finished match from the tracked players' side: their whole team (their pair in Arena, both teams when friends
 // played each other), the champions they played against, and the best (MVP) and the worst (report candidate) of the team
+// by PerformanceScore
 public record MatchReport(
     string Queue,
     long DurationSeconds,
@@ -38,12 +39,9 @@ public record MatchReport(
         var squads = info.Participants.GroupBy(p => p.Squad()).ToList();
         var ourSquads = squads.Where(s => s.Any(p => names.ContainsKey(p.Puuid))).ToList();
         var candidates = ourSquads.Count == 1 ? ourSquads[0].ToList() : info.Participants;
-        var mvp = candidates
-            .OrderByDescending(KdaRatio).ThenByDescending(p => p.Kills + p.Assists).ThenByDescending(p => p.TotalDamageDealtToChampions)
-            .First();
-        var feeder = candidates
-            .OrderBy(KdaRatio).ThenByDescending(p => p.Deaths).ThenBy(p => p.TotalDamageDealtToChampions)
-            .First();
+        var scores = candidates.ToDictionary(p => p.Puuid, p => PerformanceScore.Of(p, squads.First(s => s.Key == p.Squad()).ToList()));
+        var mvp = candidates.OrderByDescending(p => scores[p.Puuid]).ThenByDescending(KdaRatio).First();
+        var feeder = candidates.OrderBy(p => scores[p.Puuid]).ThenBy(KdaRatio).First();
         var placement = ourSquads.Count == 1 && ourSquads[0].First().SubteamPlacement > 0 ? ourSquads[0].First().SubteamPlacement : (int?)null;
 
         return new MatchReport(
@@ -66,6 +64,6 @@ public record MatchReport(
             trackedNames.GetValueOrDefault(p.Puuid) ?? RiotNames.RiotId(p) ?? p.ChampionName,
             trackedNames.ContainsKey(p.Puuid));
 
-    // Deaths count as at least one, so a deathless game ranks by kills + assists
+    // Only breaks ties of the score. Deaths count as at least one, so a deathless game ranks by kills + assists
     private static double KdaRatio(RiotMatchParticipant p) => (double)(p.Kills + p.Assists) / Math.Max(p.Deaths, 1);
 }
