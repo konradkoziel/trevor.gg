@@ -127,23 +127,32 @@ public class MatchReportTests
     }
 
     [Fact]
-    public void Message_ListsTheWholeTeam_OneLineEach_WithMvpAndFeederMarked()
+    public void Message_ShowsPlayersMvpAndFeeder_WithoutVerdict()
     {
         var report = MatchReport.For(Match(), [Ann, Bob])!;
-        var names = new Dictionary<string, string> { ["Amumu"] = "Amumu PL", ["Teemo"] = "Teemo PL" };
 
-        var embed = Assert.Single(MatchReportMessage.Format(report, "https://icons.test/Thresh.png", championNames: names).Embeds!);
+        var embed = Assert.Single(MatchReportMessage.Format(report, "https://icons.test/Thresh.png").Embeds!);
 
         Assert.Equal("❌ Przegrana · Ranked Solo/Duo · 30 min", embed.Title);
-        Assert.Null(embed.Fields);
-        var lines = embed.Description!.Split('\n');
-        Assert.Equal("**Nasza drużyna**", lines[0]);
-        Assert.Equal("**Ann#EUNE** · Yasuo (Mid) · 2/9/3", lines[1]);
-        Assert.Equal("**Bob#EUNE** · Thresh (Support) · 7/2/10 · 🏆 MVP", lines[2]);
-        Assert.Equal("Random#EUNE · Amumu PL (Jungle) · 0/10/2 · 🚨 do reportu", lines[5]);
-        Assert.StartsWith("**Przeciwnicy:** Teemo PL, Garen", lines[7]);
+        var fields = embed.Fields!;
+        Assert.Equal(["Ann#EUNE", "Bob#EUNE", "🏆 MVP", "🚨 Do reportu"], fields.Select(f => f.Name));
+        Assert.Equal("Yasuo (Mid)\n**2/9/3**", fields[0].Value);
+        Assert.True(fields[0].Inline);
+        Assert.Equal("**Bob#EUNE** — Thresh (Support) · 7/2/10", fields[2].Value);
+        Assert.Equal("**Random#EUNE** — Amumu (Jungle) · 0/10/2", fields[3].Value);
         Assert.Equal("https://icons.test/Thresh.png", embed.Thumbnail!.Url);
         Assert.Null(embed.Url);
+    }
+
+    [Fact]
+    public void Message_UsesPolishChampionNames_WhenKnown()
+    {
+        var names = new Dictionary<string, string> { ["Thresh"] = "Thresh PL" };
+
+        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(Match(), [Ann, Bob])!, null, championNames: names).Embeds!);
+
+        Assert.Equal("**Bob#EUNE** — Thresh PL (Support) · 7/2/10", embed.Fields![2].Value);
+        Assert.Equal("Yasuo (Mid)\n**2/9/3**", embed.Fields[0].Value);
     }
 
     [Fact]
@@ -154,28 +163,7 @@ public class MatchReportTests
         var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(Match(), [Ann])!, null, url).Embeds!);
 
         Assert.Equal(url, embed.Url);
-        Assert.EndsWith($"]({url})", embed.Description);
-    }
-
-    [Fact]
-    public void Message_ShowsThePairAndItsPlace_InArena()
-    {
-        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(ArenaMatch(), [Ann])!, null).Embeds!);
-
-        var lines = embed.Description!.Split('\n');
-        Assert.Equal("**Nasza para · 2. miejsce**", lines[0]);
-        Assert.Equal(3, lines.Length);
-        Assert.DoesNotContain("Przeciwnicy", embed.Description);
-    }
-
-    [Fact]
-    public void Message_ShowsBothTeams_WhenFriendsPlayedEachOther()
-    {
-        var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(Match(bobOnEnemyTeam: true), [Ann, Bob])!, null).Embeds!);
-
-        Assert.Contains("**Drużyna 1**", embed.Description);
-        Assert.Contains("**Drużyna 2**", embed.Description);
-        Assert.DoesNotContain("Przeciwnicy", embed.Description);
+        Assert.Contains($"]({url})", embed.Fields!.Last().Value);
     }
 
     [Theory]
@@ -195,7 +183,7 @@ public class MatchReportTests
 
         var embed = Assert.Single(MatchReportMessage.Format(MatchReport.For(match, premade)!, null).Embeds!);
 
-        Assert.Contains("**Gracz3#EUNE** · Amumu (Jungle) · 0/10/2 · 🚨 do reportu, swój, wstyd podwójny", embed.Description);
+        Assert.EndsWith("swój, wstyd podwójny", Assert.Single(embed.Fields!, f => f.Name == "🚨 Do reportu").Value);
         Assert.Null(embed.Thumbnail);
     }
 }
